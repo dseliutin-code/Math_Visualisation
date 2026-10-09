@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Довжина дуги · Дотична площина · Градієнт · Повний диференціал</title>
+<style>
+:root{
+  --bg:#f3efe6; --panel:#fffdf8; --stage:#fbf9f3; --ink:#1b2130; --muted:#69707f; --line:#dcd4c4;
+  --accent:#b8452a; --accent2:#1f5ea8; --good:#2a7a58; --purple:#7a3fb0; --floor:rgba(120,110,90,.10); --contour:rgba(60,70,90,.38);
+  --serif: "Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans: "Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono: "Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+}
+body[data-theme=dark]{
+  --bg:#0e1117; --panel:#161b24; --stage:#11151d; --ink:#ebe7dd; --muted:#98a1b0; --line:#2a3242;
+  --accent:#f28b62; --accent2:#74b3ff; --good:#6fd09b; --purple:#c394f5; --floor:rgba(200,210,230,.07); --contour:rgba(200,210,230,.38);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 28px;padding:22px 28px 0;max-width:1440px;margin:0 auto}
+h1{font-family:var(--serif);font-weight:600;font-size:26px;letter-spacing:.2px;margin:0;line-height:1.15}
+h1 small{display:block;font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+nav{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
+nav button,.themebtn{font:inherit;color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;padding:8px 14px;cursor:pointer;font-weight:600}
+nav button:hover{color:var(--ink)}
+nav button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.themebtn{border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:500;font-size:13px}
+main{max-width:1440px;margin:0 auto;padding:16px 28px 40px}
+.tab{display:none;grid-template-columns:minmax(0,1fr) 372px;gap:18px;align-items:start}
+.tab.on{display:grid}
+.stage{position:sticky;top:12px;background:var(--stage);border:1px solid var(--line);border-radius:14px;height:min(74vh,700px);min-height:460px;overflow:hidden}
+.stage canvas{width:100%;height:100%;display:block;touch-action:none}
+.stage .hint{position:absolute;left:14px;bottom:10px;font-size:12px;color:var(--muted);pointer-events:none}
+.stage .badge{position:absolute;right:14px;top:10px;font-size:12.5px;color:var(--muted);font-family:var(--mono);pointer-events:none}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 16px 12px}
+.panel h2{font-family:var(--serif);font-size:17px;font-weight:600;margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line)}
+.panel h2:first-child{margin-top:0;padding-top:0;border-top:0}
+.field{margin-bottom:8px;min-width:0}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:2px}
+.field label i,.info i,.theory i{font-family:var(--serif);font-size:1.06em}
+input[type=text],select{width:100%;font-family:var(--mono);font-size:14px;color:var(--ink);background:var(--stage);border:1px solid var(--line);border-radius:8px;padding:7px 9px;outline:none}
+select{font-family:var(--sans)}
+input[type=text]:focus,select:focus{border-color:var(--accent2);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent2) 22%,transparent)}
+input.bad{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--stage))}
+.err{display:block;color:var(--accent);font-size:12px;min-height:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:2px 0 8px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+button.act{font:inherit;font-weight:600;font-size:13.5px;color:var(--panel);background:var(--ink);border:0;border-radius:9px;padding:8px 13px;cursor:pointer}
+button.act.sec{background:none;color:var(--ink);border:1px solid var(--line)}
+button.act.run{background:var(--accent);color:#fff}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:13px;margin:4px 0}
+.checks label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.checks input{accent-color:var(--accent)}
+.info{font-size:13.5px;line-height:1.75;font-variant-numeric:tabular-nums}
+.info b{font-weight:600}
+.info .big{font-family:var(--serif);font-size:16px}
+.info .warn{color:var(--accent);font-weight:600}
+.mini{width:100%;height:150px;display:block}
+.map{width:100%;aspect-ratio:1;display:block;border-radius:10px;border:1px solid var(--line);cursor:crosshair;touch-action:none}
+.cap{font-size:12px;color:var(--muted);margin:4px 0 0}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;background:var(--c);margin-right:6px;vertical-align:middle}
+.theory{grid-column:1/-1;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;padding:16px 22px;font-family:var(--serif);font-size:16.5px;line-height:1.65}
+.theory p{margin:0 0 .6em;max-width:92ch}
+.theory p:last-child{margin-bottom:0}
+.theory .f{display:block;text-align:center;font-size:18px;margin:.5em 0}
+.syntax{font-size:12.5px;color:var(--muted);margin-top:10px}
+.syntax code{font-family:var(--mono);font-size:12px;background:var(--stage);border:1px solid var(--line);border-radius:5px;padding:0 4px}
+@media (max-width:980px){.stage{position:relative;top:0}.tab{grid-template-columns:1fr}.stage{height:62vh}header{padding:16px 16px 0}main{padding:12px 16px 30px}}
+</style>
+</head>
+<body>
+<header>
+  <h1><small>Математичний аналіз · наочно</small>Довжина дуги, дотична площина, градієнт і повний диференціал</h1>
+  <nav>
+    <button data-tab="arc" class="on">1. Довжина дуги</button>
+    <button data-tab="tan">2. Дотична площина і градієнт</button>
+    <button data-tab="dif">3. Повний диференціал</button>
+  </nav>
+  <button class="themebtn" id="themeBtn">Темна тема</button>
+</header>
+
+<main>
+<!-- ============================ 1. ДОВЖИНА ДУГИ ============================ -->
+<section class="tab on" id="tab-arc">
+  <div class="stage"><canvas id="arcCanvas"></canvas></div>
+  <aside class="panel">
+    <h2>Крива</h2>
+    <div class="field"><label>Готовий приклад</label><select id="arcPreset"></select></div>
+    <div class="field"><label><i>x</i>(<i>t</i>) =</label><input type="text" id="arcX" spellcheck="false" autocomplete="off"><small class="err"></small></div>
+    <div class="field"><label><i>y</i>(<i>t</i>) =</label><input type="text" id="arcY" spellcheck="false" autocomplete="off"><small class="err"></small></div>
+    <div class="row3">
+      <div class="field"><label><i>a</i> (початок)</label><input type="text" id="arcA" autocomplete="off"><small class="err"></small></div>
+      <div class="field"><label><i>b</i> (кінець)</label><input type="text" id="arcB" autocomplete="off"><small class="err"></small></div>
+      <div class="field"><label>ланок <i>n</i></label><input type="text" id="arcN" autocomplete="off"><small class="err"></small></div>
+    </div>
+    <input type="range" id="arcNs" min="1" max="200" step="1" value="4" aria-label="Кількість ланок">
+    <div class="btns">
+      <button class="act run" id="arcPlayN">▶ Подрібнювати розбиття</button>
+      <button class="act sec" id="arcPlayT">▶ Рух точки</button>
+    </div>
+    <h2>Числа</h2>
+    <div class="info" id="arcInfo"></div>
+    <h2>Збіжність <i>L<sub>n</sub></i> → <i>L</i></h2>
+    <canvas class="mini" id="arcGraph"></canvas>
+    <div class="legend"><span style="--c:var(--accent2)">довжина ламаної</span><span style="--c:var(--accent)">довжина дуги</span></div>
+    <p class="syntax">Можна писати <code>2pi</code>, <code>t^2</code>, <code>sin(3t)</code>, <code>sqrt</code>, <code>exp</code>, <code>ln</code>, <code>abs</code>, <code>tg</code>, <code>ch</code>; у числових полях — вирази на кшталт <code>pi/2</code>.</p>
+  </aside>
+  <article class="theory">
+    <p>Впишемо в криву ламану: розіб'ємо проміжок [<i>a</i>, <i>b</i>] точками <i>t</i><sub>0</sub> &lt; <i>t</i><sub>1</sub> &lt; … &lt; <i>t<sub>n</sub></i> і сполучимо відповідні точки кривої відрізками. Довжина ламаної <i>L<sub>n</sub></i> не перевищує довжини дуги, а за необмеженого подрібнення розбиття наближається до неї. Саме цю границю (точну верхню межу довжин вписаних ламаних) і називають довжиною дуги. Для гладкої кривої <i>x</i> = <i>x</i>(<i>t</i>), <i>y</i> = <i>y</i>(<i>t</i>) вона обчислюється інтегралом</p>
+    <span class="f"><i>L</i> = ∫<sub><i>a</i></sub><sup><i>b</i></sup> √( <i>x</i>′(<i>t</i>)² + <i>y</i>′(<i>t</i>)² ) <i>dt</i>.</span>
+    <p>Смужка під графіком — це ланки ламаної, «розгорнуті» на пряму: вся смужка відповідає довжині дуги <i>L</i>, зафарбована частина — довжині ламаної <i>L<sub>n</sub></i>. Увімкніть подрібнення і стежте, як незафарбований залишок зникає. Режим «Рух точки» показує змінну довжину дуги <i>s</i>(<i>t</i>) та дотичний вектор швидкості, модуль якого і стоїть під інтегралом.</p>
+  </article>
+</section>
+
+<!-- ============================ 2. ДОТИЧНА ПЛОЩИНА І ГРАДІЄНТ ============================ -->
+<section class="tab" id="tab-tan">
+  <div class="stage"><canvas id="tanCanvas"></canvas><div class="hint">Тягніть мишею — обертання · коліщатко — масштаб · подвійний клац — початковий вигляд</div></div>
+  <aside class="panel">
+    <h2>Функція і точка</h2>
+    <div class="field"><label>Готовий приклад</label><select id="tanPreset"></select></div>
+    <div class="field"><label><i>z</i> = <i>f</i>(<i>x</i>, <i>y</i>) =</label><input type="text" id="tanF" spellcheck="false" autocomplete="off"><small class="err"></small></div>
+    <div class="row3">
+      <div class="field"><label><i>x</i><sub>0</sub></label><input type="text" id="tanX" autocomplete="off"><small class="err"></small></div>
+      <div class="field"><label><i>y</i><sub>0</sub></label><input type="text" id="tanY" autocomplete="off"><small class="err"></small></div>
+      <div class="field"><label>область |<i>x</i>|,|<i>y</i>| ≤</label><input type="text" id="tanR" autocomplete="off"><small class="err"></small></div>
+    </div>
+    <div class="field"><label>напрямок <i>l</i>: кут θ до осі <i>Ox</i>, градуси</label><input type="text" id="tanTh" autocomplete="off"><small class="err"></small></div>
+    <input type="range" id="tanThS" min="0" max="360" step="1" value="30" aria-label="Кут напрямку">
+    <div class="btns">
+      <button class="act run" id="tanPlayDir">▶ Обертати напрямок</button>
+      <button class="act sec" id="tanPlayGrad">▶ Підйом за градієнтом</button>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="tanShowPlane" checked>дотична площина</label>
+      <label><input type="checkbox" id="tanShowNormal" checked>нормаль</label>
+      <label><input type="checkbox" id="tanShowSec" checked>переріз уздовж <i>l</i></label>
+      <label><input type="checkbox" id="tanShowCont" checked>лінії рівня</label>
+      <label><input type="checkbox" id="tanSpin">обертати камеру</label>
+      <label><input type="checkbox" id="tanEqual">рівний масштаб осей</label>
+    </div>
+    <label class="cap">прозорість поверхні</label>
+    <input type="range" id="tanAlpha" min="0.15" max="1" step="0.01" value="0.8" aria-label="Прозорість поверхні">
+    <h2>Вигляд згори: лінії рівня</h2>
+    <canvas class="map" id="tanMap"></canvas>
+    <p class="cap">Клацніть або тягніть по карті, щоб перенести точку <i>M</i><sub>0</sub>.</p>
+    <div class="legend"><span style="--c:var(--accent)">∇<i>f</i></span><span style="--c:var(--accent2)">напрямок <i>l</i></span><span style="--c:var(--purple)">нормаль <i>n</i></span><span style="--c:#e69a3c">дотична площина</span></div>
+    <h2>Числа</h2>
+    <div class="info" id="tanInfo"></div>
+    <h2>Похідна за напрямком як функція кута</h2>
+    <canvas class="mini" id="tanGraph"></canvas>
+  </aside>
+  <article class="theory">
+    <p>Якщо функція <i>f</i> диференційовна в точці <i>M</i><sub>0</sub>(<i>x</i><sub>0</sub>, <i>y</i><sub>0</sub>), то поверхня <i>z</i> = <i>f</i>(<i>x</i>, <i>y</i>) має в точці <i>P</i><sub>0</sub>(<i>x</i><sub>0</sub>, <i>y</i><sub>0</sub>, <i>z</i><sub>0</sub>) дотичну площину</p>
+    <span class="f"><i>z</i> − <i>z</i><sub>0</sub> = <i>f</i>′<sub><i>x</i></sub>(<i>M</i><sub>0</sub>)·(<i>x</i> − <i>x</i><sub>0</sub>) + <i>f</i>′<sub><i>y</i></sub>(<i>M</i><sub>0</sub>)·(<i>y</i> − <i>y</i><sub>0</sub>),</span>
+    <p>а вектор <i>n</i> = (−<i>f</i>′<sub><i>x</i></sub>, −<i>f</i>′<sub><i>y</i></sub>, 1) є її нормаллю. Градієнт ∇<i>f</i> = (<i>f</i>′<sub><i>x</i></sub>, <i>f</i>′<sub><i>y</i></sub>) живе не на поверхні, а в площині аргументів: на рисунку він намальований на «підлозі» і на карті ліній рівня. Він перпендикулярний до лінії рівня, що проходить через <i>M</i><sub>0</sub>, і вказує напрямок найшвидшого зростання функції. Похідна за напрямком одиничного вектора <i>l</i> дорівнює проєкції градієнта на цей напрямок:</p>
+    <span class="f">∂<i>f</i>/∂<i>l</i> = (∇<i>f</i>, <i>l</i>) = |∇<i>f</i>|·cos φ.</span>
+    <p>Геометрично це кутовий коефіцієнт дотичної до перерізу поверхні вертикальною площиною, що проходить через <i>M</i><sub>0</sub> у напрямку <i>l</i>. Увімкніть обертання напрямку: похідна найбільша, коли <i>l</i> збігається з градієнтом, і нульова, коли <i>l</i> дотикається до лінії рівня. «Підйом за градієнтом» пускає точку вздовж ∇<i>f</i> — її слід скрізь перетинає лінії рівня під прямим кутом. Якщо «рівний масштаб осей» вимкнено, вісь <i>z</i> розтягнута для наочності, тож кути в просторі спотворені; увімкніть його, щоб бачити справжню геометрію.</p>
+  </article>
+</section>
+
+<!-- ============================ 3. ПОВНИЙ ДИФЕРЕНЦІАЛ ============================ -->
+<section class="tab" id="tab-dif">
+  <div class="stage"><canvas id="difCanvas"></canvas><div class="badge" id="difBadge"></div><div class="hint">Тягніть мишею — обертання · коліщатко — масштаб · подвійний клац — початковий вигляд</div></div>
+  <aside class="panel">
+    <h2>Функція, точка, приріст</h2>
+    <div class="field"><label>Готовий приклад</label><select id="difPreset"></select></div>
+    <div class="field"><label><i>z</i> = <i>f</i>(<i>x</i>, <i>y</i>) =</label><input type="text" id="difF" spellcheck="false" autocomplete="off"><small class="err"></small></div>
+    <div class="row3">
+      <div class="field"><label><i>x</i><sub>0</sub></label><input type="text" id="difX" autocomplete="off"><small class="err"></small></div>
+      <div class="field"><label><i>y</i><sub>0</sub></label><input type="text" id="difY" autocomplete="off"><small class="err"></small></div>
+      <div class="field"><label>півширина вікна</label><input type="text" id="difR" autocomplete="off"><small class="err"></small></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Δ<i>x</i></label><input type="text" id="difDx" autocomplete="off"><small class="err"></small></div>
+      <div class="field"><label>Δ<i>y</i></label><input type="text" id="difDy" autocomplete="off"><small class="err"></small></div>
+    </div>
+    <label class="cap">стискання приросту: (Δ<i>x</i>, Δ<i>y</i>) множимо на <i>λ</i> = <b id="difTv">1</b></label>
+    <input type="range" id="difT" min="0.01" max="1" step="0.005" value="1" aria-label="Множник приросту">
+    <div class="btns">
+      <button class="act run" id="difPlay">▶ Приріст → 0</button>
+      <button class="act sec" id="difReset">λ = 1</button>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="difMicro">«мікроскоп»</label>
+      <label><input type="checkbox" id="difEqual">рівний масштаб осей</label>
+      <label><input type="checkbox" id="difSpin">обертати камеру</label>
+    </div>
+    <label class="cap">прозорість поверхні</label>
+    <input type="range" id="difAlpha" min="0.15" max="1" step="0.01" value="0.72" aria-label="Прозорість поверхні">
+    <div class="legend"><span style="--c:#e08a1e"><i>dz</i> (до площини)</span><span style="--c:var(--accent)">Δ<i>z</i> − <i>dz</i></span><span style="--c:var(--accent2)"><i>f</i>′<sub>x</sub>Δ<i>x</i></span><span style="--c:var(--good)"><i>f</i>′<sub>y</sub>Δ<i>y</i></span></div>
+    <h2>Числа</h2>
+    <div class="info" id="difInfo"></div>
+    <h2>Відношення (Δ<i>z</i> − <i>dz</i>) / ρ</h2>
+    <canvas class="mini" id="difGraph"></canvas>
+    <p class="cap">Функція диференційовна в точці тоді й лише тоді, коли це відношення прямує до нуля при ρ → 0.</p>
+  </aside>
+  <article class="theory">
+    <p>Надамо аргументам прирости Δ<i>x</i>, Δ<i>y</i> і перейдемо з точки <i>M</i><sub>0</sub> у точку <i>M</i>. Повний приріст функції Δ<i>z</i> = <i>f</i>(<i>x</i><sub>0</sub> + Δ<i>x</i>, <i>y</i><sub>0</sub> + Δ<i>y</i>) − <i>f</i>(<i>x</i><sub>0</sub>, <i>y</i><sub>0</sub>) — це приріст аплікати <em>поверхні</em>. Повний диференціал</p>
+    <span class="f"><i>dz</i> = <i>f</i>′<sub><i>x</i></sub>(<i>M</i><sub>0</sub>)·Δ<i>x</i> + <i>f</i>′<sub><i>y</i></sub>(<i>M</i><sub>0</sub>)·Δ<i>y</i></span>
+    <p>— це приріст аплікати <em>дотичної площини</em> при тому самому зміщенні. У цьому й полягає його геометричний зміст. На рисунку над точкою <i>M</i> піднімається вертикальний відрізок: помаранчева частина доходить до дотичної площини (це <i>dz</i>), червона — від площини до поверхні (це різниця Δ<i>z</i> − <i>dz</i>). Сині й зелені відрізки показують, як <i>dz</i> складається з двох частинних диференціалів. Диференційовність означає, що</p>
+    <span class="f">Δ<i>z</i> − <i>dz</i> = <i>o</i>(ρ), ρ = √(Δ<i>x</i>² + Δ<i>y</i>²) → 0,</span>
+    <p>тобто червоний відрізок зникає швидше, ніж сама відстань між точками. Запустіть «Приріст → 0» з увімкненим «мікроскопом»: вікно стискається разом із приростом, і під збільшенням гладка поверхня стає невідрізненною від своєї дотичної площини. Для порівняння оберіть приклад √|<i>xy</i>| у точці (0, 0): частинні похідні там існують, але відношення (Δ<i>z</i> − <i>dz</i>)/ρ до нуля не йде, і під мікроскопом поверхня так і не розпрямляється.</p>
+  </article>
+</section>
+</main>
+
+<script>
+'use strict';
+/* =====================================================================
+   Розбір формул, введених з клавіатури
+   ===================================================================== */
+const FN={sin:Math.sin,cos:Math.cos,tan:Math.tan,tg:Math.tan,cot:v=>1/Math.tan(v),ctg:v=>1/Math.tan(v),
+  asin:Math.asin,arcsin:Math.asin,acos:Math.acos,arccos:Math.acos,atan:Math.atan,arctan:Math.atan,arctg:Math.atan,
+  sinh:Math.sinh,sh:Math.sinh,cosh:Math.cosh,ch:Math.cosh,tanh:Math.tanh,th:Math.tanh,
+  exp:Math.exp,ln:Math.log,log:Math.log,lg:Math.log10,sqrt:Math.sqrt,cbrt:Math.cbrt,abs:Math.abs,sign:Math.sign};
+const CONST={pi:Math.PI,e:Math.E};
+const CYR={'х':'x','у':'y','е':'e','о':'o','а':'a','с':'c','і':'i','р':'p'};
+
+function compile(src,vars){
+  let s=String(src).toLowerCase().replace(/[хуеоасір]/g,c=>CYR[c]).replace(/\*\*/g,'^')
+    .replace(/[×·⋅]/g,'*').replace(/[÷:]/g,'/').replace(/[−–—]/g,'-').replace(/π/g,'pi').replace(/√/g,'sqrt');
+  if(!s.trim()) throw new Error('Порожнє поле');
+  const known=n=>vars.includes(n)||(n in CONST)||(n in FN);
+  const split=name=>{ if(name==='') return [];
+    for(let len=name.length;len>=1;len--){ const p=name.slice(0,len);
+      if(known(p)){ const r=split(name.slice(len)); if(r) return [p,...r]; } }
+    return null; };
+  const re=/\s*(?:(\d+(?:[.,]\d+)?|[.,]\d+)|([a-z]+)|([-+*\/^()]))/y;
+  const toks=[]; let pos=0;
+  while(pos<s.length){
+    if(!s.slice(pos).trim()) break;
+    re.lastIndex=pos; const m=re.exec(s);
+    if(!m){ const ch=s.slice(pos).trim()[0]; throw new Error(ch==='|'?'Модуль пишіть як abs(…)':'Незрозумілий символ «'+ch+'»'); }
+    pos=re.lastIndex;
+    if(m[1]!==undefined) toks.push({t:'n',v:parseFloat(m[1].replace(',','.'))});
+    else if(m[2]!==undefined){ const parts=split(m[2]); if(!parts) throw new Error('Невідоме ім\u2019я «'+m[2]+'»'); for(const p of parts) toks.push({t:'id',v:p}); }
+    else toks.push({t:m[3]});
+  }
+  let i=0; const peek=()=>toks[i], next=()=>toks[i++];
+  const close=()=>{ const c=next(); if(!c||c.t!==')') throw new Error('Не закрито дужку'); };
+  function expr(){ let a=term(); while(peek()&&(peek().t==='+'||peek().t==='-')){ const op=next().t; a='('+a+op+term()+')'; } return a; }
+  function term(){ let a=unary();
+    for(;;){ const p=peek(); if(!p) break;
+      if(p.t==='*'||p.t==='/'){ next(); a='('+a+p.t+unary()+')'; }
+      else if(p.t==='n'||p.t==='id'||p.t==='('){ a='('+a+'*'+power()+')'; }
+      else break; }
+    return a; }
+  function unary(){ const p=peek(); if(p&&p.t==='-'){ next(); return '(-'+unary()+')'; } if(p&&p.t==='+'){ next(); return unary(); } return power(); }
+  function power(){ const b=atom(); if(peek()&&peek().t==='^'){ next(); return 'Math.pow('+b+','+unary()+')'; } return b; }
+  function atom(){ const p=next(); if(!p) throw new Error('Вираз обірвано');
+    if(p.t==='n') return '('+p.v+')';
+    if(p.t==='('){ const a=expr(); close(); return a; }
+    if(p.t==='id'){
+      if(vars.includes(p.v)) return p.v;
+      if(p.v in CONST) return '('+CONST[p.v]+')';
+      const o=next(); if(!o||o.t!=='(') throw new Error('Після '+p.v+' потрібні дужки: '+p.v+'(…)');
+      const a=expr(); close(); return 'F.'+p.v+'('+a+')'; }
+    throw new Error('Неочікуваний символ «'+p.t+'»'); }
+  const code=expr();
+  if(i<toks.length) throw new Error('Зайвий символ «'+(toks[i].v!==undefined?toks[i].v:toks[i].t)+'»');
+  return new Function('F','return function('+vars.join(',')+'){return '+code+';}')(FN);
+}
+function num(str){ const v=compile(str,[])(); if(!isFinite(v)) throw new Error('Це не число'); return v; }
+
+/* =====================================================================
+   Дрібні допоміжні функції
+   ===================================================================== */
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+function fmt(v,p){ if(!isFinite(v)) return '—'; if(Math.abs(v)<1e-12) return '0'; return String(parseFloat(v.toPrecision(p||5))).replace('-','−').replace(/e\+?(−?\d+)/,'·10^$1'); }
+function plain(v,p){ return String(parseFloat(v.toPrecision(p||5))); }
+function sg(v){ return (v<0?'− ':'+ ')+fmt(Math.abs(v)); }
+function shift(name,v){ return Math.abs(v)<1e-12?name:'('+name+' '+(v<0?'+ ':'− ')+fmt(Math.abs(v))+')'; }
+function mark(el,msg){ el.classList.toggle('bad',!!msg); const e=el.closest('.field').querySelector('.err'); if(e) e.textContent=msg||''; }
+function readField(id,fn){ const el=$(id); try{ const v=fn(el.value); mark(el,''); return v; }catch(e){ mark(el,e.message); return undefined; } }
+function fit(cv){ const r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1; const w=Math.max(10,r.width), h=Math.max(10,r.height);
+  const W=Math.round(w*dpr), H=Math.round(h*dpr); if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); return [g,w,h]; }
+function niceStep(span,target){ const raw=span/target, p=Math.pow(10,Math.floor(Math.log10(raw))), m=raw/p; return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p; }
+function arrowHead(g,ax,ay,bx,by,size){ const a=Math.atan2(by-ay,bx-ax); g.beginPath(); g.moveTo(bx,by);
+  g.lineTo(bx-size*Math.cos(a-0.38),by-size*Math.sin(a-0.38)); g.lineTo(bx-size*Math.cos(a+0.38),by-size*Math.sin(a+0.38)); g.closePath(); g.fill(); }
+function arrow2(g,ax,ay,bx,by,color,lw){ g.strokeStyle=color; g.fillStyle=color; g.lineWidth=lw; const L=Math.hypot(bx-ax,by-ay); if(L<1) return;
+  const hs=Math.min(7+lw*2,L*0.6), ux=(bx-ax)/L, uy=(by-ay)/L; g.beginPath(); g.moveTo(ax,ay); g.lineTo(bx-ux*hs*0.8,by-uy*hs*0.8); g.stroke(); arrowHead(g,ax,ay,bx,by,hs); }
+
+let PAL={};
+function readPal(){ const cs=getComputedStyle(document.body), g=n=>cs.getPropertyValue(n).trim();
+  PAL={ink:g('--ink'),muted:g('--muted'),line:g('--line'),stage:g('--stage'),accent:g('--accent'),blue:g('--accent2'),green:g('--good'),
+       purple:g('--purple'),floor:g('--floor'),contour:g('--contour'),dark:document.body.dataset.theme==='dark',orange:'#e08a1e'}; }
+
+/* маленький графік у бічній панелі */
+function miniPlot(cv,o){
+  const [g,w,h]=fit(cv); g.clearRect(0,0,w,h);
+  const L=50,R=12,T=10,B=24, pw=w-L-R, ph=h-T-B; const [x0,x1]=o.xr; let y0=Infinity,y1=-Infinity;
+  const inc=v=>{ if(isFinite(v)){ y0=Math.min(y0,v); y1=Math.max(y1,v); } };
+  for(const s of o.series) for(const v of s.y) inc(v); for(const l of (o.hl||[])) inc(l.y); if(o.zero) inc(0);
+  if(!(y1>y0)){ if(!isFinite(y0)){y0=0;y1=0;} y0-=1; y1+=1; }
+  const ya=y0, yb=y1, pad=(y1-y0)*0.14; y0-=pad; y1+=pad;
+  const X=x=>L+(x-x0)/(x1-x0)*pw, Y=y=>T+(1-(y-y0)/(y1-y0))*ph;
+  g.strokeStyle=PAL.line; g.lineWidth=1; g.strokeRect(L+.5,T+.5,pw,ph);
+  g.font='11.5px ui-monospace,Consolas,monospace'; g.fillStyle=PAL.muted; g.textBaseline='middle'; g.textAlign='right';
+  g.fillText(fmt(yb,3),L-5,Y(yb)); g.fillText(fmt(ya,3),L-5,Y(ya));
+  if(y0<0&&y1>0){ g.strokeStyle=PAL.muted; g.globalAlpha=.5; g.beginPath(); g.moveTo(L,Y(0)); g.lineTo(L+pw,Y(0)); g.stroke(); g.globalAlpha=1; if(Math.abs(Y(0)-Y(ya))>12&&Math.abs(Y(0)-Y(yb))>12) g.fillText('0',L-5,Y(0)); }
+  g.textAlign='center'; g.textBaseline='top'; g.fillText(o.xl0!==undefined?o.xl0:fmt(x0,3),L,T+ph+5); g.fillText(o.xl1!==undefined?o.xl1:fmt(x1,3),L+pw,T+ph+5);
+  if(o.xlab) g.fillText(o.xlab,L+pw/2,T+ph+5);
+  for(const l of (o.hl||[])){ g.strokeStyle=l.color; g.setLineDash([5,4]); g.lineWidth=1.4; g.beginPath(); g.moveTo(L,Y(l.y)); g.lineTo(L+pw,Y(l.y)); g.stroke(); g.setLineDash([]); }
+  for(const l of (o.vl||[])){ if(l.x<x0||l.x>x1) continue; g.strokeStyle=l.color; g.setLineDash([4,4]); g.lineWidth=1.2; g.beginPath(); g.moveTo(X(l.x),T); g.lineTo(X(l.x),T+ph); g.stroke(); g.setLineDash([]);
+    if(l.label){ g.fillStyle=l.color; g.textBaseline='top'; g.textAlign=X(l.x)>L+pw-40?'right':'left'; g.fillText(l.label,X(l.x)+(g.textAlign==='right'?-4:4),T+3); } }
+  g.save(); g.beginPath(); g.rect(L,T,pw,ph); g.clip();
+  for(const s of o.series){ g.strokeStyle=s.color; g.fillStyle=s.color; g.lineWidth=s.lw||2; let pen=false; g.beginPath();
+    for(let k=0;k<s.x.length;k++){ const v=s.y[k]; if(!isFinite(v)){pen=false;continue;} if(pen) g.lineTo(X(s.x[k]),Y(v)); else g.moveTo(X(s.x[k]),Y(v)); pen=true; } g.stroke(); }
+  g.restore();
+  for(const m of (o.mark||[])){ if(!isFinite(m.y)) continue; g.fillStyle=m.color; g.strokeStyle=PAL.stage; g.lineWidth=2; g.beginPath(); g.arc(X(clamp(m.x,x0,x1)),Y(m.y),5,0,6.3); g.fill(); g.stroke(); }
+}
+
+/* =====================================================================
+   Тривимірна сцена на звичайному canvas (без бібліотек)
+   ===================================================================== */
+const AZ0=-2.2, EL0=0.5;
+class View3D{
+  constructor(cv,onChange){ this.cv=cv; this.az=AZ0; this.el=EL0; this.zoom=1; this.D=7; this.items=[]; this.seq=0;
+    let drag=null;
+    cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener('pointermove',e=>{ if(!drag) return; this.az+=(e.clientX-drag.x)*0.008; this.el=clamp(this.el+(e.clientY-drag.y)*0.008,0.04,1.55); drag={x:e.clientX,y:e.clientY}; onChange(); });
+    const up=()=>{ drag=null; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+    cv.addEventListener('wheel',e=>{ e.preventDefault(); this.zoom=clamp(this.zoom*Math.exp(-e.deltaY*0.0012),0.4,4); onChange(); },{passive:false});
+    cv.addEventListener('dblclick',()=>{ this.az=AZ0; this.el=EL0; this.zoom=1; onChange(); });
+  }
+  begin(){ const [g,w,h]=fit(this.cv); this.g=g; this.w=w; this.h=h; g.clearRect(0,0,w,h);
+    this.ca=Math.cos(this.az); this.sa=Math.sin(this.az); this.ce=Math.cos(this.el); this.se=Math.sin(this.el);
+    this.S=Math.min(w,h)*0.31*this.zoom; this.cx=w/2; this.cy=h*0.45; this.items=[]; this.seq=0; }
+  P(p){ const x1=p[0]*this.ca-p[1]*this.sa, y1=p[0]*this.sa+p[1]*this.ca; const up=p[2]*this.ce+y1*this.se, d=y1*this.ce-p[2]*this.se;
+    const f=this.D/(this.D+d); return [this.cx+this.S*x1*f, this.cy-this.S*up*f, d]; }
+  push(it,layer){ it.l=layer===undefined?1:layer; it.s=this.seq++; this.items.push(it); }
+  poly(pts,fill,stroke,lw,layer,bias){ const q=pts.map(p=>this.P(p)); let d=0; for(const p of q) d+=p[2]; this.push({k:0,q,fill,stroke,lw:lw||1,d:d/q.length+(bias||0)},layer); }
+  line(a,b,color,lw,o){ o=o||{}; const A=this.P(a),B=this.P(b); this.push({k:1,A,B,color,lw:lw||1.5,dash:o.dash,arrow:o.arrow,off:o.off,d:(A[2]+B[2])/2+(o.bias===undefined?-0.03:o.bias)},o.layer); }
+  dot(p,r,color,o){ o=o||{}; const A=this.P(p); this.push({k:2,A,r,color,d:A[2]-0.05},o.layer); }
+  text(p,str,color,o){ o=o||{}; const A=this.P(p); this.push({k:3,A,str,color,dx:o.dx||0,dy:o.dy||0,align:o.align||'left',d:A[2]-0.06},o.layer===undefined?2:o.layer); }
+  flush(){ const g=this.g; this.items.sort((a,b)=>a.l-b.l||(a.l===1?b.d-a.d:0)||a.s-b.s);
+    for(const it of this.items){
+      if(it.k===0){ const q=it.q; g.beginPath(); g.moveTo(q[0][0],q[0][1]); for(let i=1;i<q.length;i++) g.lineTo(q[i][0],q[i][1]); g.closePath();
+        if(it.fill){ g.fillStyle=it.fill; g.fill(); } if(it.stroke){ g.strokeStyle=it.stroke; g.lineWidth=it.lw; g.stroke(); } }
+      else if(it.k===1){ let ax=it.A[0],ay=it.A[1],bx=it.B[0],by=it.B[1]; if(it.off){ ax+=it.off[0]; bx+=it.off[0]; ay+=it.off[1]; by+=it.off[1]; }
+        g.lineCap='round'; if(it.dash) g.setLineDash(it.dash);
+        if(it.arrow) arrow2(g,ax,ay,bx,by,it.color,it.lw); else { g.strokeStyle=it.color; g.lineWidth=it.lw; g.beginPath(); g.moveTo(ax,ay); g.lineTo(bx,by); g.stroke(); }
+        if(it.dash) g.setLineDash([]); }
+      else if(it.k===2){ g.fillStyle=it.color; g.strokeStyle=PAL.stage; g.lineWidth=2; g.beginPath(); g.arc(it.A[0],it.A[1],it.r,0,6.3); g.fill(); g.stroke(); }
+      else { g.font='600 14px Georgia,"Times New Roman",serif'; g.textAlign=it.align; g.textBaseline='middle'; g.lineJoin='round';
+        g.strokeStyle=PAL.stage; g.lineWidth=4; g.strokeText(it.str,it.A[0]+it.dx,it.A[1]+it.dy); g.fillStyle=it.color; g.fillText(it.str,it.A[0]+it.dx,it.A[1]+it.dy); }
+    } }
+}
+
+/* ---------- поверхня z = f(x,y) над прямокутником ---------- */
+const STOPS=[[38,70,131],[46,134,171],[94,186,160],[226,214,133],[229,137,76],[196,69,54]];
+function cmap(t){ t=clamp(t,0,1)*(STOPS.length-1); const i=Math.min(STOPS.length-2,Math.floor(t)), f=t-i, a=STOPS[i], b=STOPS[i+1];
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f]; }
+function zRange(arr,extra){ const v=[]; for(const a of arr) if(isFinite(a)) v.push(a); if(!v.length) return null; v.sort((a,b)=>a-b);
+  let lo=v[0], hi=v[v.length-1]; const q1=v[Math.floor(v.length*0.03)], q2=v[Math.floor((v.length-1)*0.97)];
+  if(q2>q1&&hi-lo>4*(q2-q1)){ const m=(q2-q1)*0.35; lo=Math.max(lo,q1-m); hi=Math.min(hi,q2+m); }
+  for(const e of (extra||[])) if(isFinite(e)){ lo=Math.min(lo,e); hi=Math.max(hi,e); }
+  if(hi-lo<1e-12*(1+Math.abs(lo))+1e-300){ lo-=0.5; hi+=0.5; } return [lo,hi]; }
+function makeWorld(f,xa,xb,ya,yb,N,equal,extraZ){
+  const n1=N+1, xs=new Float64Array(n1), ys=new Float64Array(n1), z=new Float64Array(n1*n1);
+  for(let i=0;i<=N;i++){ xs[i]=xa+(xb-xa)*i/N; ys[i]=ya+(yb-ya)*i/N; }
+  for(let j=0;j<=N;j++) for(let i=0;i<=N;i++) z[j*n1+i]=f(xs[i],ys[j]);
+  const r=zRange(z,extraZ); if(!r) return null; const [lo,hi]=r, span=hi-lo, R=Math.max(xb-xa,yb-ya)/2;
+  let kx=1/R, kz=1.3/span; if(equal){ const k=Math.min(kx,1.9/span); kx=k; kz=k; }
+  const cx=(xa+xb)/2, cy=(ya+yb)/2, zc=(lo+hi)/2;
+  const W={f,xa,xb,ya,yb,N,xs,ys,z,lo,hi,kx,kz,R, sx:x=>(x-cx)*kx, sy:y=>(y-cy)*kx, sz:v=>(v-zc)*kz};
+  W.S=(x,y,v)=>[W.sx(x),W.sy(y),W.sz(v)]; W.floor=-span*kz/2-0.32; return W; }
+function contour(W,level){ const segs=[], {N,xs,ys,z}=W, n1=N+1; let pts;
+  const edge=(va,vb,x1,y1,x2,y2)=>{ if((va<level)!==(vb<level)){ const t=(level-va)/(vb-va); pts.push([x1+t*(x2-x1),y1+t*(y2-y1)]); } };
+  for(let j=0;j<N;j++) for(let i=0;i<N;i++){ const a=z[j*n1+i], b=z[j*n1+i+1], c=z[(j+1)*n1+i+1], d=z[(j+1)*n1+i];
+    if(!isFinite(a)||!isFinite(b)||!isFinite(c)||!isFinite(d)) continue; pts=[];
+    edge(a,b,xs[i],ys[j],xs[i+1],ys[j]); edge(b,c,xs[i+1],ys[j],xs[i+1],ys[j+1]); edge(c,d,xs[i+1],ys[j+1],xs[i],ys[j+1]); edge(d,a,xs[i],ys[j+1],xs[i],ys[j]);
+    if(pts.length>=2) segs.push([pts[0],pts[1]]); if(pts.length===4) segs.push([pts[2],pts[3]]); }
+  return segs; }
+const LIGHT=(()=>{ const v=[-0.35,-0.55,0.75], n=Math.hypot(...v); return v.map(c=>c/n); })();
+function drawWorld(V,W){ const {xa,xb,ya,yb}=W, fz=W.floor;
+  V.poly([[xa,ya],[xb,ya],[xb,yb],[xa,yb]].map(p=>[W.sx(p[0]),W.sy(p[1]),fz]),PAL.floor,PAL.line,1,0);
+  const o=[W.sx(xa),W.sy(ya),fz], top=W.sz(W.hi);
+  V.line(o,[W.sx(xb)+0.22,o[1],fz],PAL.muted,1.4,{arrow:true,layer:0});
+  V.line(o,[o[0],W.sy(yb)+0.22,fz],PAL.muted,1.4,{arrow:true,layer:0});
+  V.line(o,[o[0],o[1],top+0.3],PAL.muted,1.4,{arrow:true,bias:0.5});
+  V.text([W.sx(xb)+0.3,o[1],fz],'x',PAL.ink); V.text([o[0],W.sy(yb)+0.3,fz],'y',PAL.ink); V.text([o[0],o[1],top+0.38],'z',PAL.ink);
+  const small=(p,s,dx,dy,al)=>V.text(p,s,PAL.muted,{dx,dy,align:al||'center',layer:2});
+  small([W.sx(xb),o[1],fz],fmt(xb,3),0,16); small([W.sx((xa+xb)/2),o[1],fz],fmt((xa+xb)/2,3),0,16);
+  small([o[0],W.sy(yb),fz],fmt(yb,3),0,16); small([o[0],W.sy((ya+yb)/2),fz],fmt((ya+yb)/2,3),0,16);
+  small([o[0],o[1],top],fmt(W.hi,3),-8,0,'right'); small([o[0],o[1],W.sz(W.lo)],fmt(W.lo,3),-8,0,'right');
+  V.line([o[0]-0.02,o[1],top],[o[0]+0.02,o[1],top],PAL.muted,1,{bias:0.5}); V.line([o[0]-0.02,o[1],W.sz(W.lo)],[o[0]+0.02,o[1],W.sz(W.lo)],PAL.muted,1,{bias:0.5});
+}
+function drawSurface(V,W,alpha){ const {N,xs,ys,z}=W, n1=N+1, span=W.hi-W.lo, pad=span*0.3, zl=W.lo-pad, zh=W.hi+pad;
+  const SX=Array.from(xs,W.sx), SY=Array.from(ys,W.sy); const edge=PAL.dark?'rgba(255,255,255,'+(0.12*alpha+0.03)+')':'rgba(20,30,50,'+(0.14*alpha+0.03)+')';
+  for(let j=0;j<N;j++) for(let i=0;i<N;i++){ const a=z[j*n1+i], b=z[j*n1+i+1], c=z[(j+1)*n1+i+1], d=z[(j+1)*n1+i];
+    if(!(a>=zl&&a<=zh&&b>=zl&&b<=zh&&c>=zl&&c<=zh&&d>=zl&&d<=zh)) continue;
+    const pa=[SX[i],SY[j],W.sz(a)], pb=[SX[i+1],SY[j],W.sz(b)], pc=[SX[i+1],SY[j+1],W.sz(c)], pd=[SX[i],SY[j+1],W.sz(d)];
+    const e1=[pc[0]-pa[0],pc[1]-pa[1],pc[2]-pa[2]], e2=[pd[0]-pb[0],pd[1]-pb[1],pd[2]-pb[2]];
+    const nx=e1[1]*e2[2]-e1[2]*e2[1], ny=e1[2]*e2[0]-e1[0]*e2[2], nz=e1[0]*e2[1]-e1[1]*e2[0], nn=Math.hypot(nx,ny,nz)||1;
+    const sh=0.66+0.34*Math.abs(nx*LIGHT[0]+ny*LIGHT[1]+nz*LIGHT[2])/nn, col=cmap(((a+b+c+d)/4-W.lo)/span);
+    V.poly([pa,pb,pc,pd],'rgba('+(col[0]*sh|0)+','+(col[1]*sh|0)+','+(col[2]*sh|0)+','+alpha+')',edge,0.6); } }
+function partials(f,x,y){ const h=1e-5*Math.max(1,Math.abs(x),Math.abs(y)), c=f(x,y);
+  const xr=(f(x+h,y)-c)/h, xl=(c-f(x-h,y))/h, yr=(f(x,y+h)-c)/h, yl=(c-f(x,y-h))/h; const fx=(xr+xl)/2, fy=(yr+yl)/2;
+  const ok=isFinite(fx)&&isFinite(fy)&&Math.abs(xr-xl)<2e-3*(1+Math.abs(fx))&&Math.abs(yr-yl)<2e-3*(1+Math.abs(fy));
+  return {z:c,fx,fy,ok,xr,xl,yr,yl}; }
+
+/* =====================================================================
+   1. ДОВЖИНА ДУГИ
+   ===================================================================== */
+const ARC_PRESETS=[
+  {n:'Циклоїда (L = 8)',x:'t - sin(t)',y:'1 - cos(t)',a:'0',b:'2pi'},
+  {n:'Коло (L = 2π)',x:'cos(t)',y:'sin(t)',a:'0',b:'2pi'},
+  {n:'Парабола y = x²',x:'t',y:'t^2',a:'-1',b:'1.5'},
+  {n:'Астроїда (L = 6)',x:'cos(t)^3',y:'sin(t)^3',a:'0',b:'2pi'},
+  {n:'Кардіоїда (L = 8)',x:'(1+cos(t))cos(t)',y:'(1+cos(t))sin(t)',a:'0',b:'2pi'},
+  {n:'Спіраль Архімеда',x:'t*cos(t)',y:'t*sin(t)',a:'0',b:'4pi'},
+  {n:'Синусоїда',x:'t',y:'sin(t)',a:'0',b:'2pi'},
+  {n:'Ланцюгова лінія',x:'t',y:'ch(t)',a:'-1.5',b:'1.5'},
+  {n:'Фігура Ліссажу',x:'sin(3t)',y:'sin(2t)',a:'0',b:'2pi'}];
+const NF=20000;
+const A={cv:$('arcCanvas'),ok:false,need:true,anim:null,acc:0,tau:0,n:4,table:null};
+function arcNodeLen(n){ let L=0, px=A.x(A.a), py=A.y(A.a); for(let k=1;k<=n;k++){ const t=A.a+(A.b-A.a)*k/n, X=A.x(t), Y=A.y(t); L+=Math.hypot(X-px,Y-py); px=X; py=Y; } return L; }
+function arcApply(){
+  const x=readField('arcX',s=>compile(s,['t'])), y=readField('arcY',s=>compile(s,['t'])), a=readField('arcA',num), b=readField('arcB',num);
+  const n=readField('arcN',s=>{ const v=num(s); if(v<1||v>5000||v!==Math.round(v)) throw new Error('Ціле від 1 до 5000'); return v; });
+  if([x,y,a,b,n].includes(undefined)) return;
+  if(!(a<b)){ mark($('arcB'),'Потрібно a < b'); return; }
+  const fx=new Float64Array(NF+1), fy=new Float64Array(NF+1), cum=new Float64Array(NF+1); let xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity;
+  for(let k=0;k<=NF;k++){ const t=a+(b-a)*k/NF, X=x(t), Y=y(t);
+    if(!isFinite(X)||!isFinite(Y)){ mark($(isFinite(X)?'arcY':'arcX'),'Не визначено при t ≈ '+fmt(t,3)); return; }
+    fx[k]=X; fy[k]=Y; if(k) cum[k]=cum[k-1]+Math.hypot(X-fx[k-1],Y-fy[k-1]); xmin=Math.min(xmin,X); xmax=Math.max(xmax,X); ymin=Math.min(ymin,Y); ymax=Math.max(ymax,Y); }
+  Object.assign(A,{x,y,a,b,n,fx,fy,cum,L:cum[NF],bb:{xmin,xmax,ymin,ymax},ok:true,table:null,need:true});
+  A.tau=clamp(A.tau,a,b); if(A.anim!=='move') A.tau=a; $('arcNs').value=Math.min(n,200);
+}
+function arcSetN(n){ A.n=n; $('arcN').value=n; mark($('arcN'),''); $('arcNs').value=Math.min(n,200); A.need=true; }
+function arcTick(dt){
+  if(!A.ok) return;
+  if(A.anim==='refine'){ A.acc+=dt; const step=Math.max(0.035,0.55*Math.pow(0.93,A.n)); if(A.acc>=step){ A.acc=0; if(A.n>=200) arcStop(); else arcSetN(A.n+1); } }
+  else if(A.anim==='move'){ A.tau+=(A.b-A.a)*dt/7; if(A.tau>A.b) A.tau=A.a; A.need=true; }
+}
+function arcStop(){ A.anim=null; $('arcPlayN').textContent='▶ Подрібнювати розбиття'; $('arcPlayT').textContent='▶ Рух точки'; A.need=true; }
+function arcDraw(){
+  const [g,w,h]=fit(A.cv); g.clearRect(0,0,w,h); if(!A.ok) return;
+  const padL=50,padR=20,padT=18,padB=112, pw=w-padL-padR, ph=h-padT-padB;
+  let {xmin,xmax,ymin,ymax}=A.bb; const mx=(xmax-xmin)*0.08||0.5, my=(ymax-ymin)*0.08||0.5; xmin-=mx; xmax+=mx; ymin-=my; ymax+=my;
+  const s=Math.min(pw/(xmax-xmin),ph/(ymax-ymin)), ox=padL+(pw-s*(xmax-xmin))/2, oy=padT+(ph-s*(ymax-ymin))/2;
+  const X=x=>ox+(x-xmin)*s, Y=y=>oy+(ymax-y)*s;
+  const vx0=xmin-(ox-padL)/s, vx1=vx0+pw/s, vy1=ymax+(oy-padT)/s, vy0=vy1-ph/s;
+  // сітка
+  const st=niceStep(Math.max(vx1-vx0,vy1-vy0),9);
+  g.save(); g.beginPath(); g.rect(padL,padT,pw,ph); g.clip(); g.lineWidth=1;
+  g.font='11.5px ui-monospace,Consolas,monospace'; g.fillStyle=PAL.muted;
+  for(let v=Math.ceil(vx0/st)*st; v<=vx1; v+=st){ g.strokeStyle=PAL.line; g.globalAlpha=Math.abs(v)<st/2?1:.55; g.beginPath(); g.moveTo(X(v),padT); g.lineTo(X(v),padT+ph); g.stroke(); }
+  for(let v=Math.ceil(vy0/st)*st; v<=vy1; v+=st){ g.strokeStyle=PAL.line; g.globalAlpha=Math.abs(v)<st/2?1:.55; g.beginPath(); g.moveTo(padL,Y(v)); g.lineTo(padL+pw,Y(v)); g.stroke(); }
+  g.globalAlpha=1; g.strokeStyle=PAL.muted; g.lineWidth=1.2;
+  if(vx0<0&&vx1>0){ g.beginPath(); g.moveTo(X(0),padT); g.lineTo(X(0),padT+ph); g.stroke(); }
+  if(vy0<0&&vy1>0){ g.beginPath(); g.moveTo(padL,Y(0)); g.lineTo(padL+pw,Y(0)); g.stroke(); }
+  g.restore();
+  g.font='11.5px ui-monospace,Consolas,monospace'; g.fillStyle=PAL.muted; g.textAlign='center'; g.textBaseline='top';
+  for(let v=Math.ceil(vx0/st)*st; v<=vx1; v+=st) g.fillText(fmt(Math.abs(v)<st/1e6?0:v,4),X(v),padT+ph+4);
+  g.textAlign='right'; g.textBaseline='middle';
+  for(let v=Math.ceil(vy0/st)*st; v<=vy1; v+=st) g.fillText(fmt(Math.abs(v)<st/1e6?0:v,4),padL-5,Y(v));
+  // крива
+  g.lineJoin='round'; g.lineCap='round'; g.strokeStyle=PAL.ink; g.lineWidth=2.2; g.beginPath();
+  for(let k=0;k<=NF;k+=20){ k?g.lineTo(X(A.fx[k]),Y(A.fy[k])):g.moveTo(X(A.fx[k]),Y(A.fy[k])); } g.stroke();
+  // ламана
+  const n=A.n, nx=new Float64Array(n+1), ny=new Float64Array(n+1), len=new Float64Array(n); let Ln=0;
+  for(let k=0;k<=n;k++){ const t=A.a+(A.b-A.a)*k/n; nx[k]=A.x(t); ny[k]=A.y(t); if(k){ len[k-1]=Math.hypot(nx[k]-nx[k-1],ny[k]-ny[k-1]); Ln+=len[k-1]; } }
+  const cols=[PAL.blue,PAL.green];
+  g.lineWidth=n>120?1.4:2.4;
+  for(let k=0;k<n;k++){ g.strokeStyle=cols[k%2]; g.beginPath(); g.moveTo(X(nx[k]),Y(ny[k])); g.lineTo(X(nx[k+1]),Y(ny[k+1])); g.stroke(); }
+  if(n<=120){ const r=n>50?2.2:3.6; for(let k=0;k<=n;k++){ g.fillStyle=PAL.stage; g.strokeStyle=PAL.ink; g.lineWidth=1.4; g.beginPath(); g.arc(X(nx[k]),Y(ny[k]),r,0,6.3); g.fill(); g.stroke(); } }
+  // рухома точка
+  let sTau=null;
+  if(A.anim==='move'){ const kk=Math.round((A.tau-A.a)/(A.b-A.a)*NF); sTau=A.cum[kk];
+    g.strokeStyle=PAL.accent; g.lineWidth=4.5; g.beginPath(); for(let k=0;k<=kk;k+=10){ k?g.lineTo(X(A.fx[k]),Y(A.fy[k])):g.moveTo(X(A.fx[k]),Y(A.fy[k])); } g.lineTo(X(A.fx[kk]),Y(A.fy[kk])); g.stroke();
+    const hh=(A.b-A.a)*1e-5, dx=(A.x(A.tau+hh)-A.x(A.tau-hh))/(2*hh), dy=(A.y(A.tau+hh)-A.y(A.tau-hh))/(2*hh), sp=Math.hypot(dx,dy), px=X(A.fx[kk]), py=Y(A.fy[kk]);
+    if(sp>1e-9&&isFinite(sp)) arrow2(g,px,py,px+dx/sp*78,py-dy/sp*78,PAL.purple,2.6);
+    g.fillStyle=PAL.accent; g.strokeStyle=PAL.stage; g.lineWidth=2; g.beginPath(); g.arc(px,py,6,0,6.3); g.fill(); g.stroke();
+    g.font='600 14px Georgia,serif'; g.textAlign='left'; g.textBaseline='bottom'; g.lineWidth=4; g.strokeStyle=PAL.stage; const lab='s(t) = '+fmt(sTau,4)+',  |r′(t)| = '+fmt(sp,4);
+    g.strokeText(lab,px+12,py-10); g.fillStyle=PAL.ink; g.fillText(lab,px+12,py-10); }
+  // смужка: ламана, розгорнута на пряму
+  const bx=padL, bw=pw, by=h-58, bh=20;
+  g.font='13.5px "Segoe UI",system-ui,sans-serif'; g.textAlign='left'; g.textBaseline='bottom'; g.fillStyle=PAL.muted;
+  g.fillText('Ланки ламаної, розгорнуті на пряму (уся смужка — довжина дуги L):',bx,by-8);
+  let cx=bx; for(let k=0;k<n;k++){ const ww=len[k]/A.L*bw; g.fillStyle=cols[k%2]; g.fillRect(cx,by,Math.max(ww,0),bh); cx+=ww; }
+  if(bx+bw-cx>0.5){ g.fillStyle=PAL.accent; g.globalAlpha=.22; g.fillRect(cx,by,bx+bw-cx,bh); g.globalAlpha=1; }
+  g.strokeStyle=PAL.ink; g.lineWidth=1.3; g.strokeRect(bx+.5,by+.5,bw,bh);
+  g.textBaseline='top'; g.font='600 13.5px Georgia,serif'; g.fillStyle=PAL.ink; g.textAlign='left'; g.fillText('0',bx,by+bh+6);
+  g.textAlign='right'; g.fillStyle=PAL.accent; g.fillText('L = '+fmt(A.L,6),bx+bw,by+bh+6);
+  g.textAlign='center'; g.fillStyle=PAL.blue; const lx=clamp(cx,bx+70,bx+bw-150); g.fillText('Lₙ = '+fmt(Ln,6),lx,by+bh+6);
+  if(sTau!==null){ const px=bx+sTau/A.L*bw; g.fillStyle=PAL.accent; g.beginPath(); g.moveTo(px,by-1); g.lineTo(px-6,by-10); g.lineTo(px+6,by-10); g.closePath(); g.fill(); }
+  // числа
+  $('arcInfo').innerHTML='<span class="big"><i>L<sub>n</sub></i> = <b>'+fmt(Ln,7)+'</b></span> &nbsp;(<i>n</i> = '+n+')<br>'+
+    '<span class="big"><i>L</i> = ∫<sub><i>a</i></sub><sup><i>b</i></sup>√(<i>x</i>′² + <i>y</i>′²) <i>dt</i> ≈ <b>'+fmt(A.L,7)+'</b></span><br>'+
+    '<i>L</i> − <i>L<sub>n</sub></i> = '+fmt(Math.max(0,A.L-Ln),3)+' &nbsp;('+fmt(Math.max(0,(A.L-Ln)/A.L*100),3)+' %)';
+  // графік збіжності
+  const M=Math.max(40,Math.min(300,Math.ceil(n*1.25)));
+  if(!A.table||A.table.M!==M){ const xs=[],ys=[]; for(let k=1;k<=M;k++){ xs.push(k); ys.push(arcNodeLen(k)); } A.table={M,xs,ys}; }
+  miniPlot($('arcGraph'),{xr:[1,M],series:[{x:A.table.xs,y:A.table.ys,color:PAL.blue}],hl:[{y:A.L,color:PAL.accent}],mark:[{x:Math.min(n,M),y:Ln,color:PAL.blue}],xlab:'n',xl0:'1',xl1:String(M)});
+}
+function arcInit(){
+  const sel=$('arcPreset'); ARC_PRESETS.forEach((p,i)=>sel.add(new Option(p.n,i)));
+  const load=i=>{ const p=ARC_PRESETS[i]; $('arcX').value=p.x; $('arcY').value=p.y; $('arcA').value=p.a; $('arcB').value=p.b; arcApply(); };
+  sel.addEventListener('change',()=>load(+sel.value)); $('arcN').value=4;
+  for(const id of ['arcX','arcY','arcA','arcB','arcN']) $(id).addEventListener('input',arcApply);
+  $('arcNs').addEventListener('input',e=>{ if(A.anim==='refine') arcStop(); arcSetN(+e.target.value); });
+  $('arcPlayN').addEventListener('click',()=>{ if(A.anim==='refine'){ arcStop(); return; } arcStop(); if(!A.ok) return; if(A.n>=200) arcSetN(1); A.anim='refine'; A.acc=0; $('arcPlayN').textContent='⏸ Зупинити'; });
+  $('arcPlayT').addEventListener('click',()=>{ if(A.anim==='move'){ arcStop(); return; } arcStop(); if(!A.ok) return; A.anim='move'; A.tau=A.a; $('arcPlayT').textContent='⏸ Зупинити'; });
+  load(0);
+}
+
+/* =====================================================================
+   2. ДОТИЧНА ПЛОЩИНА І ГРАДІЄНТ
+   ===================================================================== */
+const TAN_PRESETS=[
+  {n:'Хвиляста поверхня sin x · cos y',f:'sin(x)*cos(y)',R:'3',x:'0.8',y:'0.5'},
+  {n:'Два горби (для підйому за градієнтом)',f:'exp(-((x-1)^2+y^2)) + 0.7exp(-((x+1)^2+(y-0.5)^2))',R:'2.5',x:'-0.2',y:'-1'},
+  {n:'Параболоїд 4 − x² − y²',f:'4 - x^2 - y^2',R:'2',x:'0.8',y:'0.6'},
+  {n:'Сідло x² − y²',f:'x^2 - y^2',R:'2',x:'1',y:'0.5'},
+  {n:'Півсфера (рівний масштаб)',f:'sqrt(9 - x^2 - y^2)',R:'2',x:'1',y:'1',eq:true},
+  {n:'Дзвін exp(−x² − y²)',f:'exp(-(x^2+y^2))',R:'2',x:'0.6',y:'0.4'},
+  {n:'Мавпяче сідло',f:'x^3 - 3x*y^2',R:'1.5',x:'0.7',y:'0.4'},
+  {n:'Конус √(x² + y²)',f:'sqrt(x^2+y^2)',R:'2',x:'1',y:'0.5',eq:true}];
+const T={need:true,src:'',W:null,x0:0.8,y0:0.5,theta:Math.PI/6,trace:[],animDir:false,animGrad:false,spin:false};
+T.V=new View3D($('tanCanvas'),()=>{ T.need=true; });
+function tanApply(){
+  const f=readField('tanF',s=>compile(s,['x','y'])), R=readField('tanR',s=>{ const v=num(s); if(!(v>0)) throw new Error('Потрібно > 0'); return v; });
+  const x0=readField('tanX',num), y0=readField('tanY',num), th=readField('tanTh',num);
+  if([f,R,x0,y0,th].includes(undefined)) return;
+  if(Math.abs(x0)>R){ mark($('tanX'),'Поза областю'); return; } if(Math.abs(y0)>R){ mark($('tanY'),'Поза областю'); return; }
+  const eq=$('tanEqual').checked, key=$('tanF').value+'|'+R+'|'+eq;
+  if(key!==T.key){ const W=makeWorld(f,-R,R,-R,R,44,eq); if(!W){ mark($('tanF'),'Функція не визначена в цій області'); return; }
+    const n1=W.N+1, hx=2*R/W.N; let gm=0; const gs=[];
+    for(let j=1;j<W.N;j++) for(let i=1;i<W.N;i++){ const gx=(W.z[j*n1+i+1]-W.z[j*n1+i-1])/(2*hx), gy=(W.z[(j+1)*n1+i]-W.z[(j-1)*n1+i])/(2*hx), q=Math.hypot(gx,gy); if(isFinite(q)) gs.push(q); }
+    gs.sort((a,b)=>a-b); gm=gs.length?gs[Math.floor((gs.length-1)*0.97)]:1; W.gmax=gm>1e-9?gm:1;
+    W.levels=[]; for(let k=1;k<=11;k++){ const lev=W.lo+(W.hi-W.lo)*k/12; W.levels.push(contour(W,lev)); }
+    const hc=document.createElement('canvas'); hc.width=hc.height=W.N; const hg=hc.getContext('2d'), im=hg.createImageData(W.N,W.N);
+    for(let j=0;j<W.N;j++) for(let i=0;i<W.N;i++){ const v=(W.z[j*n1+i]+W.z[j*n1+i+1]+W.z[(j+1)*n1+i]+W.z[(j+1)*n1+i+1])/4, o=((W.N-1-j)*W.N+i)*4;
+      if(isFinite(v)){ const c=cmap((v-W.lo)/(W.hi-W.lo)); im.data[o]=c[0]; im.data[o+1]=c[1]; im.data[o+2]=c[2]; im.data[o+3]=200; } }
+    hg.putImageData(im,0,0); W.heat=hc; T.W=W; T.key=key; T.trace=[]; }
+  if(x0!==T.x0||y0!==T.y0) T.trace=[];
+  T.f=f; T.R=R; T.x0=x0; T.y0=y0; T.theta=th*Math.PI/180; $('tanThS').value=((th%360)+360)%360; T.ok=true; T.need=true;
+}
+function tanSetPoint(x,y,keepTrace){ T.x0=x; T.y0=y; $('tanX').value=plain(x,4); $('tanY').value=plain(y,4); mark($('tanX'),''); mark($('tanY'),''); if(!keepTrace) T.trace=[]; T.need=true; }
+function tanStopGrad(){ T.animGrad=false; $('tanPlayGrad').textContent='▶ Підйом за градієнтом'; }
+function tanTick(dt){
+  if(!T.ok) return;
+  if(T.spin){ T.V.az+=dt*0.25; T.need=true; }
+  if(T.animDir){ T.theta=(T.theta+dt*0.7)%(2*Math.PI); const d=T.theta*180/Math.PI; $('tanTh').value=Math.round(d); mark($('tanTh'),''); $('tanThS').value=d; T.need=true; }
+  if(T.animGrad){ const p=partials(T.f,T.x0,T.y0), gn=Math.hypot(p.fx,p.fy);
+    if(!p.ok||!(gn>0.012*T.W.gmax)){ tanStopGrad(); T.need=true; return; }
+    const sp=T.R*0.32*clamp(gn/T.W.gmax*2.5,0.18,1)*dt, nx=T.x0+p.fx/gn*sp, ny=T.y0+p.fy/gn*sp;
+    if(Math.abs(nx)>T.R||Math.abs(ny)>T.R||!(T.f(nx,ny)>=p.z-1e-12)){ tanStopGrad(); T.need=true; return; }
+    if(!T.trace.length) T.trace.push([T.x0,T.y0]); T.trace.push([nx,ny]); if(T.trace.length>4000) T.trace.shift(); tanSetPoint(nx,ny,true); }
+}
+function planePatch(V,P0,gx,gy,h){ const nn=Math.hypot(gx,gy,1), n=[-gx/nn,-gy/nn,1/nn], un=Math.hypot(1,gx), u=[1/un,0,gx/un];
+  const v=[n[1]*u[2]-n[2]*u[1], n[2]*u[0]-n[0]*u[2], n[0]*u[1]-n[1]*u[0]], m=7;
+  const pt=(a,b)=>[P0[0]+a*u[0]+b*v[0], P0[1]+a*u[1]+b*v[1], P0[2]+a*u[2]+b*v[2]];
+  for(let i=0;i<m;i++) for(let j=0;j<m;j++){ const a0=-h+2*h*i/m, a1=-h+2*h*(i+1)/m, b0=-h+2*h*j/m, b1=-h+2*h*(j+1)/m;
+    V.poly([pt(a0,b0),pt(a1,b0),pt(a1,b1),pt(a0,b1)],'rgba(238,150,50,0.36)','rgba(200,110,20,0.30)',0.7,1,-0.01); }
+  const c=[pt(-h,-h),pt(h,-h),pt(h,h),pt(-h,h)]; for(let k=0;k<4;k++) V.line(c[k],c[(k+1)%4],'rgba(200,110,20,0.9)',1.4,{bias:-0.02});
+  return n; }
+function tanDraw(){
+  const V=T.V, W=T.W; V.begin(); if(!T.ok||!W){ return; }
+  const alpha=+$('tanAlpha').value, fz=W.floor, F=(x,y)=>[W.sx(x),W.sy(y),fz];
+  drawWorld(V,W);
+  const p=partials(T.f,T.x0,T.y0), z0=p.z, has=isFinite(z0);
+  let lvl0=[]; if(has) lvl0=contour(W,z0);
+  if($('tanShowCont').checked){ for(const segs of W.levels) for(const s of segs) V.line(F(s[0][0],s[0][1]),F(s[1][0],s[1][1]),PAL.contour,1,{layer:0});
+    for(const s of lvl0) V.line(F(s[0][0],s[0][1]),F(s[1][0],s[1][1]),PAL.ink,2.2,{layer:0}); }
+  drawSurface(V,W,alpha);
+  const ct=Math.cos(T.theta), st=Math.sin(T.theta); let D=NaN, gn=NaN, phi=NaN;
+  // слід підйому за градієнтом
+  for(let k=1;k<T.trace.length;k++){ const a=T.trace[k-1], b=T.trace[k]; V.line(F(a[0],a[1]),F(b[0],b[1]),PAL.accent,2,{layer:0});
+    const za=T.f(a[0],a[1]), zb=T.f(b[0],b[1]); if(isFinite(za)&&isFinite(zb)) V.line(W.S(a[0],a[1],za),W.S(b[0],b[1],zb),PAL.ink,2.6,{bias:-0.07}); }
+  if(has){
+    const P0=W.S(T.x0,T.y0,z0), F0=F(T.x0,T.y0);
+    V.line(F0,P0,PAL.muted,1.2,{dash:[4,4],bias:-0.02}); V.dot(F0,4.5,PAL.ink,{layer:0}); V.text(F0,'M₀',PAL.ink,{dx:-10,dy:14,align:'right'});
+    V.line(F0,[F0[0]+0.38*ct,F0[1]+0.38*st,fz],PAL.blue,3,{arrow:true,layer:0}); V.text([F0[0]+0.46*ct,F0[1]+0.46*st,fz],'l',PAL.blue,{align:'center'});
+    if(p.ok){
+      const gx=p.fx*W.kz/W.kx, gy=p.fy*W.kz/W.kx; gn=Math.hypot(p.fx,p.fy); D=p.fx*ct+p.fy*st; phi=Math.atan2(p.fy,p.fx);
+      const gs=clamp(0.5/W.gmax,0,1e9), gl=Math.min(gn*gs,0.9), gd=gn>0?[p.fx/gn,p.fy/gn]:[0,0];
+      if(gn>1e-9){ const tip=[F0[0]+gd[0]*gl,F0[1]+gd[1]*gl,fz]; V.line(F0,tip,PAL.accent,3.4,{arrow:true,layer:0}); V.text([tip[0]+gd[0]*0.09,tip[1]+gd[1]*0.09,fz],'∇f',PAL.accent,{align:'center'}); }
+      if($('tanShowPlane').checked) planePatch(V,P0,gx,gy,0.62);
+      if($('tanShowNormal').checked){ const nn=Math.hypot(gx,gy,1), tip=[P0[0]-gx/nn*0.55,P0[1]-gy/nn*0.55,P0[2]+0.55/nn]; V.line(P0,tip,PAL.purple,2.6,{arrow:true,layer:2}); V.text(tip,'n',PAL.purple,{dx:8,dy:-6}); }
+      if($('tanShowSec').checked){ const sm=0.75*T.R, m=44; let prev=null;
+        for(let k=0;k<=m;k++){ const s=-sm+2*sm*k/m, x=T.x0+s*ct, y=T.y0+s*st, zz=T.f(x,y); let cur=null;
+          if(Math.abs(x)<=T.R&&Math.abs(y)<=T.R&&isFinite(zz)&&zz<=W.hi+0.3*(W.hi-W.lo)&&zz>=W.lo-0.3*(W.hi-W.lo)) cur=W.S(x,y,zz);
+          if(prev&&cur) V.line(prev,cur,PAL.blue,2.6,{bias:-0.06}); prev=cur; }
+        const dz=D*W.kz/W.kx, dn=Math.hypot(1,dz), dir=[ct/dn,st/dn,dz/dn], h=0.6;
+        V.line([P0[0]-dir[0]*h,P0[1]-dir[1]*h,P0[2]-dir[2]*h],[P0[0]+dir[0]*h,P0[1]+dir[1]*h,P0[2]+dir[2]*h],PAL.blue,2.2,{arrow:true,layer:2}); }
+    }
+    V.dot(P0,5.5,PAL.ink,{layer:2}); V.text(P0,'P₀',PAL.ink,{dx:10,dy:-12});
+  }
+  V.flush();
+  tanMapDraw(p,lvl0,gn,ct,st);
+  // числа
+  let html;
+  if(!has) html='<span class="warn">Функція не визначена в точці <i>M</i><sub>0</sub>.</span>';
+  else if(!p.ok) html='<i>f</i>(<i>M</i><sub>0</sub>) = <b>'+fmt(z0)+'</b><br><span class="warn">У цій точці частинні похідні не існують</span> (однобічні: за <i>x</i> '+fmt(p.xl,3)+' і '+fmt(p.xr,3)+'; за <i>y</i> '+fmt(p.yl,3)+' і '+fmt(p.yr,3)+'), тож ні дотичної площини, ні градієнта немає.';
+  else html='<i>f</i>(<i>M</i><sub>0</sub>) = <b>'+fmt(z0)+'</b><br><i>f</i>′<sub><i>x</i></sub> = <b>'+fmt(p.fx)+'</b>, &nbsp; <i>f</i>′<sub><i>y</i></sub> = <b>'+fmt(p.fy)+'</b><br>'+
+    '∇<i>f</i> = ('+fmt(p.fx,4)+'; '+fmt(p.fy,4)+'), &nbsp; |∇<i>f</i>| = <b>'+fmt(gn)+'</b><br>'+
+    'Площина: <i>z</i> = '+fmt(z0,4)+' '+sg(p.fx)+'·'+shift('<i>x</i>',T.x0)+' '+sg(p.fy)+'·'+shift('<i>y</i>',T.y0)+'<br>'+
+    'Нормаль: <i>n</i> = ('+fmt(-p.fx,4)+'; '+fmt(-p.fy,4)+'; 1)<br>'+
+    '<span class="big">∂<i>f</i>/∂<i>l</i> = <b>'+fmt(D)+'</b></span>'+(gn>1e-9?' = |∇<i>f</i>|·cos '+fmt(Math.acos(clamp(D/gn,-1,1))*180/Math.PI,4)+'°':'');
+  $('tanInfo').innerHTML=html;
+  // графік похідної за напрямком
+  const xs=[],ys=[]; if(p.ok&&has) for(let d=0;d<=360;d+=3){ xs.push(d); ys.push(p.fx*Math.cos(d*Math.PI/180)+p.fy*Math.sin(d*Math.PI/180)); }
+  const td=((T.theta*180/Math.PI)%360+360)%360, pd=((phi*180/Math.PI)%360+360)%360;
+  miniPlot($('tanGraph'),{xr:[0,360],series:[{x:xs,y:ys,color:PAL.blue}],zero:true,vl:(isFinite(phi)&&gn>1e-9)?[{x:pd,color:PAL.accent,label:'∇f'}]:[],mark:isFinite(D)?[{x:td,y:D,color:PAL.blue}]:[],xlab:'θ, градуси',xl0:'0',xl1:'360'});
+}
+function tanMapDraw(p,lvl0,gn,ct,st){
+  const cv=$('tanMap'), [g,w,h]=fit(cv), W=T.W, R=T.R; g.clearRect(0,0,w,h);
+  const X=x=>(x+R)/(2*R)*w, Y=y=>(R-y)/(2*R)*h;
+  g.imageSmoothingEnabled=true; g.globalAlpha=PAL.dark?0.75:0.6; g.drawImage(W.heat,0,0,w,h); g.globalAlpha=1;
+  g.strokeStyle=PAL.dark?'rgba(255,255,255,.35)':'rgba(20,30,50,.35)'; g.lineWidth=1; g.beginPath();
+  for(const segs of W.levels) for(const s of segs){ g.moveTo(X(s[0][0]),Y(s[0][1])); g.lineTo(X(s[1][0]),Y(s[1][1])); } g.stroke();
+  g.strokeStyle=PAL.ink; g.lineWidth=2.2; g.beginPath(); for(const s of lvl0){ g.moveTo(X(s[0][0]),Y(s[0][1])); g.lineTo(X(s[1][0]),Y(s[1][1])); } g.stroke();
+  g.strokeStyle=PAL.muted; g.lineWidth=1; g.beginPath(); g.moveTo(X(0),0); g.lineTo(X(0),h); g.moveTo(0,Y(0)); g.lineTo(w,Y(0)); g.stroke();
+  if(T.trace.length>1){ g.strokeStyle=PAL.ink; g.lineWidth=2; g.setLineDash([2,3]); g.beginPath(); T.trace.forEach((q,k)=>k?g.lineTo(X(q[0]),Y(q[1])):g.moveTo(X(q[0]),Y(q[1]))); g.stroke(); g.setLineDash([]); }
+  const px=X(T.x0), py=Y(T.y0);
+  arrow2(g,px,py,px+ct*0.19*w,py-st*0.19*w,PAL.blue,2.6);
+  if(p.ok&&gn>1e-9){ const gl=Math.min(gn*0.5/W.gmax,0.9)*w/2; arrow2(g,px,py,px+p.fx/gn*gl,py-p.fy/gn*gl,PAL.accent,3); }
+  g.fillStyle=PAL.ink; g.strokeStyle=PAL.stage; g.lineWidth=2; g.beginPath(); g.arc(px,py,5,0,6.3); g.fill(); g.stroke();
+  g.font='11.5px ui-monospace,Consolas,monospace'; g.fillStyle=PAL.ink; g.textBaseline='bottom'; g.textAlign='right'; g.fillText('x = '+fmt(R,3),w-4,Y(0)-3); g.textAlign='left'; g.textBaseline='top'; g.fillText('y = '+fmt(R,3),X(0)+4,3);
+}
+function tanInit(){
+  const sel=$('tanPreset'); TAN_PRESETS.forEach((p,i)=>sel.add(new Option(p.n,i)));
+  const load=i=>{ const p=TAN_PRESETS[i]; $('tanF').value=p.f; $('tanR').value=p.R; $('tanX').value=p.x; $('tanY').value=p.y; $('tanEqual').checked=!!p.eq; tanStopGrad(); T.trace=[]; tanApply(); };
+  sel.addEventListener('change',()=>load(+sel.value)); $('tanTh').value=30;
+  for(const id of ['tanF','tanR','tanX','tanY','tanTh']) $(id).addEventListener('input',()=>{ if(id!=='tanTh') tanStopGrad(); tanApply(); });
+  $('tanThS').addEventListener('input',e=>{ $('tanTh').value=e.target.value; tanApply(); });
+  for(const id of ['tanShowPlane','tanShowNormal','tanShowSec','tanShowCont','tanAlpha']) $(id).addEventListener('input',()=>{ T.need=true; });
+  $('tanEqual').addEventListener('change',tanApply);
+  $('tanSpin').addEventListener('change',e=>{ T.spin=e.target.checked; });
+  $('tanPlayDir').addEventListener('click',()=>{ T.animDir=!T.animDir; $('tanPlayDir').textContent=T.animDir?'⏸ Зупинити':'▶ Обертати напрямок'; });
+  $('tanPlayGrad').addEventListener('click',()=>{ if(T.animGrad){ tanStopGrad(); return; } if(!T.ok) return; T.trace=[]; T.animGrad=true; $('tanPlayGrad').textContent='⏸ Зупинити'; });
+  const map=$('tanMap'); let down=false;
+  const pick=e=>{ const r=map.getBoundingClientRect(); tanStopGrad(); tanSetPoint(clamp(-T.R+(e.clientX-r.left)/r.width*2*T.R,-T.R,T.R), clamp(T.R-(e.clientY-r.top)/r.height*2*T.R,-T.R,T.R)); };
+  map.addEventListener('pointerdown',e=>{ if(!T.ok) return; down=true; map.setPointerCapture(e.pointerId); pick(e); });
+  map.addEventListener('pointermove',e=>{ if(down) pick(e); }); map.addEventListener('pointerup',()=>{ down=false; }); map.addEventListener('pointercancel',()=>{ down=false; });
+  load(0);
+}
+
+/* =====================================================================
+   3. ПОВНИЙ ДИФЕРЕНЦІАЛ
+   ===================================================================== */
+const DIF_PRESETS=[
+  {n:'Параболоїд 1 + x²/2 + y²/4',f:'1 + x^2/2 + y^2/4',x:'0.6',y:'0.4',dx:'0.9',dy:'0.8',R:'1.4'},
+  {n:'sin x · cos y',f:'sin(x)*cos(y)',x:'0.5',y:'0.3',dx:'0.9',dy:'0.7',R:'1.3'},
+  {n:'Добуток x·y',f:'x*y',x:'1',y:'0.5',dx:'0.8',dy:'0.8',R:'1.2'},
+  {n:'Сідло x² − y²',f:'x^2 - y^2',x:'0.5',y:'0.3',dx:'0.8',dy:'0.6',R:'1.2'},
+  {n:'exp(x)·cos y',f:'exp(x)cos(y)',x:'0',y:'0.3',dx:'0.8',dy:'0.6',R:'1.2'},
+  {n:'√|xy| у точці (0, 0): недиференційовна',f:'sqrt(abs(x*y))',x:'0',y:'0',dx:'0.8',dy:'0.6',R:'1.2'}];
+const Df={need:true,t:1,anim:false,spin:false,ok:false};
+Df.V=new View3D($('difCanvas'),()=>{ Df.need=true; });
+function difApply(){
+  const f=readField('difF',s=>compile(s,['x','y'])), x0=readField('difX',num), y0=readField('difY',num), dx=readField('difDx',num), dy=readField('difDy',num);
+  const R=readField('difR',s=>{ const v=num(s); if(!(v>0)) throw new Error('Потрібно > 0'); return v; });
+  if([f,x0,y0,dx,dy,R].includes(undefined)) return;
+  if(dx===0&&dy===0){ mark($('difDx'),'Приріст не може бути нульовим'); return; }
+  if(!isFinite(f(x0,y0))){ mark($('difF'),'Не визначена в точці M₀'); return; }
+  Object.assign(Df,{f,x0,y0,dx,dy,R,ok:true,need:true});
+}
+function difSetT(t){ Df.t=t; $('difT').value=t; $('difTv').textContent=fmt(t,3); Df.need=true; }
+function difStop(){ Df.anim=false; $('difPlay').textContent='▶ Приріст → 0'; }
+function difTick(dt){ if(!Df.ok) return; if(Df.spin){ Df.V.az+=dt*0.25; Df.need=true; }
+  if(Df.anim){ const t=Df.t*Math.exp(-0.42*dt); if(t<=0.01){ difSetT(0.01); difStop(); } else difSetT(t); } }
+function difDraw(){
+  const V=Df.V; V.begin(); if(!Df.ok) return;
+  const f=Df.f, x0=Df.x0, y0=Df.y0, ex=Df.dx*Df.t, ey=Df.dy*Df.t, em=Math.max(Math.abs(ex),Math.abs(ey));
+  const p=partials(f,x0,y0), z0=p.z, zS=f(x0+ex,y0+ey), dz=p.fx*ex+p.fy*ey, Dz=zS-z0, rho=Math.hypot(ex,ey);
+  const Rw=$('difMicro').checked?1.75*em:Math.max(Df.R,1.2*em);
+  const extra=p.ok?[z0,z0+p.fx*ex,z0+p.fy*ey,z0+dz,zS]:[z0,zS];
+  const W=makeWorld(f,x0-Rw,x0+Rw,y0-Rw,y0+Rw,30,$('difEqual').checked,extra);
+  $('difBadge').textContent='вікно: '+fmt(2*Rw,3)+' × '+fmt(2*Rw,3);
+  if(W){
+    const fz=W.floor, F=(x,y)=>[W.sx(x),W.sy(y),fz]; drawWorld(V,W); drawSurface(V,W,+$('difAlpha').value);
+    const P0=W.S(x0,y0,z0), Q=W.S(x0+ex,y0+ey,z0), Aa=W.S(x0+ex,y0,z0), Bb=W.S(x0,y0+ey,z0), top={layer:2};
+    V.line(F(x0,y0),F(x0+ex,y0+ey),PAL.ink,2,{layer:0,arrow:true}); V.dot(F(x0,y0),4,PAL.ink,{layer:0}); V.dot(F(x0+ex,y0+ey),4,PAL.ink,{layer:0});
+    V.text(F(x0,y0),'M₀',PAL.ink,{dx:-8,dy:14,align:'right'}); V.text(F(x0+ex,y0+ey),'M',PAL.ink,{dx:8,dy:14});
+    V.line(F(x0,y0),P0,PAL.muted,1.1,{dash:[4,4],layer:2}); V.line(F(x0+ex,y0+ey),Q,PAL.muted,1.1,{dash:[4,4],layer:2});
+    for(const [a,b] of [[P0,Aa],[Aa,Q],[P0,Bb],[Bb,Q]]) V.line(a,b,PAL.muted,1.2,{dash:[5,4],layer:2});
+    if(p.ok){
+      // дотична площина над околом
+      const m=Math.min(Rw,1.3*Math.max(em,0.3*Rw)), k=8, pz=(x,y)=>z0+p.fx*(x-x0)+p.fy*(y-y0);
+      for(let i=0;i<k;i++) for(let j=0;j<k;j++){ const xa=x0-m+2*m*i/k, xb=x0-m+2*m*(i+1)/k, ya=y0-m+2*m*j/k, yb=y0-m+2*m*(j+1)/k;
+        V.poly([W.S(xa,ya,pz(xa,ya)),W.S(xb,ya,pz(xb,ya)),W.S(xb,yb,pz(xb,yb)),W.S(xa,yb,pz(xa,yb))],'rgba(238,150,50,0.30)','rgba(200,110,20,0.28)',0.7,1,-0.01); }
+      const A1=W.S(x0+ex,y0,z0+p.fx*ex), B1=W.S(x0,y0+ey,z0+p.fy*ey), Tp=W.S(x0+ex,y0+ey,z0+dz);
+      for(const [a,b] of [[P0,A1],[P0,B1],[A1,Tp],[B1,Tp]]) V.line(a,b,PAL.orange,1.6,top);
+      if(Math.abs(ex)>0){ V.line(Aa,A1,PAL.blue,3.4,top); V.text([(Aa[0]+A1[0])/2,(Aa[1]+A1[1])/2,(Aa[2]+A1[2])/2],'∂f/∂x·Δx',PAL.blue,{dx:-8,align:'right'}); }
+      if(Math.abs(ey)>0){ V.line(Bb,B1,PAL.green,3.4,top); V.text([(Bb[0]+B1[0])/2,(Bb[1]+B1[1])/2,(Bb[2]+B1[2])/2],'∂f/∂y·Δy',PAL.green,{dx:8}); }
+      V.line(Q,Tp,PAL.orange,5,top); V.text([(Q[0]+Tp[0])/2,(Q[1]+Tp[1])/2,(Q[2]+Tp[2])/2],'dz',PAL.orange,{dx:-10,align:'right'});
+      if(isFinite(zS)){ const S=W.S(x0+ex,y0+ey,zS);
+        V.line(Tp,S,PAL.accent,5,top); V.text([(S[0]+Tp[0])/2,(S[1]+Tp[1])/2,(S[2]+Tp[2])/2],'Δz − dz',PAL.accent,{dx:-10,align:'right'});
+        V.line(Q,S,PAL.ink,1.3,{layer:2,off:[13,0]}); V.text([(Q[0]+S[0])/2,(Q[1]+S[1])/2,(Q[2]+S[2])/2],'Δz',PAL.ink,{dx:20});
+        V.dot(S,5,PAL.accent,top); }
+      V.dot(Tp,4.5,PAL.orange,top);
+    } else if(isFinite(zS)){ const S=W.S(x0+ex,y0+ey,zS); V.line(Q,S,PAL.ink,3,top); V.text(S,'Δz',PAL.ink,{dx:10}); V.dot(S,5,PAL.accent,top); }
+    // шлях по поверхні від P0 до точки над M
+    let prev=null; for(let q=0;q<=24;q++){ const x=x0+ex*q/24, y=y0+ey*q/24, zz=f(x,y), cur=isFinite(zz)?W.S(x,y,zz):null; if(prev&&cur) V.line(prev,cur,PAL.purple,2.4,top); prev=cur; }
+    V.dot(P0,5.5,PAL.ink,top); V.text(P0,'P₀',PAL.ink,{dx:-10,dy:-12,align:'right'});
+    V.flush();
+  }
+  // числа
+  let html='<i>f</i>(<i>M</i><sub>0</sub>) = '+fmt(z0)+'; &nbsp; Δ<i>x</i> = '+fmt(ex,4)+', Δ<i>y</i> = '+fmt(ey,4)+', ρ = '+fmt(rho,4)+'<br>';
+  if(!p.ok) html+='<span class="warn">Частинні похідні в точці <i>M</i><sub>0</sub> не існують — диференціала немає.</span><br>Δ<i>z</i> = <b>'+fmt(Dz)+'</b>';
+  else html+='<i>f</i>′<sub><i>x</i></sub> = '+fmt(p.fx)+', &nbsp; <i>f</i>′<sub><i>y</i></sub> = '+fmt(p.fy)+'<br>'+
+    '<span class="big">Δ<i>z</i> = <b>'+fmt(Dz)+'</b></span> &nbsp;— приріст до поверхні<br>'+
+    '<span class="big"><i>dz</i> = <b>'+fmt(dz)+'</b></span> &nbsp;— приріст до площини<br>'+
+    '&nbsp;&nbsp;= '+fmt(p.fx,4)+'·'+(ex<0?'(':'')+fmt(ex,4)+(ex<0?')':'')+' '+sg(p.fy)+'·'+(ey<0?'(':'')+fmt(ey,4)+(ey<0?')':'')+'<br>'+
+    'Δ<i>z</i> − <i>dz</i> = <b>'+fmt(Dz-dz,4)+'</b><br>'+
+    '<span class="big">(Δ<i>z</i> − <i>dz</i>) / ρ = <b>'+fmt((Dz-dz)/rho,4)+'</b></span>';
+  $('difInfo').innerHTML=html;
+  // графік відношення
+  const xs=[],ys=[], r1=Math.hypot(Df.dx,Df.dy);
+  if(p.ok) for(let q=1;q<=100;q++){ const t=q/100, a=Df.dx*t, b=Df.dy*t; xs.push(r1*t); ys.push((f(x0+a,y0+b)-z0-p.fx*a-p.fy*b)/(r1*t)); }
+  miniPlot($('difGraph'),{xr:[0,r1],series:[{x:xs,y:ys,color:PAL.accent}],zero:true,mark:p.ok?[{x:rho,y:(Dz-dz)/rho,color:PAL.accent}]:[],xlab:'ρ',xl0:'0'});
+}
+function difInit(){
+  const sel=$('difPreset'); DIF_PRESETS.forEach((p,i)=>sel.add(new Option(p.n,i)));
+  const load=i=>{ const p=DIF_PRESETS[i]; $('difF').value=p.f; $('difX').value=p.x; $('difY').value=p.y; $('difDx').value=p.dx; $('difDy').value=p.dy; $('difR').value=p.R; difStop(); difSetT(1); difApply(); };
+  sel.addEventListener('change',()=>load(+sel.value));
+  for(const id of ['difF','difX','difY','difDx','difDy','difR']) $(id).addEventListener('input',difApply);
+  $('difT').addEventListener('input',e=>{ difStop(); difSetT(+e.target.value); });
+  for(const id of ['difMicro','difEqual','difAlpha']) $(id).addEventListener('input',()=>{ Df.need=true; });
+  $('difSpin').addEventListener('change',e=>{ Df.spin=e.target.checked; });
+  $('difPlay').addEventListener('click',()=>{ if(Df.anim){ difStop(); return; } if(!Df.ok) return; if(Df.t<=0.011) difSetT(1); Df.anim=true; $('difPlay').textContent='⏸ Зупинити'; });
+  $('difReset').addEventListener('click',()=>{ difStop(); difSetT(1); });
+  load(0);
+}
+
+/* =====================================================================
+   Запуск
+   ===================================================================== */
+const MODS={arc:{o:A,tick:arcTick,draw:arcDraw},tan:{o:T,tick:tanTick,draw:tanDraw},dif:{o:Df,tick:difTick,draw:difDraw}};
+let active='arc';
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{ active=b.dataset.tab;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+active)); MODS[active].o.need=true; }));
+$('themeBtn').addEventListener('click',()=>{ const d=document.body.dataset.theme==='dark'; document.body.dataset.theme=d?'':'dark'; $('themeBtn').textContent=d?'Темна тема':'Світла тема'; readPal(); for(const k in MODS) MODS[k].o.need=true; });
+window.addEventListener('resize',()=>{ for(const k in MODS) MODS[k].o.need=true; });
+readPal(); arcInit(); tanInit(); difInit();
+let last=performance.now();
+function frame(now){ const dt=Math.min(0.05,(now-last)/1000); last=now; const m=MODS[active]; m.tick(dt);
+  if(m.o.need){ m.o.need=false; try{ m.draw(); }catch(e){ console.error(e); } } requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
