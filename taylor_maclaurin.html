@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ряди Тейлора та Маклорена</title>
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#fffdf9; --panel2:#f8f4ec; --ink:#1c2230; --muted:#6a7080;
+  --line:#dcd5c6; --grid:#ebe5d8; --axis:#9a9484;
+  --f:#1d3f94; --acc:#d6452a; --acc-soft:rgba(214,69,42,.15);
+  --k0:#7d8594; --k1:#16917f; --k2:#c98112; --k3:#7a55b5; --k4:#c2377a;
+  --shadow:0 1px 2px rgba(40,30,10,.06),0 10px 28px rgba(40,30,10,.07);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --math:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;
+}
+:root[data-theme="dark"]{
+  --bg:#10131a; --panel:#181c26; --panel2:#1e2330; --ink:#ebe8df; --muted:#939aa9;
+  --line:#2d3444; --grid:#232938; --axis:#5f6778;
+  --f:#8db3ff; --acc:#ff7d5c; --acc-soft:rgba(255,125,92,.17);
+  --k0:#9aa2b1; --k1:#4fd1bd; --k2:#f2b54a; --k3:#b494ee; --k4:#f078b0;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1220px;margin:0 auto;padding:22px 16px 48px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font:600 34px/1.1 var(--serif);margin:4px 0 0;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:italic;color:var(--acc)}
+h3{font:600 17px/1.25 var(--serif);margin:0 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+.card+.card{margin-top:14px}
+.controls .row1{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.fld{display:flex;align-items:center;gap:8px}
+.fld.grow{flex:1 1 300px}
+.lab{font:italic 18px var(--math);white-space:nowrap}
+.lab i{font-style:italic}
+input[type=text],input[type=number]{font:16px var(--math);color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;min-width:0;width:100%;outline:none;transition:border-color .15s,box-shadow .15s}
+input[type=text]:focus,input[type=number]:focus{border-color:var(--f);box-shadow:0 0 0 3px color-mix(in srgb,var(--f) 20%,transparent)}
+input.bad{border-color:var(--acc)}
+.w70{width:70px!important}.w90{width:96px!important}.w110{width:110px!important}
+input[type=range]{accent-color:var(--acc);width:150px}
+.btn,.ghost,.chip{font:14px var(--sans);color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer;transition:background .15s,border-color .15s,transform .05s}
+.btn:hover,.ghost:hover,.chip:hover{border-color:var(--axis)}
+.btn:active,.chip:active{transform:translateY(1px)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn:focus-visible,.chip:focus-visible,.ghost:focus-visible,.tabs button:focus-visible{outline:2px solid var(--f);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font:14px var(--math);padding:4px 10px;border-radius:999px}
+.err{color:var(--acc);font-size:13.5px;min-height:0;margin-top:6px}
+.err:empty{display:none}
+.hint{color:var(--muted);font-size:12.5px;margin-top:8px}
+.badge{display:inline-block;font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--acc-soft);color:var(--acc);margin-left:auto;white-space:nowrap}
+.tabs{display:flex;gap:4px;margin:16px 0 14px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{font:15px var(--sans);color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--acc);font-weight:600}
+.panel[hidden]{display:none}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:14px;align-items:start}
+@media(max-width:940px){.grid2{grid-template-columns:minmax(0,1fr)}h1{font-size:27px}}
+canvas.cv{display:block;width:100%;border-radius:8px;touch-action:none}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13.5px;margin-bottom:8px;color:var(--muted)}
+.legend .m{color:var(--ink)}
+.sw{display:inline-block;width:18px;height:4px;border-radius:2px;background:var(--c);vertical-align:middle;margin-right:6px}
+.sw.box{height:11px;width:14px;opacity:.9}
+.cap{font-size:12.5px;color:var(--muted);margin:10px 0 4px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;font-size:14px}
+.m{font-family:var(--math);font-size:1.07em}
+.m i{font-style:italic}
+.poly{font-size:18px;line-height:2.1;overflow-wrap:anywhere}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.86em;line-height:1.15;margin:0 .1em}
+.fr>span:first-child{border-bottom:1px solid currentColor;padding:0 .25em}
+.fr>span:last-child{padding:0 .25em}
+.op{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .2em}
+.op b{font-size:1.75em;font-weight:400;line-height:1}
+.op small{font-size:.66em}
+.eq{display:block;text-align:center;margin:.75em 0;font:1.16em var(--math);overflow-x:auto;padding:2px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:4px 8px;text-align:right;border-bottom:1px solid var(--grid)}
+th{font-weight:600;color:var(--muted);font-size:12.5px}
+td:first-child,th:first-child{text-align:left}
+.scroll{max-height:250px;overflow:auto}
+.scroll thead th{position:sticky;top:0;background:var(--panel)}
+.checks{display:grid;gap:5px;font-size:14px}
+.checks label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.checks input{accent-color:var(--acc);width:16px;height:16px;margin:0}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--c);flex:none}
+.prose{font:16px/1.65 var(--serif)}
+.prose p{margin:.6em 0;text-wrap:pretty}
+.prose h3{font-size:20px;margin:1.3em 0 .3em}
+.prose h3:first-child{margin-top:0}
+.note{font-size:14px;color:var(--muted);line-height:1.55}
+.note b{color:var(--ink);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{font:14px var(--sans);background:var(--panel2);color:var(--ink);border:0;border-right:1px solid var(--line);padding:6px 12px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--acc);color:#fff}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14.5px;align-items:baseline}
+.kv span:nth-child(odd){color:var(--muted)}
+.kv span:nth-child(even){text-align:right;font-variant-numeric:tabular-nums}
+.formgrid{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;font-size:14.5px}
+.theory{max-width:860px;margin:0 auto}
+.theory table{font:15.5px var(--math);margin:.6em 0}
+.theory td,.theory th{text-align:left;padding:7px 10px}
+.theory th{font-family:var(--sans)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <div class="eyebrow">Математичний аналіз · інтерактивна візуалізація</div>
+    <h1>Ряди <em>Тейлора</em> та <em>Маклорена</em></h1>
+  </div>
+  <button id="theme" class="ghost" title="Перемкнути світлу / темну тему">◐ Тема</button>
+</header>
+
+<section class="card controls">
+  <div class="row1">
+    <label class="fld grow"><span class="lab"><i>f</i>(<i>x</i>) =</span>
+      <input id="fx" type="text" spellcheck="false" autocomplete="off" value="sin(x)" aria-label="Формула функції"></label>
+    <label class="fld"><span class="lab"><i>a</i> =</span>
+      <input id="aIn" type="text" class="w90" value="0" autocomplete="off" aria-label="Центр розкладу"></label>
+    <button id="mac" class="btn" title="Поставити центр розкладу в нуль">a = 0 · Маклорен</button>
+    <div class="fld"><span class="lab"><i>n</i> =</span>
+      <input id="nIn" type="number" class="w70" min="0" max="30" value="5" aria-label="Порядок многочлена">
+      <input id="nR" type="range" min="0" max="30" value="5" aria-label="Порядок многочлена, повзунок"></div>
+    <span id="badge" class="badge"></span>
+  </div>
+  <div id="fxErr" class="err" role="alert"></div>
+  <div class="chips" id="presets"></div>
+  <div class="hint">Операції: + − * / ^, дужки, неявне множення (2x, x·sin x). Функції: sin, cos, tg, ctg, exp, ln, lg, sqrt, abs, sh, ch, th, arcsin, arccos, arctg. Сталі: pi, e. Змінна — x (або t). У числові поля можна вводити вирази, наприклад pi/4.</div>
+</section>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="main" class="on">Наближення</button>
+  <button data-tab="geo">Геометричний зміст</button>
+  <button data-tab="kin">Фізичний зміст</button>
+  <button data-tab="pend">Симуляція: маятник</button>
+  <button data-tab="theory">Теоретична довідка</button>
+</nav>
+
+<!-- ============ ВКЛАДКА 1 ============ -->
+<section class="panel" id="tab-main">
+  <div class="grid2">
+    <div class="card">
+      <div class="legend">
+        <span><span class="sw" style="--c:var(--f)"></span><span class="m"><i>f</i>(<i>x</i>)</span></span>
+        <span><span class="sw" style="--c:var(--acc)"></span><span class="m"><i>T<sub>n</sub></i>(<i>x</i>)</span> — многочлен Тейлора</span>
+        <span><span class="sw box" style="--c:var(--acc-soft)"></span>залишок <span class="m"><i>R<sub>n</sub></i> = <i>f</i> − <i>T<sub>n</sub></i></span></span>
+      </div>
+      <canvas id="cvMain" class="cv" style="height:400px"></canvas>
+      <div class="cap">Похибка |<i>f</i>(<i>x</i>) − <i>T<sub>n</sub></i>(<i>x</i>)| у логарифмічній шкалі</div>
+      <canvas id="cvErr" class="cv" style="height:140px;touch-action:auto"></canvas>
+      <div class="toolbar">
+        <span>x від</span><input id="x0In" type="text" class="w90" value="-7">
+        <span>до</span><input id="x1In" type="text" class="w90" value="7">
+        <button id="auto" class="btn">Авто-масштаб</button>
+        <button id="playN" class="btn pri">▶ Нарощувати n</button>
+      </div>
+      <div class="hint">Колесо миші — масштаб, перетягування — зсув. Вертикальну лінію центра <i>a</i> можна тягнути мишею; клацання по графіку ставить точку <i>x</i> для оцінки похибки.</div>
+    </div>
+    <aside>
+      <div class="card"><h3 id="polyTitle">Многочлен Тейлора</h3><div id="poly" class="m poly"></div></div>
+      <div class="card"><h3>Значення в точці</h3>
+        <label class="fld" style="margin-bottom:8px"><span class="lab"><i>x</i> =</span><input id="xpIn" type="text" class="w110" value="1.5"></label>
+        <div class="kv" id="probe"></div>
+      </div>
+      <div class="card"><h3>Коефіцієнти розкладу</h3>
+        <div class="scroll"><table id="coefT"></table></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ ВКЛАДКА 2 ============ -->
+<section class="panel" id="tab-geo" hidden>
+  <div class="grid2">
+    <div class="card">
+      <div class="legend" id="geoLegend"></div>
+      <canvas id="cvGeo" class="cv" style="height:400px;touch-action:auto"></canvas>
+      <div class="toolbar">
+        <span>«Мікроскоп»: півширина околу <span class="m"><i>h</i></span> =</span>
+        <input id="hIn" type="text" class="w90" value="2">
+        <input id="zoomR" type="range" min="-3" max="0.7" step="0.01" value="0.3" style="flex:1;min-width:160px" aria-label="Збільшення">
+        <span id="magLbl" class="note"></span>
+      </div>
+      <div class="cap">Нормовані відхилення (<i>f</i>(<i>x</i>) − <i>T<sub>k</sub></i>(<i>x</i>)) / <i>h<sup>k</sup></i> на відрізку [<i>a</i> − <i>h</i>, <i>a</i> + <i>h</i>]: при <i>h</i> → 0 кожна крива притискається до нуля</div>
+      <canvas id="cvRes" class="cv" style="height:170px;touch-action:auto"></canvas>
+    </div>
+    <aside>
+      <div class="card"><h3>Послідовні дотики</h3>
+        <div class="checks" id="geoChecks"></div>
+        <p class="note" style="margin:10px 0 0">Масштаб на осях однаковий, тому стичне коло справді кругле. Зменшуйте <i>h</i>: спершу крива зливається з параболою, потім — з дотичною.</p>
+      </div>
+      <div class="card"><h3>Порядок дотику в числах</h3>
+        <table id="geoT"></table>
+        <p class="note" style="margin:10px 0 0">δ<sub>k</sub>(<i>h</i>) = max |<i>f</i> − <i>T<sub>k</sub></i>| на околі. Відношення δ<sub>k</sub> / <i>h<sup>k</sup></i> прямує до нуля разом з <i>h</i> — це і є запис <span class="m"><i>f</i> − <i>T<sub>k</sub></i> = <i>o</i>((<i>x</i> − <i>a</i>)<sup><i>k</i></sup>)</span>.</p>
+      </div>
+      <div class="card"><h3>Кривина в точці</h3><div class="kv" id="curvInfo"></div></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ ВКЛАДКА 3 ============ -->
+<section class="panel" id="tab-kin" hidden>
+  <div class="grid2">
+    <div class="card">
+      <div class="cap" style="margin-top:0">Матеріальна точка рухається вздовж прямої за законом <span class="m"><i>s</i>(<i>t</i>) = <i>f</i>(<i>t</i>)</span>. У момент <span class="m"><i>t</i><sub>0</sub> = <i>a</i></span> ми «знімаємо покази» — положення, швидкість, прискорення, ривок — і прогнозуємо рух далі.</div>
+      <canvas id="cvLanes" class="cv" style="height:320px;touch-action:auto"></canvas>
+      <div class="toolbar">
+        <button id="kPlay" class="btn pri">▶ Пуск</button>
+        <button id="kReset" class="btn">↺ Спочатку</button>
+        <span>тривалість, с</span><input id="kT" type="text" class="w70" value="3">
+        <span>темп</span><input id="kSpeed" type="range" min="0.1" max="2" step="0.05" value="0.6" style="width:120px">
+        <span id="kClock" class="m" style="margin-left:auto"></span>
+      </div>
+      <div class="cap">Графік руху <i>s</i>(<i>t</i>) і прогнози</div>
+      <canvas id="cvKin" class="cv" style="height:260px;touch-action:auto"></canvas>
+    </div>
+    <aside>
+      <div class="card"><h3>Покази в момент <span class="m"><i>t</i><sub>0</sub></span></h3>
+        <div class="kv" id="kinQ"></div>
+        <div class="eq" style="font-size:1em;margin-bottom:0"><i>s</i>(<i>t</i><sub>0</sub>+Δ<i>t</i>) ≈ <i>s</i><sub>0</sub> + <i>v</i><sub>0</sub>Δ<i>t</i> + <span class="fr"><span><i>a</i><sub>0</sub></span><span>2</span></span>Δ<i>t</i><sup>2</sup> + <span class="fr"><span><i>j</i><sub>0</sub></span><span>6</span></span>Δ<i>t</i><sup>3</sup> + …</div>
+      </div>
+      <div class="card"><h3>Моделі руху</h3>
+        <div class="checks" id="kinChecks"></div>
+      </div>
+      <div class="card"><h3>Прогноз проти дійсності</h3>
+        <table id="kinT"></table>
+        <p class="note" style="margin:10px 0 0">Порожнє кільце на кожній доріжці — справжнє положення тіла; відрізок до кольорової точки — похибка прогнозу, тобто залишковий член.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ ВКЛАДКА 4 ============ -->
+<section class="panel" id="tab-pend" hidden>
+  <div class="grid2">
+    <div class="card">
+      <div class="legend">
+        <span><span class="sw" style="--c:var(--f)"></span>точне рівняння <span class="m">θ″ = −(<i>g</i>/<i>L</i>)·sin θ</span></span>
+        <span><span class="sw" style="--c:var(--acc)"></span>наближене <span class="m">θ″ = −(<i>g</i>/<i>L</i>)·<i>S<sub>m</sub></i>(θ)</span>, де <i>S<sub>m</sub></i> — многочлен Маклорена синуса</span>
+      </div>
+      <canvas id="cvPend" class="cv" style="height:340px;touch-action:auto"></canvas>
+      <div class="toolbar">
+        <button id="pPlay" class="btn pri">▶ Пуск</button>
+        <button id="pReset" class="btn">↺ Спочатку</button>
+        <span id="pClock" class="m" style="margin-left:auto"></span>
+      </div>
+      <div class="cap">Кут відхилення θ(<i>t</i>), градуси</div>
+      <canvas id="cvTh" class="cv" style="height:210px;touch-action:auto"></canvas>
+    </div>
+    <aside>
+      <div class="card"><h3>Параметри</h3>
+        <div class="formgrid">
+          <span>Початковий кут θ₀, °</span><input id="pDeg" type="text" value="60">
+          <span></span><input id="pDegR" type="range" min="1" max="179" step="1" value="60" style="width:100%">
+          <span>Довжина <i>L</i>, м</span><input id="pL" type="text" value="1">
+          <span>Прискорення <i>g</i>, м/с²</span><input id="pG" type="text" value="9.81">
+          <span>Порядок <i>m</i></span>
+          <div class="seg" id="pOrd"><button data-m="1" class="on">1</button><button data-m="3">3</button><button data-m="5">5</button><button data-m="7">7</button></div>
+        </div>
+        <div id="pFormula" class="m" style="margin-top:10px;font-size:16px;line-height:2"></div>
+      </div>
+      <div class="card"><h3>Період коливань</h3>
+        <div class="kv" id="pInfo"></div>
+        <p class="note" id="pNote" style="margin:10px 0 0"></p>
+      </div>
+      <div class="card"><h3>Де працює наближення</h3>
+        <canvas id="cvSin" class="cv" style="height:180px;touch-action:auto"></canvas>
+        <p class="note" style="margin:8px 0 0">Зафарбована смуга — кути, яких маятник справді досягає (|θ| ≤ θ₀). Поки там криві збігаються, наближена модель чесна.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ ВКЛАДКА 5 ============ -->
+<section class="panel" id="tab-theory" hidden>
+  <div class="card theory prose">
+    <h3>Многочлен Тейлора</h3>
+    <p>Нехай функція <span class="m"><i>f</i></span> має в точці <span class="m"><i>a</i></span> похідні до порядку <span class="m"><i>n</i></span> включно. Її многочленом Тейлора порядку <span class="m"><i>n</i></span> у точці <span class="m"><i>a</i></span> називають</p>
+    <span class="eq"><i>T<sub>n</sub></i>(<i>x</i>) = <span class="op"><small><i>n</i></small><b>∑</b><small><i>k</i> = 0</small></span> <span class="fr"><span><i>f</i><sup> (<i>k</i>)</sup>(<i>a</i>)</span><span><i>k</i>!</span></span> (<i>x</i> − <i>a</i>)<sup><i>k</i></sup>.</span>
+    <p>Це єдиний многочлен степеня не вище <span class="m"><i>n</i></span>, який у точці <span class="m"><i>a</i></span> має ті самі значення всіх похідних до порядку <span class="m"><i>n</i></span>, що й сама функція. Якщо центр розкладу <span class="m"><i>a</i> = 0</span>, многочлен (і відповідний ряд) називають іменем Маклорена: тоді він записується просто за степенями <span class="m"><i>x</i></span>.</p>
+
+    <h3>Залишковий член</h3>
+    <p>Різницю <span class="m"><i>R<sub>n</sub></i>(<i>x</i>) = <i>f</i>(<i>x</i>) − <i>T<sub>n</sub></i>(<i>x</i>)</span> називають залишковим членом. Формула Тейлора з залишком у формі Пеано стверджує, що поблизу точки <span class="m"><i>a</i></span> він нескінченно малий порівняно з останнім утриманим степенем:</p>
+    <span class="eq"><i>f</i>(<i>x</i>) = <i>T<sub>n</sub></i>(<i>x</i>) + <i>o</i>((<i>x</i> − <i>a</i>)<sup><i>n</i></sup>),&nbsp;&nbsp; <i>x</i> → <i>a</i>.</span>
+    <p>Якщо ж на проміжку між <span class="m"><i>a</i></span> та <span class="m"><i>x</i></span> існує ще й похідна порядку <span class="m"><i>n</i> + 1</span>, то залишок можна записати явно у формі Лагранжа: знайдеться точка <span class="m">ξ</span> між <span class="m"><i>a</i></span> та <span class="m"><i>x</i></span>, для якої</p>
+    <span class="eq"><i>R<sub>n</sub></i>(<i>x</i>) = <span class="fr"><span><i>f</i><sup> (<i>n</i>+1)</sup>(ξ)</span><span>(<i>n</i> + 1)!</span></span> (<i>x</i> − <i>a</i>)<sup><i>n</i>+1</sup>.</span>
+    <p>Перша форма описує якість наближення в малому околі, друга дає справжню оцінку похибки на відрізку — саме її видно на логарифмічному графіку у вкладці «Наближення».</p>
+
+    <h3>Ряд Тейлора та його збіжність</h3>
+    <p>Для нескінченно диференційовної функції можна виписати весь ряд <span class="m">∑ <i>f</i><sup> (<i>k</i>)</sup>(<i>a</i>)(<i>x</i> − <i>a</i>)<sup><i>k</i></sup>/<i>k</i>!</span>. Він збігається до <span class="m"><i>f</i>(<i>x</i>)</span> тоді й лише тоді, коли <span class="m"><i>R<sub>n</sub></i>(<i>x</i>) → 0</span> при <span class="m"><i>n</i> → ∞</span>. Як степеневий ряд він збігається всередині інтервалу <span class="m">|<i>x</i> − <i>a</i>| &lt; <i>R</i></span> і розбігається зовні. Спробуйте функції <span class="m">ln(1 + <i>x</i>)</span> або <span class="m">1/(1 + <i>x</i><sup>2</sup>)</span> з <span class="m"><i>a</i> = 0</span>: зі зростанням <span class="m"><i>n</i></span> многочлени дедалі краще прилягають до графіка на (−1, 1) і дедалі різкіше відриваються від нього за межами цього інтервалу, хоча друга функція гладка на всій прямій — радіус визначають її особливості <span class="m">±<i>i</i></span> в комплексній площині. Буває і так, що ряд збігається, але не до своєї функції: у <span class="m"><i>f</i>(<i>x</i>) = <i>e</i><sup>−1/<i>x</i>²</sup>, <i>f</i>(0) = 0</span> усі похідні в нулі дорівнюють нулю, тож ряд Маклорена тотожно нульовий.</p>
+
+    <h3>Геометричний зміст</h3>
+    <p>Многочлен <span class="m"><i>T</i><sub>0</sub></span> — горизонтальна пряма на рівні <span class="m"><i>f</i>(<i>a</i>)</span>; <span class="m"><i>T</i><sub>1</sub></span> — дотична до графіка; <span class="m"><i>T</i><sub>2</sub></span> — стична парабола, яка має в точці дотику ту саму кривину, що й графік. Кожен наступний доданок підвищує порядок дотику на одиницю: графіки <span class="m"><i>f</i></span> і <span class="m"><i>T<sub>n</sub></i></span> розходяться не швидше, ніж <span class="m">|<i>x</i> − <i>a</i>|<sup><i>n</i>+1</sup></span>. Тому під «мікроскопом» крива спочатку стає нерозрізненною з многочленами високого порядку, а врешті — і з власною дотичною.</p>
+
+    <h3>Фізичний зміст</h3>
+    <p>Якщо <span class="m"><i>s</i>(<i>t</i>)</span> — закон руху точки, то коефіцієнти Тейлора в момент <span class="m"><i>t</i><sub>0</sub></span> — це миттєві положення, швидкість, прискорення та ривок:</p>
+    <span class="eq"><i>s</i>(<i>t</i><sub>0</sub> + Δ<i>t</i>) = <i>s</i><sub>0</sub> + <i>v</i><sub>0</sub>Δ<i>t</i> + <span class="fr"><span><i>a</i><sub>0</sub></span><span>2</span></span>Δ<i>t</i><sup>2</sup> + <span class="fr"><span><i>j</i><sub>0</sub></span><span>6</span></span>Δ<i>t</i><sup>3</sup> + …</span>
+    <p>Обриваючи суму, дістаємо знайомі моделі: тіло у спокої, рівномірний рух, рівноприскорений рух. Так само діють у фізиці всюди, де складну залежність замінюють простою: гармонічний осцилятор виникає з рівняння маятника заміною <span class="m">sin θ ≈ θ</span>, тобто многочленом Маклорена першого порядку. Вкладка «Симуляція: маятник» показує, якою ціною дається це спрощення.</p>
+
+    <h3>Основні розклади Маклорена</h3>
+    <table>
+      <tr><th>Функція</th><th>Розклад</th><th>Збіжність</th></tr>
+      <tr><td><i>e<sup>x</sup></i></td><td>1 + <i>x</i> + <i>x</i>²/2! + <i>x</i>³/3! + …</td><td><i>x</i> ∈ ℝ</td></tr>
+      <tr><td>sin <i>x</i></td><td><i>x</i> − <i>x</i>³/3! + <i>x</i>⁵/5! − …</td><td><i>x</i> ∈ ℝ</td></tr>
+      <tr><td>cos <i>x</i></td><td>1 − <i>x</i>²/2! + <i>x</i>⁴/4! − …</td><td><i>x</i> ∈ ℝ</td></tr>
+      <tr><td>ln(1 + <i>x</i>)</td><td><i>x</i> − <i>x</i>²/2 + <i>x</i>³/3 − …</td><td>−1 &lt; <i>x</i> ≤ 1</td></tr>
+      <tr><td>1/(1 − <i>x</i>)</td><td>1 + <i>x</i> + <i>x</i>² + <i>x</i>³ + …</td><td>|<i>x</i>| &lt; 1</td></tr>
+      <tr><td>(1 + <i>x</i>)<sup>α</sup></td><td>1 + α<i>x</i> + α(α − 1)<i>x</i>²/2! + …</td><td>|<i>x</i>| &lt; 1</td></tr>
+      <tr><td>arctg <i>x</i></td><td><i>x</i> − <i>x</i>³/3 + <i>x</i>⁵/5 − …</td><td>|<i>x</i>| ≤ 1</td></tr>
+    </table>
+  </div>
+</section>
+
+</div>
+
+<!-- ================= МАТЕМАТИЧНЕ ЯДРО (без DOM) ================= -->
+<script id="core">
+const Core=(()=>{
+  const FN={sin:'sin',cos:'cos',tan:'tan',tg:'tan',cot:'cot',ctg:'cot',exp:'exp',ln:'ln',log:'ln',lg:'lg',
+    sqrt:'sqrt',abs:'abs',sinh:'sinh',sh:'sinh',cosh:'cosh',ch:'cosh',tanh:'tanh',th:'tanh',
+    asin:'asin',arcsin:'asin',acos:'acos',arccos:'acos',atan:'atan',arctan:'atan',arctg:'atan'};
+  const CONST={pi:Math.PI,e:Math.E};
+  const VARS={x:1,t:1};
+  const CYR={'х':'x','Х':'x','е':'e','Е':'e','с':'c','С':'c','о':'o','О':'o','а':'a','А':'a','р':'p','Р':'p','і':'i','І':'i','у':'y','т':'t','Т':'t'};
+  const FNAMES=Object.keys(FN).sort((a,b)=>b.length-a.length);
+
+  function splitId(id){
+    if(VARS[id]||id in CONST||FN[id]) return [id];
+    for(const f of FNAMES){
+      if(id.startsWith(f)){ const rest=id.slice(f.length); if(VARS[rest]||rest in CONST) return [f,rest]; }
+    }
+    throw new Error('Невідоме ім\u2019я «'+id+'»');
+  }
+  function tokenize(src){
+    let s=String(src).replace(/[хХеЕсСоОаАрРіІутТ]/g,ch=>CYR[ch]||ch)
+      .replace(/[−–—]/g,'-').replace(/[·×]/g,'*').replace(/÷/g,'/').replace(/\*\*/g,'^')
+      .replace(/π/g,' pi ').replace(/√/g,' sqrt ');
+    const out=[]; let i=0;
+    while(i<s.length){
+      const c=s[i];
+      if(/\s/.test(c)){i++;continue;}
+      if(/[0-9.,]/.test(c)){
+        let j=i; while(j<s.length&&/[0-9.,]/.test(s[j])) j++;
+        const raw=s.slice(i,j), v=Number(raw.replace(/,/g,'.'));
+        if(!isFinite(v)||raw.replace(/[0-9]/g,'').length>1) throw new Error('Некоректне число «'+raw+'»');
+        out.push({k:'num',v}); i=j; continue;
+      }
+      if(/[a-zA-Z]/.test(c)){
+        let j=i; while(j<s.length&&/[a-zA-Z]/.test(s[j])) j++;
+        for(const part of splitId(s.slice(i,j).toLowerCase())) out.push({k:'id',v:part});
+        i=j; continue;
+      }
+      if('+-*/^()'.includes(c)){out.push({k:c});i++;continue;}
+      throw new Error('Невідомий символ «'+c+'»');
+    }
+    return out;
+  }
+  function parse(src){
+    const tk=tokenize(src); let p=0;
+    if(!tk.length) throw new Error('Введіть формулу');
+    const peek=()=>tk[p], next=()=>tk[p++];
+    const need=()=>{const c=next(); if(!c||c.k!==')') throw new Error('Не вистачає дужки «)»');};
+    function expr(){ let a=term(); while(peek()&&(peek().k==='+'||peek().k==='-')){const op=next().k; a={t:'bin',op,a,b:term()};} return a; }
+    function term(){ let a=unary();
+      for(;;){ const q=peek(); if(!q) break;
+        if(q.k==='*'||q.k==='/'){next(); a={t:'bin',op:q.k,a,b:unary()};}
+        else if(q.k==='num'||q.k==='id'||q.k==='('){ a={t:'bin',op:'*',a,b:power()}; }
+        else break; }
+      return a; }
+    function unary(){ const q=peek();
+      if(q&&q.k==='-'){next(); return {t:'neg',a:unary()};}
+      if(q&&q.k==='+'){next(); return unary();}
+      return power(); }
+    function power(){ const b=primary();
+      if(peek()&&peek().k==='^'){next(); return {t:'bin',op:'^',a:b,b:unary()};}
+      return b; }
+    function primary(){ const q=next();
+      if(!q) throw new Error('Вираз обривається');
+      if(q.k==='num') return {t:'num',v:q.v};
+      if(q.k==='('){ const e=expr(); need(); return e; }
+      if(q.k==='id'){
+        if(VARS[q.v]) return {t:'var'};
+        if(q.v in CONST) return {t:'num',v:CONST[q.v]};
+        const name=FN[q.v];
+        if(peek()&&peek().k==='('){ next(); const e=expr(); need(); return {t:'fn',name,a:e}; }
+        if(!peek()) throw new Error('Функції «'+q.v+'» бракує аргументу');
+        return {t:'fn',name,a:unary()};
+      }
+      throw new Error('Неочікуваний символ «'+q.k+'»');
+    }
+    const e=expr();
+    if(p<tk.length) throw new Error(tk[p].k===')'?'Зайва дужка «)»':'Неочікуваний символ');
+    return e;
+  }
+  function isConst(n){ return n.t==='num'?true:n.t==='var'?false:n.t==='bin'?isConst(n.a)&&isConst(n.b):isConst(n.a); }
+
+  const F1={sin:Math.sin,cos:Math.cos,tan:Math.tan,cot:x=>1/Math.tan(x),exp:Math.exp,ln:Math.log,lg:Math.log10,
+    sqrt:Math.sqrt,abs:Math.abs,sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,asin:Math.asin,acos:Math.acos,atan:Math.atan};
+  function compile(n){
+    switch(n.t){
+      case 'num':{const v=n.v; return ()=>v;}
+      case 'var': return x=>x;
+      case 'neg':{const f=compile(n.a); return x=>-f(x);}
+      case 'fn':{const f=compile(n.a), m=F1[n.name]; return x=>m(f(x));}
+      case 'bin':{const f=compile(n.a), g=compile(n.b);
+        switch(n.op){
+          case '+': return x=>f(x)+g(x);
+          case '-': return x=>f(x)-g(x);
+          case '*': return x=>f(x)*g(x);
+          case '/': return x=>f(x)/g(x);
+          case '^': return x=>Math.pow(f(x),g(x));
+        }}
+    }
+  }
+
+  /* Коефіцієнти Тейлора c_k = f^(k)(a)/k! методом зрізаних степеневих рядів */
+  function jet(ast,a,N){
+    const Z=()=>new Float64Array(N+1);
+    const cst=v=>{const r=Z(); r[0]=v; return r;};
+    const nan=()=>{const r=Z(); r.fill(NaN); return r;};
+    const add=(f,g)=>{const r=Z(); for(let k=0;k<=N;k++) r[k]=f[k]+g[k]; return r;};
+    const sub=(f,g)=>{const r=Z(); for(let k=0;k<=N;k++) r[k]=f[k]-g[k]; return r;};
+    const scale=(f,s)=>{const r=Z(); for(let k=0;k<=N;k++) r[k]=f[k]*s; return r;};
+    const mul=(f,g)=>{const r=Z(); for(let k=0;k<=N;k++){let s=0; for(let j=0;j<=k;j++) s+=f[j]*g[k-j]; r[k]=s;} return r;};
+    const div=(f,g)=>{const q=Z(); for(let k=0;k<=N;k++){let s=f[k]; for(let j=1;j<=k;j++) s-=g[j]*q[k-j]; q[k]=s/g[0];} return q;};
+    const exp=f=>{const e=Z(); e[0]=Math.exp(f[0]); for(let k=1;k<=N;k++){let s=0; for(let j=1;j<=k;j++) s+=j*f[j]*e[k-j]; e[k]=s/k;} return e;};
+    const ln=f=>{ if(!(f[0]>0)) return nan(); const l=Z(); l[0]=Math.log(f[0]);
+      for(let k=1;k<=N;k++){let s=0; for(let j=1;j<k;j++) s+=j*l[j]*f[k-j]; l[k]=(f[k]-s/k)/f[0];} return l;};
+    const trig=(f,hyp)=>{const s=Z(),c=Z(); s[0]=hyp?Math.sinh(f[0]):Math.sin(f[0]); c[0]=hyp?Math.cosh(f[0]):Math.cos(f[0]);
+      for(let k=1;k<=N;k++){let u=0,w=0; for(let j=1;j<=k;j++){u+=j*f[j]*c[k-j]; w+=j*f[j]*s[k-j];} s[k]=u/k; c[k]=(hyp?w:-w)/k;}
+      return [s,c];};
+    const powr=(f,r)=>{ if(!(f[0]>0)){ if(f[0]===0&&r>0){const z=nan(); z[0]=0; return z;} return nan(); }
+      const p=Z(); p[0]=Math.pow(f[0],r);
+      for(let k=1;k<=N;k++){let s=0; for(let j=1;j<=k;j++) s+=(r*j-(k-j))*f[j]*p[k-j]; p[k]=s/(k*f[0]);} return p;};
+    const powi=(f,m)=>{let r=cst(1),b=f; while(m>0){ if(m&1) r=mul(r,b); m>>=1; if(m) b=mul(b,b);} return r;};
+    /* h' = f'·g  →  h_k = (1/k) Σ j f_j g_{k-j} */
+    const integ=(f,g,h0)=>{const h=Z(); h[0]=h0; for(let k=1;k<=N;k++){let s=0; for(let j=1;j<=k;j++) s+=j*f[j]*g[k-j]; h[k]=s/k;} return h;};
+    function ev(n){
+      switch(n.t){
+        case 'num': return cst(n.v);
+        case 'var':{const r=cst(a); if(N>=1) r[1]=1; return r;}
+        case 'neg': return scale(ev(n.a),-1);
+        case 'bin':
+          switch(n.op){
+            case '+': return add(ev(n.a),ev(n.b));
+            case '-': return sub(ev(n.a),ev(n.b));
+            case '*': return mul(ev(n.a),ev(n.b));
+            case '/': return div(ev(n.a),ev(n.b));
+            case '^':{
+              if(isConst(n.b)){ const r=compile(n.b)(0), f=ev(n.a);
+                if(Number.isInteger(r)&&Math.abs(r)<=256){ const p=powi(f,Math.abs(r)); return r<0?div(cst(1),p):p; }
+                return powr(f,r); }
+              if(isConst(n.a)){ const c=compile(n.a)(0); if(!(c>0)) return nan(); return exp(scale(ev(n.b),Math.log(c))); }
+              return exp(mul(ev(n.b),ln(ev(n.a))));
+            }
+          }
+          break;
+        case 'fn':{ const f=ev(n.a);
+          switch(n.name){
+            case 'sin': return trig(f,false)[0];
+            case 'cos': return trig(f,false)[1];
+            case 'tan':{const [s,c]=trig(f,false); return div(s,c);}
+            case 'cot':{const [s,c]=trig(f,false); return div(c,s);}
+            case 'sinh': return trig(f,true)[0];
+            case 'cosh': return trig(f,true)[1];
+            case 'tanh':{const [s,c]=trig(f,true); return div(s,c);}
+            case 'exp': return exp(f);
+            case 'ln': return ln(f);
+            case 'lg': return scale(ln(f),1/Math.LN10);
+            case 'sqrt': return powr(f,0.5);
+            case 'abs': if(f[0]>0) return f; if(f[0]<0) return scale(f,-1); {const z=nan(); z[0]=0; return z;}
+            case 'atan': return integ(f,div(cst(1),add(cst(1),mul(f,f))),Math.atan(f[0]));
+            case 'asin': return integ(f,powr(sub(cst(1),mul(f,f)),-0.5),Math.asin(f[0]));
+            case 'acos': return integ(f,scale(powr(sub(cst(1),mul(f,f)),-0.5),-1),Math.acos(f[0]));
+          }}
+      }
+      return nan();
+    }
+    return ev(ast);
+  }
+  function horner(c,n,h){ let s=0; for(let k=Math.min(n,c.length-1);k>=0;k--) s=s*h+c[k]; return s; }
+  function toFrac(v){
+    if(!isFinite(v)) return null;
+    const sg=v<0?-1:1, x=Math.abs(v); if(x>1e9) return null;
+    let h0=0,h1=1,k0=1,k1=0,y=x;
+    for(let i=0;i<24;i++){
+      const q=Math.floor(y), h2=q*h1+h0, k2=q*k1+k0;
+      if(k2>50000) break;
+      h0=h1;h1=h2;k0=k1;k1=k2;
+      if(Math.abs(x-h1/k1)<=1e-13*Math.max(1,x)) return {p:sg*h1,q:k1};
+      const fr=y-q; if(fr<1e-15) break; y=1/fr;
+    }
+    return null;
+  }
+  return {parse,compile,jet,horner,isConst,toFrac};
+})();
+if(typeof module!=='undefined') module.exports=Core;
+</script>
+
+<!-- ================= ІНТЕРФЕЙС ================= -->
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const NMAX=30;
+const SUBD='₀₁₂₃₄₅₆₇₈₉', SUPD='⁰¹²³⁴⁵⁶⁷⁸⁹';
+const sub=n=>String(n).split('').map(d=>SUBD[d]).join('');
+const sup=n=>String(n).split('').map(d=>d==='-'?'⁻':SUPD[d]).join('');
+
+/* ---------- стан ---------- */
+const S={src:'sin(x)',a:0,n:5,ast:null,f:null,coef:null,err:'',xp:1.5};
+let active='main';
+const C={};
+function readColors(){
+  const cs=getComputedStyle(document.documentElement);
+  const g=n=>cs.getPropertyValue(n).trim();
+  Object.assign(C,{f:g('--f'),acc:g('--acc'),accSoft:g('--acc-soft'),grid:g('--grid'),axis:g('--axis'),line:g('--line'),
+    muted:g('--muted'),ink:g('--ink'),panel:g('--panel'),k0:g('--k0'),k1:g('--k1'),k2:g('--k2'),k3:g('--k3'),k4:g('--k4')});
+}
+
+/* ---------- форматування ---------- */
+function fmt(v,sig=5,plain=false){
+  if(!isFinite(v)) return '—';
+  if(v===0) return '0';
+  const av=Math.abs(v);
+  if(av<1e-4||av>=1e7){
+    let [m,e]=v.toExponential(Math.max(0,sig-3)).split('e');
+    if(m.includes('.')) m=m.replace(/\.?0+$/,'');
+    m=m.replace('-','−');
+    return plain? m+'e'+(+e) : m+'·10<sup>'+String(+e).replace('-','−')+'</sup>';
+  }
+  let s=v.toPrecision(sig);
+  if(s.includes('e')) s=String(Number(s));
+  if(s.includes('.')) s=s.replace(/\.?0+$/,'');
+  return s.replace('-','−');
+}
+function parseNum(str){
+  const ast=Core.parse(str);
+  if(!Core.isConst(ast)) throw new Error('потрібне число');
+  const v=Core.compile(ast)(0);
+  if(!isFinite(v)) throw new Error('потрібне скінченне число');
+  return v;
+}
+function numInput(el,apply,check){
+  const h=()=>{ try{ const v=parseNum(el.value); if(check&&!check(v)) throw 0; el.classList.remove('bad'); apply(v); }catch(e){ el.classList.add('bad'); } };
+  el.addEventListener('input',h);
+}
+const T=(k,x)=>Core.horner(S.coef,k,x-S.a);
+const isMac=()=>Math.abs(S.a)<1e-14;
+function zeroTol(){ let m=1; if(S.coef) for(const v of S.coef) if(Math.abs(v)>m&&isFinite(v)) m=Math.abs(v); return 1e-15*m; }
+
+function recompute(){
+  S.err=''; S.coef=null;
+  try{ S.ast=Core.parse(S.src); S.f=Core.compile(S.ast); }
+  catch(e){ S.err=e.message; S.ast=null; S.f=null; return; }
+  const c=Core.jet(S.ast,S.a,NMAX);
+  for(let k=0;k<=NMAX;k++) if(!isFinite(c[k])){
+    S.err='У точці a = '+fmt(S.a,5,true).replace('−','-')+' функцію не вдається розкласти: вона там не визначена або не має потрібних похідних. Змініть центр розкладу.';
+    return;
+  }
+  S.coef=c;
+}
+
+/* ---------- полотно з осями ---------- */
+function niceStep(raw){ const p=Math.pow(10,Math.floor(Math.log10(raw))), r=raw/p; return (r<=1?1:r<=2?2:r<=5?5:10)*p; }
+function tick(x,step){
+  if(Math.abs(x)<step*1e-6) return '0';
+  const d=Math.max(0,-Math.floor(Math.log10(step)+1e-9));
+  const s=(d>6||Math.abs(x)>=1e6)?x.toExponential(1):x.toFixed(d);
+  return s.replace('-','−');
+}
+class Plot{
+  constructor(cv,pad){ this.cv=cv; this.ctx=cv.getContext('2d'); this.pad=Object.assign({l:48,r:10,t:10,b:24},pad||{}); this.v={x0:-1,x1:1,y0:-1,y1:1}; this.w=0; this.h=0; }
+  fit(){ const r=this.cv.getBoundingClientRect(); if(r.width<30||r.height<30) return false;
+    const d=window.devicePixelRatio||1, W=Math.round(r.width*d), H=Math.round(r.height*d);
+    if(this.cv.width!==W||this.cv.height!==H){ this.cv.width=W; this.cv.height=H; }
+    this.w=r.width; this.h=r.height; this.ctx.setTransform(d,0,0,d,0,0); return true; }
+  get L(){return this.pad.l} get R(){return this.w-this.pad.r} get T(){return this.pad.t} get B(){return this.h-this.pad.b}
+  X(x){ const v=this.v; return this.L+(x-v.x0)/(v.x1-v.x0)*(this.R-this.L); }
+  Y(y){ const v=this.v; return this.B-(y-v.y0)/(v.y1-v.y0)*(this.B-this.T); }
+  iX(px){ const v=this.v; return v.x0+(px-this.L)/(this.R-this.L)*(v.x1-v.x0); }
+  iY(py){ const v=this.v; return v.y0+(this.B-py)/(this.B-this.T)*(v.y1-v.y0); }
+  begin(){ if(!this.fit()) return false; this.ctx.clearRect(0,0,this.w,this.h); return true; }
+  clipOn(){ const c=this.ctx; c.save(); c.beginPath(); c.rect(this.L,this.T,this.R-this.L,this.B-this.T); c.clip(); }
+  clipOff(){ this.ctx.restore(); }
+  frame(o={}){
+    const c=this.ctx,v=this.v;
+    c.lineWidth=1; c.font='11px "Segoe UI",system-ui,sans-serif'; c.setLineDash([]);
+    const sx=niceStep((v.x1-v.x0)/Math.max(2,(this.R-this.L)/85)), sy=o.ystep||niceStep((v.y1-v.y0)/Math.max(2,(this.B-this.T)/46));
+    c.strokeStyle=C.grid; c.fillStyle=C.muted; c.beginPath();
+    c.textAlign='center'; c.textBaseline='top';
+    for(let i=Math.ceil(v.x0/sx-1e-9); i*sx<=v.x1+sx*1e-9; i++){ const x=i*sx, px=Math.round(this.X(x))+.5;
+      if(px<this.L-1||px>this.R+1) continue;
+      c.moveTo(px,this.T); c.lineTo(px,this.B); c.fillText(o.xfmt?o.xfmt(x):tick(x,sx),px,this.B+6); }
+    c.textAlign='right'; c.textBaseline='middle';
+    for(let i=Math.ceil(v.y0/sy-1e-9); i*sy<=v.y1+sy*1e-9; i++){ const y=i*sy, py=Math.round(this.Y(y))+.5;
+      if(py<this.T-1||py>this.B+1) continue;
+      c.moveTo(this.L,py); c.lineTo(this.R,py); c.fillText(o.yfmt?o.yfmt(y):tick(y,sy),this.L-6,py); }
+    c.stroke();
+    c.strokeStyle=C.axis; c.beginPath();
+    if(v.x0<0&&v.x1>0){ const px=Math.round(this.X(0))+.5; c.moveTo(px,this.T); c.lineTo(px,this.B); }
+    if(v.y0<0&&v.y1>0&&!o.noZero){ const py=Math.round(this.Y(0))+.5; c.moveTo(this.L,py); c.lineTo(this.R,py); }
+    c.stroke();
+    c.strokeStyle=C.line; c.strokeRect(this.L+.5,this.T+.5,this.R-this.L-1,this.B-this.T-1);
+  }
+  curve(fn,color,lw=2,dash){
+    const c=this.ctx; this.clipOn();
+    c.strokeStyle=color; c.lineWidth=lw; c.lineJoin='round'; c.lineCap='round'; c.setLineDash(dash||[]); c.beginPath();
+    let pen=false, py0=0;
+    for(let px=this.L; px<=this.R+.5; px+=1){
+      const y=fn(this.iX(px));
+      if(!isFinite(y)){ pen=false; continue; }
+      let py=this.Y(y); if(py<-4000) py=-4000; else if(py>this.h+4000) py=this.h+4000;
+      if(pen&&((py<this.T&&py0>this.B)||(py>this.B&&py0<this.T))) pen=false;
+      if(!pen){ c.moveTo(px,py); pen=true; } else c.lineTo(px,py);
+      py0=py;
+    }
+    c.stroke(); c.setLineDash([]); this.clipOff();
+  }
+  poly(pts,color,lw=2){
+    const c=this.ctx; this.clipOn(); c.strokeStyle=color; c.lineWidth=lw; c.lineJoin='round'; c.beginPath();
+    let pen=false;
+    for(const [x,y] of pts){ if(!isFinite(y)){pen=false;continue;} let py=this.Y(y); py=Math.max(-4000,Math.min(this.h+4000,py));
+      if(!pen){ c.moveTo(this.X(x),py); pen=true; } else c.lineTo(this.X(x),py); }
+    c.stroke(); this.clipOff();
+  }
+  dot(x,y,color,r=5){ const c=this.ctx; if(!isFinite(y)) return; const px=this.X(x), py=this.Y(y);
+    if(px<this.L-r||px>this.R+r||py<this.T-r||py>this.B+r) return;
+    c.beginPath(); c.arc(px,py,r,0,2*Math.PI); c.fillStyle=color; c.fill(); c.lineWidth=2; c.strokeStyle=C.panel; c.stroke(); }
+  vline(x,color,dash){ const c=this.ctx, px=Math.round(this.X(x))+.5; if(px<this.L||px>this.R) return;
+    c.strokeStyle=color; c.lineWidth=1; c.setLineDash(dash||[]); c.beginPath(); c.moveTo(px,this.T); c.lineTo(px,this.B); c.stroke(); c.setLineDash([]); }
+  msg(text){ const c=this.ctx; c.fillStyle=C.muted; c.font='14px "Segoe UI",system-ui,sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(text,(this.L+this.R)/2,(this.T+this.B)/2); }
+}
+const plots={};
+
+/* =================== ВКЛАДКА 1: НАБЛИЖЕННЯ =================== */
+function autoY(){
+  const P=plots.main, ys=[];
+  if(S.f) for(let i=0;i<=400;i++){ const y=S.f(P.v.x0+(P.v.x1-P.v.x0)*i/400); if(isFinite(y)) ys.push(y); }
+  if(!ys.length){ P.v.y0=-2; P.v.y1=2; return; }
+  ys.sort((a,b)=>a-b);
+  let lo=ys[Math.floor((ys.length-1)*0.04)], hi=ys[Math.ceil((ys.length-1)*0.96)];
+  if(hi-lo<1e-6){ lo-=1; hi+=1; }
+  const p=(hi-lo)*0.4; P.v.y0=lo-p; P.v.y1=hi+p;
+}
+function syncRangeInputs(){ const v=plots.main.v; $('x0In').value=fmt(v.x0,4,true).replace('−','-'); $('x1In').value=fmt(v.x1,4,true).replace('−','-'); $('x0In').classList.remove('bad'); $('x1In').classList.remove('bad'); }
+function shade(P,f,g){
+  const c=P.ctx; P.clipOn(); c.fillStyle=C.accSoft; let run=[];
+  const cl=py=>Math.max(P.T-40,Math.min(P.B+40,py));
+  const flush=()=>{ if(run.length>1){ c.beginPath(); c.moveTo(run[0][0],run[0][1]);
+      for(let i=1;i<run.length;i++) c.lineTo(run[i][0],run[i][1]);
+      for(let i=run.length-1;i>=0;i--) c.lineTo(run[i][0],run[i][2]);
+      c.closePath(); c.fill(); } run=[]; };
+  for(let px=P.L;px<=P.R;px+=1){ const x=P.iX(px), y1=f(x), y2=g(x);
+    if(!isFinite(y1)||!isFinite(y2)){ flush(); continue; }
+    run.push([px,cl(P.Y(y1)),cl(P.Y(y2))]); }
+  flush(); P.clipOff();
+}
+function drawMain(){
+  const P=plots.main; if(!P.begin()) return;
+  P.frame();
+  if(!S.f){ P.msg('Введіть коректну формулу функції'); drawErr(); return; }
+  const n=S.n, Tn=x=>T(n,x);
+  if(S.coef) shade(P,S.f,Tn);
+  P.curve(S.f,C.f,2.6);
+  if(S.coef){
+    P.curve(Tn,C.acc,2.2);
+    const c=P.ctx;
+    /* точка оцінки похибки */
+    const xp=S.xp, fx=S.f(xp), tx=Tn(xp);
+    if(isFinite(fx)&&isFinite(tx)){
+      P.clipOn(); c.strokeStyle=C.ink; c.lineWidth=1.5; c.setLineDash([3,3]); c.beginPath();
+      c.moveTo(P.X(xp),Math.max(-4000,Math.min(4000,P.Y(fx)))); c.lineTo(P.X(xp),Math.max(-4000,Math.min(4000,P.Y(tx)))); c.stroke(); c.setLineDash([]); P.clipOff();
+      P.dot(xp,tx,C.acc,4); P.dot(xp,fx,C.f,4);
+    }
+    /* центр розкладу */
+    P.vline(S.a,C.muted,[5,4]);
+    P.dot(S.a,S.coef[0],C.ink,6);
+    const px=P.X(S.a);
+    if(px>=P.L&&px<=P.R){ c.fillStyle=C.ink; c.font='italic 15px "Cambria Math","Times New Roman",serif'; c.textAlign=px>P.R-20?'right':'left'; c.textBaseline='top'; c.fillText('a',px+(px>P.R-20?-6:6),P.T+5); }
+  }
+  drawErr();
+}
+function drawErr(){
+  const P=plots.err; if(!P.begin()) return;
+  P.v={x0:plots.main.v.x0,x1:plots.main.v.x1,y0:-17,y1:3};
+  P.frame({ystep:5,yfmt:y=>'10'+sup(Math.round(y)),noZero:true});
+  if(!S.f||!S.coef) return;
+  const n=S.n;
+  P.curve(x=>{ const e=Math.abs(S.f(x)-T(n,x)); if(!isFinite(e)) return NaN; return e>0?Math.max(-16.6,Math.log10(e)):-16.6; },C.acc,1.8);
+  P.vline(S.a,C.muted,[5,4]);
+}
+function coefHTML(v){
+  const av=Math.abs(v);
+  if(av>1e-9){ const fr=Core.toFrac(av); if(fr){ return fr.q===1?String(fr.p):'<span class="fr"><span>'+fr.p+'</span><span>'+fr.q+'</span></span>'; } }
+  return fmt(av,4);
+}
+function polyHTML(n){
+  const c=S.coef, a=S.a, tol=zeroTol(); let base;
+  if(isMac()) base='<i>x</i>';
+  else { const fa=Core.toFrac(Math.abs(a)); const s=fa&&fa.q===1?String(fa.p):fmt(Math.abs(a),4); base='(<i>x</i> '+(a>0?'−':'+')+' '+s+')'; }
+  const parts=[]; let shown=0;
+  for(let k=0;k<=n;k++){
+    const v=c[k]; if(Math.abs(v)<=tol) continue;
+    if(shown>=9){ parts.push(' + …'); break; }
+    const one=Math.abs(Math.abs(v)-1)<1e-13;
+    let term;
+    if(k===0) term=coefHTML(v);
+    else term=(one?'':coefHTML(v)+'\u2009')+base+(k>1?'<sup>'+k+'</sup>':'');
+    parts.push(shown===0?(v<0?'−':'')+term:' '+(v<0?'−':'+')+' '+term); shown++;
+  }
+  return parts.length?parts.join(''):'0';
+}
+function updMainSide(){
+  const n=S.n;
+  $('polyTitle').textContent=isMac()?'Многочлен Маклорена':'Многочлен Тейлора';
+  if(!S.coef){ $('poly').textContent='—'; $('probe').innerHTML=''; $('coefT').innerHTML=''; return; }
+  $('poly').innerHTML='<i>T</i><sub>'+n+'</sub>(<i>x</i>) = '+polyHTML(n);
+  const fx=S.f(S.xp), tx=T(n,S.xp), r=fx-tx;
+  $('probe').innerHTML='<span><i>f</i>(<i>x</i>)</span><span>'+fmt(fx,10)+'</span>'+
+    '<span><i>T</i><sub>'+n+'</sub>(<i>x</i>)</span><span>'+fmt(tx,10)+'</span>'+
+    '<span>залишок <i>R</i><sub>'+n+'</sub>(<i>x</i>)</span><span>'+fmt(r,4)+'</span>'+
+    '<span>відносна похибка</span><span>'+(isFinite(r/fx)&&fx!==0?fmt(Math.abs(r/fx)*100,3)+' %':'—')+'</span>';
+  const tol=zeroTol(); let rows='<thead><tr><th><i>k</i></th><th><i>f</i><sup> (<i>k</i>)</sup>(<i>a</i>)</th><th><i>f</i><sup> (<i>k</i>)</sup>(<i>a</i>) / <i>k</i>!</th></tr></thead><tbody>', fact=1;
+  for(let k=0;k<=n;k++){ if(k>0) fact*=k;
+    const ck=Math.abs(S.coef[k])<=tol?0:S.coef[k], d=ck*fact;
+    const fd=Core.toFrac(d), fc=Core.toFrac(ck);
+    const ds=fd&&fd.q===1&&Math.abs(fd.p)<1e7?String(fd.p).replace('-','−'):fmt(d,6);
+    const cs=(ck!==0&&Math.abs(ck)>1e-9&&fc&&fc.q>1)?(ck<0?'−':'')+Math.abs(fc.p)+'/'+fc.q:fmt(ck,6);
+    rows+='<tr><td>'+k+'</td><td>'+ds+'</td><td>'+cs+'</td></tr>'; }
+  $('coefT').innerHTML=rows+'</tbody>';
+}
+function bindMain(){
+  const cv=$('cvMain'), P=plots.main; let mode=null,sx=0,sy=0,v0=null,moved=0;
+  const pos=e=>{ const r=cv.getBoundingClientRect(); return [e.clientX-r.left,e.clientY-r.top]; };
+  const nearA=px=>S.coef&&Math.abs(px-P.X(S.a))<11;
+  cv.addEventListener('pointerdown',e=>{ const [px,py]=pos(e); cv.setPointerCapture(e.pointerId); sx=px; sy=py; moved=0; v0=Object.assign({},P.v); mode=nearA(px)?'a':'pan'; });
+  cv.addEventListener('pointermove',e=>{ const [px,py]=pos(e);
+    if(mode==='a'){ let a=P.iX(px); const span=P.v.x1-P.v.x0; const st=niceStep(span/400); a=Math.round(a/st)*st; if(Math.abs(a)<span*0.012) a=0; a=+a.toPrecision(12);
+      setA(a,true); }
+    else if(mode==='pan'){ const dx=(px-sx)/(P.R-P.L)*(v0.x1-v0.x0), dy=(py-sy)/(P.B-P.T)*(v0.y1-v0.y0);
+      moved=Math.max(moved,Math.abs(px-sx)+Math.abs(py-sy));
+      if(moved>3){ P.v={x0:v0.x0-dx,x1:v0.x1-dx,y0:v0.y0+dy,y1:v0.y1+dy}; syncRangeInputs(); drawMain(); } }
+    else cv.style.cursor=nearA(px)?'ew-resize':'grab';
+  });
+  const up=e=>{ if(mode==='pan'&&moved<=3){ const [px]=pos(e); const span=P.v.x1-P.v.x0; const st=niceStep(span/400); S.xp=+(Math.round(P.iX(px)/st)*st).toPrecision(12); $('xpIn').value=fmt(S.xp,6,true).replace('−','-'); $('xpIn').classList.remove('bad'); drawMain(); updMainSide(); } mode=null; };
+  cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',()=>{mode=null;});
+  cv.addEventListener('wheel',e=>{ e.preventDefault(); const [px,py]=pos(e); const k=Math.exp(Math.max(-60,Math.min(60,e.deltaY))*0.0022), x=P.iX(px), y=P.iY(py), v=P.v;
+    if((v.x1-v.x0)*k<1e-6||(v.x1-v.x0)*k>1e6) return;
+    P.v={x0:x-(x-v.x0)*k,x1:x+(v.x1-x)*k,y0:y-(y-v.y0)*k,y1:y+(v.y1-y)*k}; syncRangeInputs(); drawMain(); },{passive:false});
+  const rng=()=>{ let ok=true,a,b; try{a=parseNum($('x0In').value);}catch(e){ok=false;} try{b=parseNum($('x1In').value);}catch(e){ok=false;}
+    if(ok&&b-a>1e-9){ $('x0In').classList.remove('bad'); $('x1In').classList.remove('bad'); P.v.x0=a; P.v.x1=b; autoY(); drawMain(); }
+    else { $('x0In').classList.add('bad'); $('x1In').classList.add('bad'); } };
+  $('x0In').addEventListener('change',rng); $('x1In').addEventListener('change',rng);
+  $('auto').onclick=()=>{ const w=7; P.v.x0=S.a-w; P.v.x1=S.a+w; autoY(); syncRangeInputs(); drawMain(); };
+  numInput($('xpIn'),v=>{ S.xp=v; drawMain(); updMainSide(); });
+  let timer=null;
+  const stop=()=>{ clearInterval(timer); timer=null; $('playN').textContent='▶ Нарощувати n'; };
+  $('playN').onclick=()=>{ if(timer){ stop(); return; }
+    const target=S.n>=3?S.n:12; setN(0); $('playN').textContent='❚❚ Зупинити';
+    timer=setInterval(()=>{ if(S.n>=target||active!=='main'){ stop(); return; } setN(S.n+1); },520); };
+}
+
+/* =================== ВКЛАДКА 2: ГЕОМЕТРИЧНИЙ ЗМІСТ =================== */
+const G={h:2,on:[false,true,true,false,false],circle:false};
+const GN=['T₀ — горизонтальний рівень','T₁ — дотична пряма','T₂ — стична парабола','T₃ — кубічне наближення','T₄ — наближення 4-го порядку'];
+function buildGeoUI(){
+  let h='';
+  GN.forEach((nm,k)=>{ h+='<label><input type="checkbox" data-k="'+k+'"'+(G.on[k]?' checked':'')+'><span class="dot" style="--c:var(--k'+k+')"></span>'+nm+'</label>'; });
+  h+='<label><input type="checkbox" id="gCirc"><span class="dot" style="--c:var(--muted)"></span>стичне коло (коло кривини)</label>';
+  $('geoChecks').innerHTML=h;
+  $('geoChecks').addEventListener('change',e=>{ const t=e.target; if(t.id==='gCirc') G.circle=t.checked; else G.on[+t.dataset.k]=t.checked; drawGeo(); });
+  const setH=(h,from)=>{ G.h=Math.max(1e-4,Math.min(50,h)); if(from!=='r') $('zoomR').value=Math.max(-3,Math.min(0.7,Math.log10(G.h))); if(from!=='i'){ $('hIn').value=fmt(G.h,3,true); $('hIn').classList.remove('bad'); } drawGeo(); };
+  $('zoomR').addEventListener('input',()=>setH(Math.pow(10,+$('zoomR').value),'r'));
+  numInput($('hIn'),v=>setH(v,'i'),v=>v>0);
+  $('geoLegend').innerHTML='<span><span class="sw" style="--c:var(--f)"></span><span class="m"><i>f</i>(<i>x</i>)</span></span><span>кольорові криві — многочлени <span class="m"><i>T<sub>k</sub></i></span>, увімкнені праворуч</span>';
+}
+function drawGeo(){
+  const P=plots.geo, P2=plots.res;
+  $('magLbl').textContent='збільшення ×'+fmt(5/G.h,3,true);
+  if(!P.begin()) return;
+  if(!S.f||!S.coef){ P.frame(); P.msg('Розклад у цій точці недоступний'); if(P2.begin()) P2.frame(); $('geoT').innerHTML=''; $('curvInfo').innerHTML=''; return; }
+  const a=S.a, c=S.coef, h=G.h, asp=(P.B-P.T)/(P.R-P.L);
+  P.v={x0:a-h,x1:a+h,y0:c[0]-h*asp,y1:c[0]+h*asp};
+  P.frame();
+  const d1=c[1], d2=2*c[2], ctx=P.ctx;
+  if(G.circle&&Math.abs(d2)>1e-12){
+    const Rc=Math.pow(1+d1*d1,1.5)/Math.abs(d2), cx=a-d1*(1+d1*d1)/d2, cy=c[0]+(1+d1*d1)/d2, sc=(P.R-P.L)/(2*h);
+    if(Rc*sc<3e4){ P.clipOn(); ctx.strokeStyle=C.muted; ctx.lineWidth=1.4; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.arc(P.X(cx),P.Y(cy),Rc*sc,0,2*Math.PI); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(P.X(cx),P.Y(cy)); ctx.lineTo(P.X(a),P.Y(c[0])); ctx.stroke();
+      ctx.fillStyle=C.muted; ctx.beginPath(); ctx.arc(P.X(cx),P.Y(cy),3,0,2*Math.PI); ctx.fill(); P.clipOff(); }
+  }
+  for(let k=0;k<5;k++) if(G.on[k]) P.curve(x=>T(k,x),C['k'+k],2);
+  P.curve(S.f,C.f,2.8);
+  P.dot(a,c[0],C.ink,6);
+
+  /* таблиця порядку дотику */
+  let rows='<thead><tr><th><i>k</i></th><th>δ<sub>k</sub>(<i>h</i>)</th><th>δ<sub>k</sub> / <i>h<sup>k</sup></i></th></tr></thead><tbody>';
+  for(let k=0;k<5;k++){ let m=0; for(let i=0;i<=200;i++){ const x=a-h+2*h*i/200, e=Math.abs(S.f(x)-T(k,x)); if(isFinite(e)&&e>m) m=e; }
+    rows+='<tr><td><span class="dot" style="--c:var(--k'+k+');display:inline-block;margin-right:6px"></span>'+k+'</td><td>'+fmt(m,3)+'</td><td>'+fmt(m/Math.pow(h,k),3)+'</td></tr>'; }
+  $('geoT').innerHTML=rows+'</tbody>';
+  const kap=Math.abs(d2)/Math.pow(1+d1*d1,1.5);
+  $('curvInfo').innerHTML='<span>нахил дотичної <i>f</i>′(<i>a</i>)</span><span>'+fmt(d1,6)+'</span><span><i>f</i>″(<i>a</i>)</span><span>'+fmt(d2,6)+'</span><span>кривина κ</span><span>'+fmt(kap,6)+'</span><span>радіус кривини 1/κ</span><span>'+(kap>1e-12?fmt(1/kap,6):'∞')+'</span>';
+
+  /* нормовані відхилення */
+  if(!P2.begin()) return;
+  let M=0; for(let k=0;k<5;k++) if(G.on[k]) M=Math.max(M,Math.abs(c[k+1]),Math.abs(c[k+2]||0));
+  if(!(M>1e-12)) M=1;
+  P2.v={x0:a-h,x1:a+h,y0:-1.25*M,y1:1.25*M};
+  P2.frame();
+  for(let k=0;k<5;k++) if(G.on[k]){ const hk=Math.pow(h,k); P2.curve(x=>(S.f(x)-T(k,x))/hk,C['k'+k],2); }
+  P2.vline(a,C.muted,[5,4]);
+}
+
+/* =================== ВКЛАДКА 3: КІНЕМАТИКА =================== */
+const K={T:3,t:0,play:false,speed:0.6,on:[true,true,true,false],onN:true};
+const KN=['T₀ — спокій: s₀','T₁ — рівномірний рух: s₀ + v₀Δt','T₂ — рівноприскорений рух: … + a₀Δt²/2','T₃ — з урахуванням ривка: … + j₀Δt³/6'];
+function buildKinUI(){
+  let h='<label><span class="dot" style="--c:var(--f)"></span>справжній рух s(t)</label>';
+  KN.forEach((nm,k)=>{ h+='<label><input type="checkbox" data-k="'+k+'"'+(K.on[k]?' checked':'')+'><span class="dot" style="--c:var(--k'+k+')"></span>'+nm+'</label>'; });
+  h+='<label><input type="checkbox" data-k="n" checked><span class="dot" style="--c:var(--acc)"></span><span id="kinNLbl"></span></label>';
+  $('kinChecks').innerHTML=h;
+  $('kinChecks').addEventListener('change',e=>{ const k=e.target.dataset.k; if(k==='n') K.onN=e.target.checked; else K.on[+k]=e.target.checked; drawKin(); });
+  const btn=()=>{ $('kPlay').textContent=K.play?'❚❚ Пауза':'▶ Пуск'; };
+  $('kPlay').onclick=()=>{ if(!K.play&&K.t>=K.T) K.t=0; K.play=!K.play; btn(); };
+  $('kReset').onclick=()=>{ K.t=0; K.play=false; btn(); drawKin(); };
+  $('kSpeed').addEventListener('input',()=>{ K.speed=+$('kSpeed').value; });
+  numInput($('kT'),v=>{ K.T=v; K.t=0; drawKin(); },v=>v>0&&v<=1000);
+  K.updBtn=btn;
+}
+function kinModels(){
+  const m=[]; for(let k=0;k<4;k++) if(K.on[k]) m.push({k,color:C['k'+k],name:KN[k]});
+  if(K.onN) m.push({k:S.n,color:C.acc,name:'T'+sub(S.n)+' — многочлен порядку n = '+S.n});
+  return m;
+}
+function kinRange(ms){
+  const a=S.a; let lo=Infinity,hi=-Infinity;
+  for(let i=0;i<=240;i++){ const y=S.f(a+K.T*i/240); if(isFinite(y)){ if(y<lo)lo=y; if(y>hi)hi=y; } }
+  if(!isFinite(lo)){ lo=-1; hi=1; }
+  const span=Math.max(hi-lo,1e-9); let lo2=lo,hi2=hi;
+  for(const m of ms) for(let i=0;i<=120;i++){ const y=T(m.k,a+K.T*i/120); if(isFinite(y)){ if(y<lo2)lo2=y; if(y>hi2)hi2=y; } }
+  lo2=Math.max(lo2,lo-span); hi2=Math.min(hi2,hi+span);
+  if(hi2-lo2<1e-6){ lo2-=1; hi2+=1; }
+  const p=(hi2-lo2)*0.08; return [lo2-p,hi2+p];
+}
+function drawKin(){
+  const P=plots.lanes, P2=plots.kin;
+  $('kinNLbl').textContent='T'+sub(S.n)+' — многочлен порядку n = '+S.n;
+  $('kClock').innerHTML='<i>t</i> = <i>t</i><sub>0</sub> + '+K.t.toFixed(2)+' с';
+  if(!P.begin()) return;
+  if(!S.f||!S.coef){ P.msg('Розклад у цій точці недоступний'); if(P2.begin()) P2.frame(); $('kinQ').innerHTML=''; $('kinT').innerHTML=''; return; }
+  const c=S.coef, a=S.a, t=a+K.t, ms=kinModels(), [lo,hi]=kinRange(ms), ctx=P.ctx;
+  $('kinQ').innerHTML='<span>положення <i>s</i>₀ = <i>f</i>(<i>t</i>₀)</span><span>'+fmt(c[0],5)+' м</span><span>швидкість <i>v</i>₀ = <i>f</i>′(<i>t</i>₀)</span><span>'+fmt(c[1],5)+' м/с</span><span>прискорення <i>a</i>₀ = <i>f</i>″(<i>t</i>₀)</span><span>'+fmt(2*c[2],5)+' м/с²</span><span>ривок <i>j</i>₀ = <i>f</i>‴(<i>t</i>₀)</span><span>'+fmt(6*c[3],5)+' м/с³</span>';
+
+  /* доріжки */
+  P.v={x0:lo,x1:hi,y0:0,y1:1};
+  const st=niceStep((hi-lo)/Math.max(2,(P.R-P.L)/90));
+  ctx.font='11px "Segoe UI",system-ui,sans-serif'; ctx.lineWidth=1; ctx.strokeStyle=C.grid; ctx.fillStyle=C.muted; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.beginPath();
+  for(let i=Math.ceil(lo/st-1e-9); i*st<=hi; i++){ const px=Math.round(P.X(i*st))+.5; ctx.moveTo(px,P.T); ctx.lineTo(px,P.B); ctx.fillText(tick(i*st,st),px,P.B+6); }
+  ctx.stroke(); ctx.textAlign='right'; ctx.fillText('s, м',P.R,P.T-2);
+  const sTrue=S.f(t), rows=[{name:'Справжній рух s(t)',color:C.f,pos:sTrue}].concat(ms.map(m=>Object.assign({pos:T(m.k,t)},m)));
+  const rh=(P.B-P.T)/rows.length, cl=px=>Math.max(P.L,Math.min(P.R,px));
+  const xs0=P.X(c[0]);
+  rows.forEach((r,i)=>{
+    const y=Math.round(P.T+rh*(i+0.66))+.5;
+    ctx.fillStyle=C.muted; ctx.font='12.5px "Segoe UI",system-ui,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='alphabetic'; ctx.fillText(r.name,P.L+2,y-rh*0.3);
+    ctx.strokeStyle=C.line; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(P.L,y); ctx.lineTo(P.R,y); ctx.stroke();
+    ctx.strokeStyle=C.axis; ctx.beginPath(); ctx.moveTo(cl(xs0),y-5); ctx.lineTo(cl(xs0),y+5); ctx.stroke();
+    if(!isFinite(r.pos)) return;
+    const px=P.X(r.pos), inside=px>=P.L-1&&px<=P.R+1, pc=cl(px);
+    if(i>0&&isFinite(sTrue)){ const pt=cl(P.X(sTrue));
+      ctx.strokeStyle=r.color; ctx.globalAlpha=.45; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(pt,y); ctx.lineTo(pc,y); ctx.stroke(); ctx.globalAlpha=1;
+      ctx.strokeStyle=C.f; ctx.lineWidth=1.6; ctx.beginPath(); ctx.arc(pt,y,7,0,2*Math.PI); ctx.stroke(); }
+    ctx.globalAlpha=inside?1:.35; ctx.fillStyle=r.color; ctx.beginPath(); ctx.arc(pc,y,i===0?9:7,0,2*Math.PI); ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle=C.panel; ctx.stroke(); ctx.globalAlpha=1;
+  });
+
+  /* таблиця */
+  let tb='<thead><tr><th>модель</th><th>положення, м</th><th>похибка, м</th></tr></thead><tbody><tr><td>справжній рух</td><td>'+fmt(sTrue,5)+'</td><td>—</td></tr>';
+  ms.forEach(m=>{ const v=T(m.k,t); tb+='<tr><td><span class="dot" style="--c:'+m.color+';display:inline-block;margin-right:6px"></span>T'+sub(m.k)+'</td><td>'+fmt(v,5)+'</td><td>'+fmt(v-sTrue,3)+'</td></tr>'; });
+  $('kinT').innerHTML=tb+'</tbody>';
+
+  /* графік s(t) */
+  if(!P2.begin()) return;
+  P2.v={x0:a,x1:a+K.T,y0:lo,y1:hi}; P2.frame();
+  ms.forEach(m=>P2.curve(x=>T(m.k,x),m.color,1.8));
+  P2.curve(S.f,C.f,2.6);
+  P2.vline(t,C.ink,[4,3]);
+  ms.forEach(m=>P2.dot(t,T(m.k,t),m.color,4));
+  P2.dot(t,sTrue,C.f,5);
+}
+
+/* =================== ВКЛАДКА 4: МАЯТНИК =================== */
+const Pn={deg:60,L:1,g:9.81,m:1,t:0,tr:[0,0],ap:[0,0],hist:[],trail:[],play:false,dead:false,T0:0,Tex:0,Tap:0};
+function Sm(x,m){ const x2=x*x; let s=x; if(m>=3) s-=x*x2/6; if(m>=5) s+=x*x2*x2/120; if(m>=7) s-=x*x2*x2*x2/5040; return s; }
+function agm(a,b){ for(let i=0;i<40;i++){ const a2=(a+b)/2; b=Math.sqrt(a*b); a=a2; } return a; }
+function rk(st,acc,h){
+  const th=st[0],om=st[1];
+  const k1t=om,k1o=acc(th), k2t=om+h/2*k1o,k2o=acc(th+h/2*k1t), k3t=om+h/2*k2o,k3o=acc(th+h/2*k2t), k4t=om+h*k3o,k4o=acc(th+h*k3t);
+  return [th+h/6*(k1t+2*k2t+2*k3t+k4t), om+h/6*(k1o+2*k2o+2*k3o+k4o)];
+}
+function periodApprox(th0,w2,m){
+  const T0=2*Math.PI/Math.sqrt(w2), dt=T0/4000, acc=x=>-w2*Sm(x,m); let st=[th0,0], t=0, s0=0;
+  for(let i=0;i<4000*30;i++){ const nx=rk(st,acc,dt);
+    if(i===0) s0=Math.sign(nx[1]);
+    else if(Math.sign(nx[1])!==s0){ const fr=st[1]/(st[1]-nx[1]); return 2*(t+fr*dt); }
+    if(Math.abs(nx[0])>25) return null;
+    st=nx; t+=dt; }
+  return null;
+}
+function resetPend(){
+  const th=Pn.deg*Math.PI/180, w2=Pn.g/Pn.L;
+  Pn.t=0; Pn.tr=[th,0]; Pn.ap=[th,0]; Pn.hist=[[0,th,th]]; Pn.trail=[]; Pn.dead=false;
+  Pn.T0=2*Math.PI/Math.sqrt(w2); Pn.Tex=Pn.T0/agm(1,Math.cos(th/2)); Pn.Tap=Pn.m===1?Pn.T0:periodApprox(th,w2,Pn.m);
+  const names={1:'θ',3:'θ − <span class="fr"><span>θ<sup>3</sup></span><span>6</span></span>',5:'θ − <span class="fr"><span>θ<sup>3</sup></span><span>6</span></span> + <span class="fr"><span>θ<sup>5</sup></span><span>120</span></span>',7:'θ − <span class="fr"><span>θ<sup>3</sup></span><span>6</span></span> + <span class="fr"><span>θ<sup>5</sup></span><span>120</span></span> − <span class="fr"><span>θ<sup>7</sup></span><span>5040</span></span>'};
+  $('pFormula').innerHTML='sin θ ≈ <i>S</i><sub>'+Pn.m+'</sub>(θ) = '+names[Pn.m];
+  const e=Pn.Tap==null?null:(Pn.Tap-Pn.Tex)/Pn.Tex*100;
+  $('pInfo').innerHTML='<span>малі коливання 2π√(<i>L</i>/<i>g</i>)</span><span>'+fmt(Pn.T0,6)+' с</span><span>точний період</span><span>'+fmt(Pn.Tex,6)+' с</span><span>період наближеної моделі</span><span>'+(Pn.Tap==null?'немає':fmt(Pn.Tap,6)+' с')+'</span><span>похибка періоду</span><span>'+(e==null?'—':fmt(e,3)+' %')+'</span>';
+  $('pNote').innerHTML=Pn.Tap==null?'<b>Модель руйнується.</b> При такому куті многочлен <i>S</i><sub>'+Pn.m+'</sub>(θ₀) має інший знак, ніж sin θ₀: «повертальна» сила штовхає маятник геть від рівноваги, і коливань немає. Наближення Тейлора локальне — далеко від центра розкладу воно може втратити не лише точність, а й якісну поведінку.':
+    (Pn.m===1?'У лінійній моделі період не залежить від амплітуди. Справжній маятник при великих кутах коливається повільніше — збільшіть θ₀ і стежте, як криві розходяться за фазою.':'Чим вищий порядок многочлена, тим довше наближена модель іде в ногу зі справжнім маятником.');
+  drawPend();
+}
+function stepPend(dt){
+  const w2=Pn.g/Pn.L, ns=Math.max(1,Math.ceil(dt/0.002)), h=dt/ns, m=Pn.m;
+  for(let i=0;i<ns;i++){ Pn.tr=rk(Pn.tr,x=>-w2*Math.sin(x),h);
+    if(!Pn.dead){ Pn.ap=rk(Pn.ap,x=>-w2*Sm(x,m),h); if(Math.abs(Pn.ap[0])>40) Pn.dead=true; } }
+  Pn.t+=dt; Pn.hist.push([Pn.t,Pn.tr[0],Pn.dead?NaN:Pn.ap[0]]);
+  while(Pn.hist.length>2&&Pn.hist[0][0]<Pn.t-13) Pn.hist.shift();
+  Pn.trail.push([Pn.tr[0],Pn.dead?NaN:Pn.ap[0]]); if(Pn.trail.length>45) Pn.trail.shift();
+}
+function drawPend(){
+  $('pClock').innerHTML='<i>t</i> = '+Pn.t.toFixed(2)+' с';
+  /* маятники */
+  const cv=$('cvPend'), r=cv.getBoundingClientRect();
+  if(r.width>30){
+    const d=window.devicePixelRatio||1, W=Math.round(r.width*d), H=Math.round(r.height*d);
+    if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+    const c=cv.getContext('2d'), w=r.width, h=r.height; c.setTransform(d,0,0,d,0,0); c.clearRect(0,0,w,h);
+    const big=Pn.deg>90, cx=w/2, cy=big?h/2:h*0.14, R=big?Math.min(w,h)*0.4:Math.min(w*0.46,h*0.72), th0=Pn.deg*Math.PI/180;
+    const bx=t=>cx+R*Math.sin(t), by=t=>cy+R*Math.cos(t);
+    c.strokeStyle=C.grid; c.lineWidth=1.5; c.beginPath(); c.arc(cx,cy,R,Math.PI/2-th0,Math.PI/2+th0); c.stroke();
+    c.strokeStyle=C.axis; c.lineWidth=1; c.setLineDash([4,4]); c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx,cy+R+16); c.stroke(); c.setLineDash([]);
+    const tl=Pn.trail.length;
+    Pn.trail.forEach((p,i)=>{ const al=(i+1)/tl*0.35;
+      if(isFinite(p[1])){ c.globalAlpha=al; c.fillStyle=C.acc; c.beginPath(); c.arc(bx(p[1]),by(p[1]),5,0,2*Math.PI); c.fill(); }
+      c.globalAlpha=al; c.fillStyle=C.f; c.beginPath(); c.arc(bx(p[0]),by(p[0]),5,0,2*Math.PI); c.fill(); });
+    c.globalAlpha=1;
+    const bob=(t,col,rad)=>{ c.strokeStyle=col; c.lineWidth=2.5; c.beginPath(); c.moveTo(cx,cy); c.lineTo(bx(t),by(t)); c.stroke();
+      c.fillStyle=col; c.beginPath(); c.arc(bx(t),by(t),rad,0,2*Math.PI); c.fill(); c.lineWidth=2; c.strokeStyle=C.panel; c.stroke(); };
+    if(!Pn.dead) bob(Pn.ap[0],C.acc,13);
+    bob(Pn.tr[0],C.f,13);
+    c.fillStyle=C.ink; c.beginPath(); c.arc(cx,cy,4.5,0,2*Math.PI); c.fill();
+    if(Pn.dead){ c.fillStyle=C.acc; c.font='13px "Segoe UI",system-ui,sans-serif'; c.textAlign='center'; c.textBaseline='bottom'; c.fillText('наближена модель «зірвалась» — рух неперіодичний',cx,h-6); }
+  }
+  /* θ(t) */
+  const P=plots.th;
+  if(P.begin()){ const W=12, A=Pn.deg*1.3, k=180/Math.PI;
+    P.v={x0:Math.max(0,Pn.t-W),x1:Math.max(W,Pn.t),y0:-A,y1:A}; P.frame();
+    P.poly(Pn.hist.map(p=>[p[0],p[2]*k]),C.acc,2); P.poly(Pn.hist.map(p=>[p[0],p[1]*k]),C.f,2.4); }
+  /* sin θ проти S_m */
+  const Q=plots.sin;
+  if(Q.begin()){ const th0=Pn.deg*Math.PI/180, c=Q.ctx;
+    Q.v={x0:-Math.PI,x1:Math.PI,y0:-1.7,y1:1.7};
+    c.fillStyle=C.accSoft; c.fillRect(Q.X(-th0),Q.T,Q.X(th0)-Q.X(-th0),Q.B-Q.T);
+    Q.frame({xfmt:x=>Math.round(x*180/Math.PI)+'°'});
+    Q.curve(x=>Sm(x,Pn.m),C.acc,2); Q.curve(Math.sin,C.f,2.4); }
+}
+function buildPendUI(){
+  const btn=()=>{ $('pPlay').textContent=Pn.play?'❚❚ Пауза':'▶ Пуск'; };
+  $('pPlay').onclick=()=>{ Pn.play=!Pn.play; btn(); };
+  $('pReset').onclick=()=>{ Pn.play=false; btn(); resetPend(); };
+  numInput($('pDeg'),v=>{ Pn.deg=v; $('pDegR').value=v; resetPend(); },v=>v>=0.1&&v<=179.9);
+  $('pDegR').addEventListener('input',()=>{ Pn.deg=+$('pDegR').value; $('pDeg').value=Pn.deg; $('pDeg').classList.remove('bad'); resetPend(); });
+  numInput($('pL'),v=>{ Pn.L=v; resetPend(); },v=>v>0&&v<=1000);
+  numInput($('pG'),v=>{ Pn.g=v; resetPend(); },v=>v>0&&v<=1000);
+  $('pOrd').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; Pn.m=+b.dataset.m;
+    $('pOrd').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); resetPend(); });
+}
+
+/* =================== ЗАГАЛЬНЕ КЕРУВАННЯ =================== */
+function redraw(){
+  $('fxErr').textContent=S.err;
+  $('fx').classList.toggle('bad',!S.f);
+  $('badge').textContent=isMac()?'ряд Маклорена (a = 0)':'ряд Тейлора в точці a = '+fmt(S.a,4,true);
+  if(active==='main'){ drawMain(); updMainSide(); }
+  else if(active==='geo') drawGeo();
+  else if(active==='kin') drawKin();
+  else if(active==='pend') drawPend();
+}
+function setN(n){ S.n=Math.max(0,Math.min(NMAX,Math.round(n)||0)); $('nIn').value=S.n; $('nR').value=S.n; redraw(); }
+function setA(a,fromDrag){ S.a=a; if(fromDrag||document.activeElement!==$('aIn')){ $('aIn').value=fmt(a,8,true).replace('−','-'); } $('aIn').classList.remove('bad'); K.t=0; recompute(); redraw(); }
+function setF(src,rescale){ S.src=src; K.t=0; recompute(); if(rescale&&S.f) autoY(); redraw(); }
+
+const PRESETS=['sin(x)','cos(x)','e^x','ln(1+x)','1/(1-x)','1/(1+x^2)','arctg(x)','sqrt(1+x)','e^(-x^2)','tg(x)','sh(x)','x^3-2x+1','e^x*sin(x)'];
+function init(){
+  document.documentElement.dataset.theme=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  readColors();
+  plots.main=new Plot($('cvMain')); plots.err=new Plot($('cvErr'));
+  plots.geo=new Plot($('cvGeo')); plots.res=new Plot($('cvRes'));
+  plots.lanes=new Plot($('cvLanes'),{l:16,r:16,t:16,b:24}); plots.kin=new Plot($('cvKin'));
+  plots.th=new Plot($('cvTh')); plots.sin=new Plot($('cvSin'),{l:36,r:8,t:8,b:22});
+  plots.main.v={x0:-7,x1:7,y0:-2,y1:2};
+
+  $('presets').innerHTML=PRESETS.map(p=>'<button class="chip" data-f="'+p+'">'+p+'</button>').join('');
+  $('presets').addEventListener('click',e=>{ const b=e.target.closest('.chip'); if(!b) return; $('fx').value=b.dataset.f; setF(b.dataset.f,true); });
+  $('fx').addEventListener('input',()=>setF($('fx').value,true));
+  $('aIn').addEventListener('input',()=>{ try{ setA(parseNum($('aIn').value),false); }catch(e){ $('aIn').classList.add('bad'); } });
+  $('mac').onclick=()=>setA(0,true);
+  $('nIn').addEventListener('input',()=>{ if($('nIn').value!=='') setN(+$('nIn').value); });
+  $('nR').addEventListener('input',()=>setN(+$('nR').value));
+  $('theme').onclick=()=>{ const r=document.documentElement; r.dataset.theme=r.dataset.theme==='dark'?'light':'dark'; readColors(); redraw(); };
+  $('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; active=b.dataset.tab;
+    $('tabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    document.querySelectorAll('.panel').forEach(p=>{ p.hidden=p.id!=='tab-'+active; });
+    redraw(); });
+  bindMain(); buildGeoUI(); buildKinUI(); buildPendUI();
+  recompute(); autoY(); resetPend(); redraw();
+  window.addEventListener('resize',redraw);
+  let last=0;
+  const loop=ts=>{ const dt=Math.min(0.05,(ts-last)/1000||0); last=ts;
+    if(active==='kin'&&K.play){ K.t+=dt*K.speed; if(K.t>=K.T){ K.t=K.T; K.play=false; K.updBtn(); } drawKin(); }
+    if(active==='pend'&&Pn.play){ stepPend(dt); drawPend(); }
+    requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+init();
+})();
+</script>
+</body>
+</html>
