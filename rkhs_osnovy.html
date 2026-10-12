@@ -1,0 +1,1033 @@
+<!doctype html>
+<html lang="uk" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RKHS: основи</title>
+<style>
+:root{
+  --bg:#0e1120; --panel:#161a2d; --panel2:#1d2240; --plot:#12162a; --border:#272d4d;
+  --text:#e7e9f4; --muted:#9aa1c0; --grid:rgba(255,255,255,.055); --axis:rgba(255,255,255,.28);
+  --acc1:#6ea8ff; --acc2:#ff8a5c; --acc3:#5fd3a5; --acc4:#c792ea; --pt:#ffd166;
+  --band:rgba(110,168,255,.16); --shadow:0 10px 30px rgba(0,0,0,.35);
+  --serif:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;
+  --mono:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+}
+html[data-theme="light"]{
+  --bg:#f3f4f9; --panel:#ffffff; --panel2:#eef0f8; --plot:#fbfbfe; --border:#dde0ee;
+  --text:#1c2036; --muted:#5d6385; --grid:rgba(20,30,80,.07); --axis:rgba(20,30,80,.35);
+  --acc1:#2f6fe0; --acc2:#e0582a; --acc3:#14a374; --acc4:#8a4fd0; --pt:#d99a00;
+  --band:rgba(47,111,224,.13); --shadow:0 8px 24px rgba(30,40,90,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:22px 24px 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;max-width:1400px;margin:0 auto}
+h1{margin:0;font-size:24px;letter-spacing:.2px}
+h1 .ital{font-family:var(--serif);font-style:italic;color:var(--acc1)}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--acc1)}
+.btn.primary{background:var(--acc1);color:#fff;border-color:var(--acc1)}
+.btn.small{padding:3px 8px;font-size:12px}
+nav.tabs{max-width:1400px;margin:10px auto 0;padding:0 24px;display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs button{background:transparent;color:var(--muted);border:1px solid transparent;border-bottom:none;padding:9px 15px;border-radius:11px 11px 0 0;font:inherit;font-size:14px;cursor:pointer}
+nav.tabs button.on{background:var(--panel);color:var(--text);border-color:var(--border)}
+main{max-width:1400px;margin:0 auto;padding:0 24px 30px}
+.tabwrap{background:var(--panel);border:1px solid var(--border);border-radius:0 14px 14px 14px;padding:16px;box-shadow:var(--shadow)}
+.tab{display:none}.tab.on{display:block}
+.kbar{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.kbar .formula{font-family:var(--serif);font-size:17px;font-style:italic}
+.kbar .note{color:var(--muted);font-size:13px;flex-basis:100%}
+.ctl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.ctl b{color:var(--text);font-family:var(--serif);font-style:italic;font-weight:normal;font-size:16px;min-width:14px}
+input[type=range]{accent-color:var(--acc1);width:130px}
+input[type=number]{width:68px;background:var(--plot);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:3px 6px;font:13px var(--mono)}
+select{background:var(--plot);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font:inherit;font-size:13px}
+textarea{width:100%;min-height:150px;background:var(--plot);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:13px/1.45 var(--mono);resize:vertical}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--acc1)}
+.layout{display:grid;grid-template-columns:320px 1fr;gap:16px}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:12px}
+.box{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+.box h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chk{display:flex;align-items:center;gap:7px;font-size:13px;margin:3px 0;cursor:pointer}
+.chk input{accent-color:var(--acc1)}
+canvas{width:100%;display:block;border-radius:11px;background:var(--plot);border:1px solid var(--border);touch-action:none}
+#cvReg{height:460px;cursor:crosshair}
+.readout{font:13px var(--mono);color:var(--muted);min-height:20px;margin:8px 2px 0}
+.readout .v{color:var(--text)}
+.stats{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px}
+.stats span:nth-child(odd){color:var(--muted)}
+.stats span:nth-child(even){font-family:var(--mono);text-align:right}
+.alphas{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;max-height:96px;overflow:auto}
+.alphas span{font:12px var(--mono);background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:1px 6px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.hint kbd{font:11px var(--mono);border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:var(--panel2);color:var(--text)}
+.knote{margin-top:10px;font-size:13.5px;color:var(--muted);border-left:3px solid var(--acc4);padding:4px 10px}
+.geo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:960px){.geo{grid-template-columns:1fr}}
+.geo .cell h4{margin:0 0 6px;font-size:14px;font-weight:600}
+.geo .cell p{margin:6px 2px 0;font-size:13px;color:var(--muted)}
+.geo canvas{height:330px}
+#cvEmb{cursor:grab}
+.heatgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:960px){.heatgrid{grid-template-columns:1fr}}
+#cvHeat{height:380px;cursor:crosshair}
+#cvHK,#cvST{height:250px}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted);margin:6px 2px 0;flex-wrap:wrap}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.theory{max-width:900px;margin:0 auto;font-size:15.5px;line-height:1.68}
+.theory h2{font-size:19px;margin:26px 0 8px;color:var(--acc1);font-weight:600}
+.theory h2:first-child{margin-top:4px}
+.theory p{margin:0 0 10px;text-align:justify;hyphens:auto}
+.m{font-family:var(--serif);font-style:italic;font-size:1.06em;white-space:nowrap}
+.mb{display:block;text-align:center;font-family:var(--serif);font-style:italic;font-size:1.12em;margin:10px 0 12px;padding:8px;background:var(--panel2);border-radius:10px;border:1px solid var(--border)}
+.theory table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0 12px}
+.theory td,.theory th{border-bottom:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
+.theory th{color:var(--muted);font-weight:600;font-size:13px}
+.thm{border-left:3px solid var(--acc3);background:var(--panel2);padding:8px 12px;border-radius:0 10px 10px 0;margin:8px 0 12px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:0 0 24px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Гільбертові простори з відтворюючим ядром <span class="ital">(RKHS)</span>: основи</h1>
+    <div class="sub">Інтерактивна лабораторія: ядро, регресія, геометрія простору ознак і фізичний зміст</div>
+  </div>
+  <button class="btn" id="themeBtn">☀︎ Світла тема</button>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="reg" class="on">① Ядро і регресія</button>
+  <button data-tab="geo">② Геометрія простору ознак</button>
+  <button data-tab="heat">③ Фізика: теплопровідність</button>
+  <button data-tab="th">📖 Теоретична довідка</button>
+</nav>
+
+<main><div class="tabwrap">
+
+  <!-- Спільна панель ядра -->
+  <div class="kbar" id="kbar">
+    <div class="ctl">Ядро
+      <select id="kType">
+        <option value="gauss">Гаусове (RBF)</option>
+        <option value="laplace">Лапласове</option>
+        <option value="matern">Матерна ν = 3/2</option>
+        <option value="poly">Поліноміальне</option>
+      </select>
+    </div>
+    <div class="ctl" id="rowS"><b>σ</b><input type="range" id="kS" min="0.1" max="3" step="0.01" value="1"><input type="number" id="kSn" min="0.05" max="10" step="0.05" value="1"></div>
+    <div class="ctl" id="rowC" style="display:none"><b>c</b><input type="range" id="kC" min="0" max="5" step="0.05" value="1"><input type="number" id="kCn" min="0" max="20" step="0.1" value="1"></div>
+    <div class="ctl" id="rowD" style="display:none"><b>d</b><input type="range" id="kD" min="1" max="6" step="1" value="2"><input type="number" id="kDn" min="1" max="8" step="1" value="2"></div>
+    <div class="formula" id="kFormula"></div>
+    <div class="note" id="kNote"></div>
+  </div>
+
+  <!-- ВКЛАДКА 1 -->
+  <section class="tab on" id="tab-reg">
+    <p class="hint">Клік по полю — додати точку, перетягування — зсунути, <kbd>Shift</kbd>+клік або права кнопка — видалити. Дані можна також вводити з клавіатури у текстовому полі (по рядку на точку: <span class="m">x, y</span> або <span class="m">x; y</span>). Наведіть курсор, щоб побачити відтворюючу властивість <span class="m">f(x) = ⟨f, k<sub>x</sub>⟩</span>.</p>
+    <div class="layout">
+      <div class="side">
+        <div class="box">
+          <h3>Дані (x, y)</h3>
+          <textarea id="dataTA" spellcheck="false"></textarea>
+          <div class="row" style="margin-top:8px">
+            <button class="btn small" data-preset="sin">sin x</button>
+            <button class="btn small" data-preset="noisy">sin x + шум</button>
+            <button class="btn small" data-preset="step">сходинка</button>
+            <button class="btn small" data-preset="rand">випадкові</button>
+            <button class="btn small" data-preset="clear">очистити</button>
+          </div>
+          <div id="dataErr" style="color:var(--acc2);font-size:12px;margin-top:6px"></div>
+        </div>
+        <div class="box">
+          <h3>Регуляризація</h3>
+          <div class="ctl"><b>λ</b><input type="range" id="lam" min="-6" max="1" step="0.05" value="-3" style="width:150px"><span id="lamV" style="font-family:var(--mono);color:var(--text)"></span></div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:6px">Мінімізуємо <span class="m">Σ(f(x<sub>i</sub>) − y<sub>i</sub>)² + λ‖f‖²<sub>ℋ</sub></span>. При <span class="m">λ → 0</span> — інтерполяція з мінімальною нормою.</div>
+        </div>
+        <div class="box">
+          <h3>Показувати</h3>
+          <label class="chk"><input type="checkbox" id="cBumps" checked> доданки <span class="m">α<sub>i</sub> k(·, x<sub>i</sub>)</span></label>
+          <label class="chk"><input type="checkbox" id="cBand" checked> функцію потужності <span class="m">P(x)</span></label>
+          <label class="chk"><input type="checkbox" id="cKx" checked> <span class="m">k<sub>x</sub></span> під курсором</label>
+        </div>
+        <div class="box">
+          <h3>Характеристики розв'язку</h3>
+          <div class="stats" id="regStats"></div>
+        </div>
+      </div>
+      <div>
+        <canvas id="cvReg"></canvas>
+        <div class="legend">
+          <span><i style="background:var(--acc1)"></i>f = Σ α<sub>i</sub> k(·, x<sub>i</sub>)</span>
+          <span><i style="background:var(--acc4)"></i>доданки α<sub>i</sub> k(·, x<sub>i</sub>)</span>
+          <span><i style="background:var(--band);height:9px"></i>f ± P(x), P(x) = dist(k<sub>x</sub>, span{k<sub>x<sub>i</sub></sub>})</span>
+          <span><i style="background:var(--acc3)"></i>k<sub>x</sub> (представник обчислення в точці)</span>
+        </div>
+        <div class="readout" id="regReadout">Наведіть курсор на графік…</div>
+        <div class="alphas" id="alphaList"></div>
+        <div class="knote" id="kPhys"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ВКЛАДКА 2 -->
+  <section class="tab" id="tab-geo">
+    <p class="hint">Кожна точка <span class="m">x</span> переходить у вектор <span class="m">Φ(x) = k<sub>x</sub> ∈ ℋ</span>. Скалярні добутки, довжини, кути й відстані між цими векторами обчислюються лише через ядро. Задайте <span class="m">x₀</span> і <span class="m">y₀</span> з клавіатури або повзунками; 3D-сцену можна обертати мишею.</p>
+    <div class="row" style="gap:22px;margin-bottom:12px">
+      <div class="ctl"><b style="color:var(--acc1)">x₀</b><input type="range" id="gx" min="-5" max="5" step="0.01" value="-0.6"><input type="number" id="gxn" min="-5" max="5" step="0.1" value="-0.6"></div>
+      <div class="ctl"><b style="color:var(--acc2)">y₀</b><input type="range" id="gy" min="-5" max="5" step="0.01" value="0.8"><input type="number" id="gyn" min="-5" max="5" step="0.1" value="0.8"></div>
+      <label class="chk"><input type="checkbox" id="autoRot" checked> автообертання 3D</label>
+    </div>
+    <div class="geo">
+      <div class="cell">
+        <h4>Функції <span class="m">k<sub>x₀</sub></span> і <span class="m">k<sub>y₀</sub></span> як елементи ℋ</h4>
+        <canvas id="cvKF"></canvas>
+        <p>Відтворююча властивість для самого ядра: значення <span class="m">k<sub>x₀</sub>(y₀)</span> дорівнює скалярному добутку <span class="m">⟨k<sub>x₀</sub>, k<sub>y₀</sub>⟩<sub>ℋ</sub></span>.</p>
+      </div>
+      <div class="cell">
+        <h4>Кут і відстань між <span class="m">Φ(x₀)</span> та <span class="m">Φ(y₀)</span></h4>
+        <canvas id="cvVec"></canvas>
+        <p>Площина, натягнута на два вектори з ℋ, у справжньому масштабі: <span class="m">‖k<sub>x</sub>‖ = √k(x,x)</span>, <span class="m">cos θ = k(x,y)/√(k(x,x)k(y,y))</span>.</p>
+      </div>
+      <div class="cell">
+        <h4>Образ відрізка <span class="m">[−5, 5]</span> у просторі ознак</h4>
+        <canvas id="cvEmb"></canvas>
+        <p id="embNote">Проєкція кривої <span class="m">x ↦ Φ(x)</span> на три головні напрями (ядерний PCA).</p>
+      </div>
+      <div class="cell">
+        <h4>Матриця Грама даних з вкладки ① та її спектр</h4>
+        <canvas id="cvGram"></canvas>
+        <p id="gramNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ВКЛАДКА 3 -->
+  <section class="tab" id="tab-heat">
+    <p class="hint">Рівняння теплопровідності <span class="m">u<sub>t</sub> = D u<sub>xx</sub></span>. Помаранчева крива — чисельний розв'язок (явна різницева схема), синя штрихова — точна формула через гаусове ядро з <span class="m">σ(t) = √(2Dt)</span>. У режимі джерел клік додає джерело, <kbd>Shift</kbd>+клік видаляє; у режимі профілю початкову температуру можна намалювати мишею. <kbd>Пробіл</kbd> — пуск/пауза.</p>
+    <div class="layout">
+      <div class="side">
+        <div class="box">
+          <h3>Початковий стан</h3>
+          <select id="hMode" style="width:100%;margin-bottom:8px">
+            <option value="points">Точкові джерела тепла (δ-імпульси)</option>
+            <option value="profile">Довільний профіль температури</option>
+          </select>
+          <div id="hPointsUI">
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:4px">Рядки <span class="m">x : q</span> (q &lt; 0 — стік тепла)</div>
+            <textarea id="srcTA" spellcheck="false" style="min-height:100px"></textarea>
+            <div class="row" style="margin-top:6px">
+              <button class="btn small" data-hp="one">одне</button>
+              <button class="btn small" data-hp="two">два</button>
+              <button class="btn small" data-hp="three">три різні</button>
+              <button class="btn small" data-hp="dip">джерело + стік</button>
+            </div>
+          </div>
+          <div id="hProfUI" style="display:none">
+            <div class="row">
+              <button class="btn small" data-pp="rect">прямокутник</button>
+              <button class="btn small" data-pp="bumps">два горби</button>
+              <button class="btn small" data-pp="comb">гребінка</button>
+              <button class="btn small" data-pp="step">сходинка</button>
+              <button class="btn small" data-pp="rand">випадковий</button>
+            </div>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:6px">Або намалюйте профіль мишею прямо на графіку.</div>
+          </div>
+        </div>
+        <div class="box">
+          <h3>Параметри</h3>
+          <div class="ctl"><b>D</b><input type="range" id="hD" min="0.05" max="2" step="0.01" value="0.5"><span id="hDv" style="font-family:var(--mono);color:var(--text)"></span></div>
+          <div class="ctl" style="margin-top:6px">швидкість<input type="range" id="hSp" min="-2" max="0.3" step="0.01" value="-0.7"><span id="hSpv" style="font-family:var(--mono);color:var(--text)"></span></div>
+          <label class="chk" style="margin-top:6px"><input type="checkbox" id="hFix"> зафіксувати масштаб осі <span class="m">u</span></label>
+          <div class="row" style="margin-top:8px">
+            <button class="btn primary" id="hPlay">▶ Пуск</button>
+            <button class="btn" id="hStep">+0.1 c</button>
+            <button class="btn" id="hReset">⟲ Скинути</button>
+          </div>
+        </div>
+        <div class="box">
+          <h3>Вимірювання</h3>
+          <div class="stats" id="heatStats"></div>
+        </div>
+      </div>
+      <div>
+        <canvas id="cvHeat"></canvas>
+        <div class="legend">
+          <span><i style="background:var(--acc2)"></i>u(x,t) — різницева схема</span>
+          <span><i style="background:var(--acc1)"></i>точний розв'язок через ядро</span>
+          <span><i style="background:var(--pt)"></i>джерела</span>
+        </div>
+        <div class="heatgrid">
+          <div>
+            <canvas id="cvHK"></canvas>
+            <div class="readout" id="heatInfo" style="line-height:1.6;font-family:system-ui,sans-serif"></div>
+          </div>
+          <div>
+            <canvas id="cvST"></canvas>
+            <div class="readout" style="font-family:system-ui,sans-serif">Просторово-часова діаграма (час іде вниз, кожен рядок нормовано на свій максимум): видно, як ширина зростає ∝ √t.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ВКЛАДКА 4 -->
+  <section class="tab" id="tab-th">
+    <div class="theory">
+      <h2>1. Функціонал обчислення значення</h2>
+      <p>Нехай <span class="m">ℋ</span> — гільбертів простір функцій <span class="m">f : X → ℝ</span>. Кожній точці <span class="m">x ∈ X</span> відповідає лінійний функціонал обчислення значення <span class="m">δ<sub>x</sub>(f) = f(x)</span>. У звичному просторі <span class="m">L²</span> він навіть не означений: елементами є класи еквівалентних функцій, і «значення в точці» не має сенсу. Простір <span class="m">ℋ</span> називають <b>гільбертовим простором з відтворюючим ядром</b>, якщо всі функціонали <span class="m">δ<sub>x</sub></span> неперервні, тобто <span class="m">|f(x)| ≤ C<sub>x</sub>‖f‖<sub>ℋ</sub></span>. Звідси одразу випливає, що збіжність за нормою <span class="m">ℋ</span> тягне поточкову збіжність — саме тому з функціями з RKHS зручно працювати в задачах навчання, де нас цікавлять передбачення в конкретних точках.</p>
+
+      <h2>2. Відтворююче ядро</h2>
+      <p>За теоремою Ріса неперервний функціонал <span class="m">δ<sub>x</sub></span> зображується скалярним добутком з деяким єдиним елементом <span class="m">k<sub>x</sub> ∈ ℋ</span>:</p>
+      <span class="mb">f(x) = ⟨f, k<sub>x</sub>⟩<sub>ℋ</sub>&nbsp;&nbsp; для всіх f ∈ ℋ,&nbsp;&nbsp;&nbsp; k(x, y) := ⟨k<sub>y</sub>, k<sub>x</sub>⟩<sub>ℋ</sub> = k<sub>y</sub>(x).</span>
+      <p>Функцію <span class="m">k</span> називають відтворюючим ядром. Вона симетрична і додатно визначена: для будь-яких точок <span class="m">x<sub>1</sub>,…,x<sub>n</sub></span> і чисел <span class="m">c<sub>i</sub></span> маємо <span class="m">Σ c<sub>i</sub>c<sub>j</sub> k(x<sub>i</sub>, x<sub>j</sub>) = ‖Σ c<sub>i</sub> k<sub>x<sub>i</sub></sub>‖² ≥ 0</span>, тобто кожна матриця Грама <span class="m">K = (k(x<sub>i</sub>,x<sub>j</sub>))</span> невід'ємно визначена. Нерівність Коші–Буняковського дає оцінку <span class="m">|f(x)| ≤ ‖f‖<sub>ℋ</sub>√k(x,x)</span>, причому <span class="m">‖δ<sub>x</sub>‖ = √k(x,x)</span>. На вкладці ① зелена крива під курсором — це саме представник <span class="m">k<sub>x</sub></span>.</p>
+
+      <h2>3. Теорема Мура–Ароншайна</h2>
+      <div class="thm"><b>Теорема.</b> Для кожної симетричної додатно визначеної функції <span class="m">k : X × X → ℝ</span> існує єдиний гільбертів простір <span class="m">ℋ<sub>k</sub></span> функцій на <span class="m">X</span>, для якого <span class="m">k</span> є відтворюючим ядром.</div>
+      <p>Конструкція прозора: беремо лінійну оболонку функцій <span class="m">k<sub>x</sub></span>, вводимо на ній скалярний добуток <span class="m">⟨Σ a<sub>i</sub>k<sub>x<sub>i</sub></sub>, Σ b<sub>j</sub>k<sub>y<sub>j</sub></sub>⟩ = Σ a<sub>i</sub>b<sub>j</sub> k(x<sub>i</sub>, y<sub>j</sub>)</span> і поповнюємо. Отже, ядро повністю визначає простір, і навпаки. Перевірити, що функція є ядром, означає перевірити невід'ємність спектрів усіх матриць Грама — це ілюструє правий нижній графік вкладки ②.</p>
+
+      <h2>4. Простір ознак і геометрія</h2>
+      <p>Відображення <span class="m">Φ : X → ℋ</span>, <span class="m">Φ(x) = k<sub>x</sub></span>, називають картою ознак: <span class="m">k(x, y) = ⟨Φ(x), Φ(y)⟩</span>. Ядро — це скалярний добуток у (можливо, нескінченновимірному) просторі ознак, обчислений без явного переходу до ознак (так званий kernel trick). Уся геометрія образів точок задається ядром:</p>
+      <span class="mb">‖Φ(x)‖ = √k(x,x),&nbsp;&nbsp; cos θ<sub>xy</sub> = k(x,y) / √(k(x,x) k(y,y)),&nbsp;&nbsp; ‖Φ(x) − Φ(y)‖² = k(x,x) + k(y,y) − 2k(x,y).</span>
+      <p>Для гаусового ядра <span class="m">k(x,x) = 1</span>, тому образ прямої — крива на одиничній сфері нескінченновимірного простору, а далекі точки стають майже ортогональними. Для поліноміального ядра степеня <span class="m">d</span> простір ознак скінченновимірний, <span class="m">dim ℋ = d + 1</span>, і при <span class="m">d = 2</span> крива <span class="m">Φ(x) = (x², √(2c)·x, c)</span> точно вміщується у три виміри.</p>
+
+      <h2>5. Основні ядра на ℝ</h2>
+      <table>
+        <tr><th>Ядро</th><th>Формула</th><th>Простір ℋ<sub>k</sub></th></tr>
+        <tr><td>Гаусове</td><td class="m">exp(−(x−y)²/2σ²)</td><td>дуже гладкі (аналітичні) функції зі швидко спадним спектром Фур'є</td></tr>
+        <tr><td>Лапласове</td><td class="m">exp(−|x−y|/σ)</td><td>соболевський <span class="m">H¹(ℝ)</span>, норма <span class="m">½∫(σf′² + f²/σ)dx</span></td></tr>
+        <tr><td>Матерна 3/2</td><td class="m">(1+√3r/σ)e<sup>−√3r/σ</sup></td><td>норма, еквівалентна нормі <span class="m">H²(ℝ)</span></td></tr>
+        <tr><td>Поліноміальне</td><td class="m">(xy + c)<sup>d</sup></td><td>многочлени степеня ≤ d (при c &gt; 0)</td></tr>
+      </table>
+
+      <h2>6. Теорема про представлення і ядрова регресія</h2>
+      <div class="thm"><b>Теорема (про представлення).</b> Розв'язок задачі <span class="m">min<sub>f∈ℋ</sub> Σ (f(x<sub>i</sub>) − y<sub>i</sub>)² + λ‖f‖²<sub>ℋ</sub></span> має вигляд <span class="m">f = Σ α<sub>i</sub> k<sub>x<sub>i</sub></sub></span>, де <span class="m">α = (K + λI)<sup>−1</sup>y</span>.</div>
+      <p>Ідея доведення геометрична: розкладемо <span class="m">f = f<sub>∥</sub> + f<sub>⊥</sub></span>, де <span class="m">f<sub>∥</sub> ∈ span{k<sub>x<sub>i</sub></sub>}</span>. Ортогональна складова не змінює значень у точках даних, бо <span class="m">f<sub>⊥</sub>(x<sub>i</sub>) = ⟨f<sub>⊥</sub>, k<sub>x<sub>i</sub></sub>⟩ = 0</span>, але збільшує норму. Тому нескінченновимірна задача зводиться до лінійної системи розміру <span class="m">n</span>, а квадрат норми розв'язку дорівнює <span class="m">αᵀKα</span>. При <span class="m">λ → 0</span> отримуємо інтерполянт з мінімальною нормою — ортогональну проєкцію невідомої функції на <span class="m">span{k<sub>x<sub>i</sub></sub>}</span>. Похибку інтерполяції контролює функція потужності <span class="m">P(x) = dist(k<sub>x</sub>, span{k<sub>x<sub>i</sub></sub>})</span>: <span class="m">|f(x) − s(x)| ≤ P(x)‖f‖<sub>ℋ</sub></span>. На вкладці ① вона показана смугою; при <span class="m">λ &gt; 0</span> це та сама величина <span class="m">√(k(x,x) − k<sub>x</sub>ᵀ(K+λI)<sup>−1</sup>k<sub>x</sub>)</span>, що в мові гаусівських процесів є апостеріорним стандартним відхиленням.</p>
+
+      <h2>7. Фізичний зміст ядра</h2>
+      <p>Часто норма RKHS — це енергія: <span class="m">‖f‖² = ⟨Lf, f⟩<sub>L²</sub></span> для деякого диференціального оператора <span class="m">L</span>. Тоді ядро є функцією Гріна, <span class="m">L k<sub>y</sub> = δ<sub>y</sub></span>: функція <span class="m">k<sub>y</sub></span> — відгук системи на одиничну точкову силу в точці <span class="m">y</span>, а інтерполянт з мінімальною нормою — конфігурація з найменшою енергією, що проходить через задані точки. Для лапласового ядра <span class="m">L = ½(−σ d²/dx² + 1/σ)</span>: це пружна струна з натягом <span class="m">σ</span> на пружній основі жорсткості <span class="m">1/σ</span>, тому інтерполянт має злами у вузлах і експоненційно релаксує між ними.</p>
+      <p>Гаусове ядро — це ядро теплопровідності. Розв'язок рівняння <span class="m">u<sub>t</sub> = D u<sub>xx</sub></span> з початковою умовою <span class="m">u<sub>0</sub></span> є згорткою з ядром Гауса ширини <span class="m">σ(t) = √(2Dt)</span>:</p>
+      <span class="mb">u(x,t) = (4πDt)<sup>−1/2</sup> ∫ exp(−(x−y)²/4Dt) u<sub>0</sub>(y) dy.</span>
+      <p>Якщо тепло вносять точкові джерела потужності <span class="m">q<sub>i</sub></span>, то стан у момент <span class="m">t</span> — це в точності розклад <span class="m">Σ α<sub>i</sub> k<sub>σ</sub>(·, x<sub>i</sub>)</span> з коефіцієнтами <span class="m">α<sub>i</sub> = q<sub>i</sub>/√(4πDt)</span>, тобто елемент лінійної оболонки ядер — так само, як розв'язок регресії. Дифузія діє як фільтр низьких частот, послаблюючи гармоніку частоти <span class="m">ω</span> у <span class="m">e<sup>−Dω²t</sup></span> разів, тому з часом лишаються лише гладкі функції. Цей самий механізм пояснює надзвичайну гладкість елементів RKHS гаусового ядра (вкладка ③, профіль «гребінка»).</p>
+    </div>
+  </section>
+
+</div></main>
+<footer>Автономний HTML-файл · працює офлайн без зовнішніх бібліотек</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const SUB = n => String(n).replace(/\d/g, d => "₀₁₂₃₄₅₆₇₈₉"[d]);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function fmt(v, p){
+  if (!isFinite(v)) return "—";
+  const a = Math.abs(v);
+  if (a !== 0 && (a < 1e-3 || a >= 1e5)) return v.toExponential(2);
+  return String(+v.toFixed(p != null ? p : (a < 1 ? 4 : a < 100 ? 3 : 1)));
+}
+
+/* ---------- Полотна й осі ---------- */
+function prep(cv){
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  const W = Math.round(w*dpr), Hh = Math.round(h*dpr);
+  if (cv.width !== W || cv.height !== Hh){ cv.width = W; cv.height = Hh; }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  return {ctx, w, h};
+}
+function niceStep(range, target){
+  const raw = range/target, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw/p;
+  return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
+}
+function frame(cv, xr, yr, pad){
+  pad = pad || {l:46, r:12, t:12, b:26};
+  const {ctx, w, h} = prep(cv);
+  const f = {ctx, w, h, xr, yr, pad,
+    X: x => pad.l + (x - xr[0])/(xr[1]-xr[0])*(w - pad.l - pad.r),
+    Y: y => h - pad.b - (y - yr[0])/(yr[1]-yr[0])*(h - pad.t - pad.b),
+    ix: px => xr[0] + (px - pad.l)/(w - pad.l - pad.r)*(xr[1]-xr[0]),
+    iy: py => yr[0] + (h - pad.b - py)/(h - pad.t - pad.b)*(yr[1]-yr[0])};
+  ctx.save();
+  ctx.font = "11px " + css("--mono");
+  ctx.lineWidth = 1;
+  const sx = niceStep(xr[1]-xr[0], 8), sy = niceStep(yr[1]-yr[0], 6);
+  ctx.strokeStyle = css("--grid"); ctx.fillStyle = css("--muted");
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (let x = Math.ceil(xr[0]/sx)*sx; x <= xr[1] + 1e-9; x += sx){
+    const X = Math.round(f.X(x)) + .5;
+    ctx.beginPath(); ctx.moveTo(X, pad.t); ctx.lineTo(X, h - pad.b); ctx.stroke();
+    ctx.fillText(String(+x.toPrecision(6)), X, h - pad.b + 6);
+  }
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let y = Math.ceil(yr[0]/sy)*sy; y <= yr[1] + 1e-9; y += sy){
+    const Y = Math.round(f.Y(y)) + .5;
+    ctx.beginPath(); ctx.moveTo(pad.l, Y); ctx.lineTo(w - pad.r, Y); ctx.stroke();
+    const lab = Math.abs(y) >= 1e4 ? y.toExponential(0) : String(+y.toPrecision(6));
+    ctx.fillText(lab, pad.l - 6, Y);
+  }
+  ctx.strokeStyle = css("--axis");
+  if (xr[0] < 0 && xr[1] > 0){ const X = Math.round(f.X(0))+.5; ctx.beginPath(); ctx.moveTo(X,pad.t); ctx.lineTo(X,h-pad.b); ctx.stroke(); }
+  if (yr[0] < 0 && yr[1] > 0){ const Y = Math.round(f.Y(0))+.5; ctx.beginPath(); ctx.moveTo(pad.l,Y); ctx.lineTo(w-pad.r,Y); ctx.stroke(); }
+  ctx.restore();
+  return f;
+}
+function clipPlot(f){ const c = f.ctx; c.save(); c.beginPath(); c.rect(f.pad.l, f.pad.t, f.w-f.pad.l-f.pad.r, f.h-f.pad.t-f.pad.b); c.clip(); }
+function poly(f, xs, ys, color, width, dash){
+  const c = f.ctx; c.save(); c.strokeStyle = color; c.lineWidth = width || 2; c.lineJoin = "round";
+  if (dash) c.setLineDash(dash);
+  c.beginPath();
+  for (let i = 0; i < xs.length; i++){ const X = f.X(xs[i]), Y = clamp(f.Y(ys[i]), -1e4, 1e4); i ? c.lineTo(X,Y) : c.moveTo(X,Y); }
+  c.stroke(); c.restore();
+}
+function linspace(a, b, n){ const r = new Float64Array(n); for (let i = 0; i < n; i++) r[i] = a + (b-a)*i/(n-1); return r; }
+
+/* ---------- Лінійна алгебра ---------- */
+function inverse(A){
+  const n = A.length, M = A.map((r,i) => { const e = new Float64Array(2*n); for (let j=0;j<n;j++) e[j]=r[j]; e[n+i]=1; return e; });
+  for (let c = 0; c < n; c++){
+    let p = c, best = Math.abs(M[c][c]);
+    for (let r = c+1; r < n; r++) if (Math.abs(M[r][c]) > best){ best = Math.abs(M[r][c]); p = r; }
+    if (best < 1e-300) return null;
+    [M[c], M[p]] = [M[p], M[c]];
+    const d = M[c][c];
+    for (let j = 0; j < 2*n; j++) M[c][j] /= d;
+    for (let r = 0; r < n; r++) if (r !== c){
+      const fct = M[r][c]; if (fct === 0) continue;
+      for (let j = 0; j < 2*n; j++) M[r][j] -= fct*M[c][j];
+    }
+  }
+  return M.map(r => Array.from(r.slice(n)));
+}
+function jacobiEig(A0){
+  const n = A0.length, a = A0.map(r => Float64Array.from(r)), V = [];
+  for (let i = 0; i < n; i++){ V.push(new Float64Array(n)); V[i][i] = 1; }
+  let scale = 0; for (let i=0;i<n;i++) for (let j=0;j<n;j++) scale += a[i][j]*a[i][j];
+  for (let sweep = 0; sweep < 60; sweep++){
+    let off = 0; for (let i=0;i<n;i++) for (let j=i+1;j<n;j++) off += a[i][j]*a[i][j];
+    if (off <= 1e-26*scale || off === 0) break;
+    for (let p = 0; p < n-1; p++) for (let q = p+1; q < n; q++){
+      const apq = a[p][q]; if (Math.abs(apq) < 1e-300) continue;
+      const th = (a[q][q] - a[p][p])/(2*apq);
+      const t = (th >= 0 ? 1 : -1)/(Math.abs(th) + Math.sqrt(th*th + 1));
+      const c = 1/Math.sqrt(t*t + 1), s = t*c;
+      for (let k = 0; k < n; k++){ const kp = a[k][p], kq = a[k][q]; a[k][p] = c*kp - s*kq; a[k][q] = s*kp + c*kq; }
+      for (let k = 0; k < n; k++){ const pk = a[p][k], qk = a[q][k]; a[p][k] = c*pk - s*qk; a[q][k] = s*pk + c*qk; }
+      for (let k = 0; k < n; k++){ const vp = V[k][p], vq = V[k][q]; V[k][p] = c*vp - s*vq; V[k][q] = s*vp + c*vq; }
+    }
+  }
+  const idx = [...Array(n).keys()].sort((i,j) => a[j][j] - a[i][i]);
+  return { vals: idx.map(i => a[i][i]), vecs: V.map(r => idx.map(i => r[i])) };
+}
+
+/* ---------- Ядра ---------- */
+const S = { kernel:"gauss", s:1, c:1, d:2, lam:1e-3, pts:[] };
+function kfun(){
+  const {kernel, s, c, d} = S;
+  if (kernel === "gauss"){ const q = 1/(2*s*s); return (x,y) => Math.exp(-(x-y)*(x-y)*q); }
+  if (kernel === "laplace") return (x,y) => Math.exp(-Math.abs(x-y)/s);
+  if (kernel === "matern"){ const a = Math.sqrt(3)/s; return (x,y) => { const r = a*Math.abs(x-y); return (1+r)*Math.exp(-r); }; }
+  return (x,y) => Math.pow(x*y + c, d);
+}
+const normalized = () => S.kernel !== "poly";
+const KINFO = {
+  gauss: { f:"k(x, y) = exp(−(x − y)² / 2σ²)",
+    note:"Нормоване ядро: k(x,x) = 1, усі Φ(x) лежать на одиничній сфері. ℋ нескінченновимірний; σ — радіус «впливу» точки.",
+    phys:"<b>Гаусове ядро.</b> Простір ℋ складається з дуже гладких функцій: гармоніки високої частоти ω «штрафуються» множником e<sup>σ²ω²/2</sup>. Фізично це ядро теплопровідності: k<sub>σ</sub>(x, y) — профіль температури від точкового джерела після дифузії до ширини σ (див. вкладку ③). Зменшіть σ — і інтерполянт розпадеться на окремі «горбики» навколо даних." },
+  laplace: { f:"k(x, y) = exp(−|x − y| / σ)",
+    note:"Нормоване ядро. ℋ = H¹(ℝ) — функції з квадратично інтегровною першою похідною.",
+    phys:"<b>Лапласове ядро — пружна струна.</b> Тут ‖f‖²<sub>ℋ</sub> = ½∫(σ f′² + f²/σ) dx — потенціальна енергія струни з натягом σ на пружній основі жорсткості 1/σ, а k<sub>y</sub> — прогин від одиничної точкової сили в точці y (функція Гріна). Інтерполянт при малому λ — форма такої струни, закріпленої в точках даних: злами у вузлах і експоненційна релаксація до нуля між ними." },
+  matern: { f:"k(x, y) = (1 + √3|x − y|/σ) · exp(−√3|x − y|/σ)",
+    note:"Нормоване ядро. Норма ℋ еквівалентна нормі H²(ℝ): неперервна перша похідна, без зламів.",
+    phys:"<b>Ядро Матерна 3/2.</b> Проміжна гладкість між лапласовим і гаусовим: енергія містить квадрат другої похідної, як у пружної балки на пружній основі. Порівняйте з лапласовим ядром за тих самих даних — злами зникають." },
+  poly: { f:"k(x, y) = (x · y + c)<sup>d</sup>",
+    note:"Ненормоване ядро; при c > 0 ℋ — многочлени степеня ≤ d, dim ℋ = d + 1. Матриця Грама має ранг ≤ d + 1.",
+    phys:"<b>Поліноміальне ядро.</b> Простір ознак скінченновимірний: Φ(x) = (√C<sub>d</sub><sup>j</sup> c<sup>(d−j)/2</sup> x<sup>j</sup>)<sub>j=0..d</sub>. Ядрова регресія тут збігається з гребеневою поліноміальною регресією, тому при n > d + 1 точках точна інтерполяція неможлива — порівняйте з нескінченновимірними ядрами." }
+};
+
+/* ---------- Розбір введення ---------- */
+function parsePairs(text){
+  const out = [];
+  for (const raw of text.split(/\n/)){
+    const line = raw.trim(); if (!line || line.startsWith("#")) continue;
+    let parts;
+    if (/[;:\t]/.test(line)) parts = line.split(/[;:\t]/).map(s => s.trim().replace(",", "."));
+    else if (/\s/.test(line.replace(/\s*,\s*/g, ","))) parts = line.split(/\s+/).map(s => s.replace(",", "."));
+    else parts = line.split(",");
+    parts = parts.filter(s => s !== "");
+    if (parts.length !== 2) return {err:`Не вдалося розібрати рядок «${line}»`};
+    const a = parseFloat(parts[0]), b = parseFloat(parts[1]);
+    if (!isFinite(a) || !isFinite(b)) return {err:`Нечислове значення в рядку «${line}»`};
+    out.push([a, b]);
+  }
+  return {data: out};
+}
+
+/* =========================================================
+   ВКЛАДКА 1: регресія
+   ========================================================= */
+let FIT = null, hoverX = null, drag = -1;
+function fit(){
+  const P = S.pts, n = P.length; FIT = null;
+  if (!n) return;
+  const k = kfun(), K = [];
+  for (let i = 0; i < n; i++){ K.push([]); for (let j = 0; j < n; j++) K[i].push(k(P[i].x, P[j].x)); }
+  const A = K.map((r,i) => r.map((v,j) => v + (i === j ? S.lam : 0)));
+  const Ai = inverse(A); if (!Ai) return;
+  const y = P.map(p => p.y), alpha = Ai.map(r => r.reduce((s,v,j) => s + v*y[j], 0));
+  let norm2 = 0, mse = 0, dof = 0;
+  for (let i = 0; i < n; i++){
+    let Ka = 0; for (let j = 0; j < n; j++){ Ka += K[i][j]*alpha[j]; dof += K[i][j]*Ai[j][i]; }
+    norm2 += alpha[i]*Ka; mse += (Ka - y[i])**2;
+  }
+  FIT = {k, K, Ai, alpha, norm2, mse: mse/n, dof};
+}
+function evalFit(x){
+  const {k, Ai, alpha} = FIT, P = S.pts, n = P.length, kv = new Float64Array(n);
+  let f = 0; for (let i = 0; i < n; i++){ kv[i] = k(x, P[i].x); f += alpha[i]*kv[i]; }
+  let q = 0; for (let i = 0; i < n; i++){ let s = 0; for (let j = 0; j < n; j++) s += Ai[i][j]*kv[j]; q += kv[i]*s; }
+  return {f, P: Math.sqrt(Math.max(0, k(x,x) - q))};
+}
+function yRangeReg(){
+  let lo = -3, hi = 3;
+  for (const p of S.pts){ lo = Math.min(lo, p.y - .6); hi = Math.max(hi, p.y + .6); }
+  return [lo, hi];
+}
+let regF = null;
+function drawReg(){
+  const cv = $("cvReg"), f = frame(cv, [-5,5], yRangeReg()); regF = f;
+  const c = f.ctx, P = S.pts;
+  clipPlot(f);
+  const xs = linspace(-5, 5, 420);
+  if (FIT){
+    const fs = new Float64Array(xs.length), ps = new Float64Array(xs.length);
+    for (let i = 0; i < xs.length; i++){ const e = evalFit(xs[i]); fs[i] = e.f; ps[i] = e.P; }
+    if ($("cBand").checked){
+      c.fillStyle = css("--band"); c.beginPath();
+      for (let i = 0; i < xs.length; i++){ const X=f.X(xs[i]), Y=clamp(f.Y(fs[i]+ps[i]),-1e4,1e4); i ? c.lineTo(X,Y) : c.moveTo(X,Y); }
+      for (let i = xs.length-1; i >= 0; i--) c.lineTo(f.X(xs[i]), clamp(f.Y(fs[i]-ps[i]),-1e4,1e4));
+      c.closePath(); c.fill();
+    }
+    if ($("cBumps").checked){
+      c.globalAlpha = .55;
+      P.forEach((p, i) => poly(f, xs, Array.from(xs, x => FIT.alpha[i]*FIT.k(x, p.x)), css("--acc4"), 1.2));
+      c.globalAlpha = 1;
+    }
+    if (hoverX != null && $("cKx").checked){
+      poly(f, xs, Array.from(xs, x => FIT.k(x, hoverX)), css("--acc3"), 1.6, [5,4]);
+    }
+    c.globalAlpha = .5; c.strokeStyle = css("--muted"); c.setLineDash([2,3]);
+    P.forEach(p => { const e = evalFit(p.x); c.beginPath(); c.moveTo(f.X(p.x), f.Y(p.y)); c.lineTo(f.X(p.x), f.Y(e.f)); c.stroke(); });
+    c.setLineDash([]); c.globalAlpha = 1;
+    poly(f, xs, fs, css("--acc1"), 2.6);
+  }
+  if (hoverX != null){
+    c.strokeStyle = css("--axis"); c.setLineDash([3,3]); c.beginPath(); c.moveTo(f.X(hoverX), f.pad.t); c.lineTo(f.X(hoverX), f.h-f.pad.b); c.stroke(); c.setLineDash([]);
+    if (FIT){ const e = evalFit(hoverX); c.fillStyle = css("--acc3"); c.beginPath(); c.arc(f.X(hoverX), f.Y(e.f), 5, 0, 7); c.fill(); }
+  }
+  P.forEach((p, i) => {
+    c.beginPath(); c.arc(f.X(p.x), f.Y(p.y), i === drag ? 7 : 5.5, 0, 7);
+    c.fillStyle = css("--pt"); c.fill(); c.lineWidth = 2; c.strokeStyle = css("--plot"); c.stroke();
+  });
+  c.restore();
+  if (!P.length){ c.fillStyle = css("--muted"); c.font = "14px system-ui"; c.textAlign = "center"; c.fillText("Клікніть, щоб додати точки даних", f.w/2, f.h/2); }
+  // статистика
+  const st = $("regStats");
+  if (FIT){
+    st.innerHTML = `<span>кількість точок n</span><span>${P.length}</span>
+      <span>‖f‖<sub>ℋ</sub> = √(αᵀKα)</span><span>${fmt(Math.sqrt(Math.max(0,FIT.norm2)))}</span>
+      <span>середньоквадр. похибка</span><span>${fmt(FIT.mse)}</span>
+      <span>ефект. ступені свободи tr K(K+λI)⁻¹</span><span>${fmt(FIT.dof,2)}</span>`;
+    $("alphaList").innerHTML = P.map((p,i) => `<span>α${SUB(i+1)} = ${fmt(FIT.alpha[i])}</span>`).join("");
+  } else {
+    st.innerHTML = `<span>кількість точок n</span><span>${P.length}</span>`;
+    $("alphaList").innerHTML = "";
+  }
+  const ro = $("regReadout");
+  if (hoverX != null && FIT){
+    const e = evalFit(hoverX);
+    ro.innerHTML = `x = <span class="v">${fmt(hoverX,3)}</span> &nbsp; f(x) = Σ αᵢ k(xᵢ, x) = ⟨f, kₓ⟩<sub>ℋ</sub> = <span class="v">${fmt(e.f)}</span> &nbsp; P(x) = <span class="v">${fmt(e.P)}</span> &nbsp; ‖δₓ‖ = √k(x,x) = <span class="v">${fmt(Math.sqrt(FIT.k(hoverX,hoverX)))}</span>`;
+  } else ro.textContent = "Наведіть курсор на графік…";
+}
+function ptsToTA(){ $("dataTA").value = S.pts.map(p => `${+p.x.toFixed(3)}, ${+p.y.toFixed(3)}`).join("\n"); $("dataErr").textContent = ""; }
+function setPts(arr){ S.pts = arr.slice(0, 60).map(([x,y]) => ({x, y})); }
+function updateAll(){ fit(); redraw(); }
+
+(function initReg(){
+  const cv = $("cvReg");
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const nearest = (px, py) => { let b = -1, bd = 12; S.pts.forEach((p,i) => { const d = Math.hypot(regF.X(p.x)-px, regF.Y(p.y)-py); if (d < bd){ bd = d; b = i; } }); return b; };
+  cv.addEventListener("contextmenu", e => e.preventDefault());
+  cv.addEventListener("pointerdown", e => {
+    if (!regF) return; const [px, py] = pos(e); const i = nearest(px, py);
+    if (e.shiftKey || e.button === 2){ if (i >= 0){ S.pts.splice(i,1); ptsToTA(); updateAll(); } return; }
+    if (i >= 0) drag = i;
+    else if (S.pts.length < 60){ S.pts.push({x: clamp(regF.ix(px),-5,5), y: regF.iy(py)}); drag = S.pts.length-1; ptsToTA(); updateAll(); }
+    cv.setPointerCapture(e.pointerId);
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!regF) return; const [px, py] = pos(e);
+    hoverX = clamp(regF.ix(px), -5, 5);
+    if (drag >= 0){ S.pts[drag].x = hoverX; S.pts[drag].y = regF.iy(py); fit(); }
+    drawReg();
+  });
+  cv.addEventListener("pointerup", () => { if (drag >= 0){ drag = -1; ptsToTA(); updateAll(); } });
+  cv.addEventListener("pointerleave", () => { if (drag < 0){ hoverX = null; drawReg(); } });
+
+  let tmr = null;
+  $("dataTA").addEventListener("input", () => {
+    clearTimeout(tmr);
+    tmr = setTimeout(() => {
+      const r = parsePairs($("dataTA").value);
+      if (r.err){ $("dataErr").textContent = r.err; return; }
+      $("dataErr").textContent = r.data.length > 60 ? "Використано перші 60 точок" : "";
+      setPts(r.data); updateAll();
+    }, 350);
+  });
+  document.querySelectorAll("[data-preset]").forEach(b => b.onclick = () => {
+    const t = b.dataset.preset, a = [];
+    if (t === "sin") for (let i = 0; i < 9; i++){ const x = -4.4 + 1.1*i; a.push([x, 1.5*Math.sin(x)]); }
+    if (t === "noisy") for (let i = 0; i < 25; i++){ const x = -4.6 + 9.2*i/24; a.push([x, 1.5*Math.sin(x) + 0.45*(Math.random()*2-1)]); }
+    if (t === "step") for (let i = 0; i < 12; i++){ const x = -4.4 + 0.8*i; a.push([x, x < 0 ? -1 : 1]); }
+    if (t === "rand") for (let i = 0; i < 8; i++) a.push([-4.5 + 9*Math.random(), 4*Math.random() - 2]);
+    setPts(a); ptsToTA(); updateAll();
+  });
+  ["cBumps","cBand","cKx"].forEach(id => $(id).onchange = drawReg);
+  $("lam").oninput = () => { S.lam = Math.pow(10, +$("lam").value); $("lamV").textContent = S.lam.toExponential(1); updateAll(); };
+  S.lam = Math.pow(10, +$("lam").value); $("lamV").textContent = S.lam.toExponential(1);
+  setPts([[-4,-0.8],[-3,0.3],[-2,1.1],[-0.5,0.4],[0.5,-0.6],[1.5,-1.2],[2.5,0.2],[3.5,1.3]]);
+  ptsToTA();
+})();
+
+/* ---------- панель ядра ---------- */
+function linkPair(r, n, key, cb){
+  const R = $(r), N = $(n);
+  R.oninput = () => { N.value = R.value; S[key] = +R.value; cb(); };
+  N.oninput = () => { const v = parseFloat(N.value); if (!isFinite(v) || v < +N.min) return; S[key] = v; R.value = clamp(v, +R.min, +R.max); cb(); };
+}
+function kernelChanged(){
+  const t = S.kernel;
+  $("rowS").style.display = t === "poly" ? "none" : "";
+  $("rowC").style.display = $("rowD").style.display = t === "poly" ? "" : "none";
+  $("kFormula").innerHTML = KINFO[t].f; $("kNote").textContent = KINFO[t].note; $("kPhys").innerHTML = KINFO[t].phys;
+  EMB = null; updateAll();
+}
+$("kType").onchange = () => { S.kernel = $("kType").value; kernelChanged(); };
+linkPair("kS","kSn","s", kernelChanged);
+linkPair("kC","kCn","c", kernelChanged);
+linkPair("kD","kDn","d", () => { S.d = Math.round(S.d); kernelChanged(); });
+
+/* =========================================================
+   ВКЛАДКА 2: геометрія
+   ========================================================= */
+const G = { x:-0.6, y:0.8, yaw:0.7, pitch:-0.35 };
+let EMB = null;
+function computeEmb(){
+  const k = kfun(), N = 48, T = Array.from(linspace(-5,5,N));
+  const Gm = T.map(a => T.map(b => k(a,b)));
+  const {vals, vecs} = jacobiEig(Gm);
+  const tot = vals.reduce((s,v) => s + Math.max(v,0), 0);
+  const comps = [];
+  for (let j = 0; j < 3; j++) comps.push(vals[j] > 1e-10*vals[0] ? j : -1);
+  const z = x => { const kv = T.map(t => k(x,t)); return comps.map(j => { if (j < 0) return 0; let s = 0; for (let i = 0; i < N; i++) s += vecs[i][j]*kv[i]; return s/Math.sqrt(vals[j]); }); };
+  const cx = Array.from(linspace(-5,5,300)), curve = cx.map(z);
+  let R = 0; curve.forEach(p => R = Math.max(R, Math.hypot(...p)));
+  EMB = { z, curve, cx, R: normalized() ? Math.max(1,R) : R, energy: (Math.max(vals[0],0)+Math.max(vals[1]||0,0)+Math.max(vals[2]||0,0))/tot };
+}
+function drawKF(){
+  const k = kfun(), xs = linspace(-5,5,400), a = Array.from(xs, t => k(t, G.x)), b = Array.from(xs, t => k(t, G.y));
+  let lo = 0, hi = 0; a.concat(b).forEach(v => { lo = Math.min(lo,v); hi = Math.max(hi,v); });
+  const f = frame($("cvKF"), [-5,5], [lo - .05*(hi-lo), hi*1.15 + 1e-9]); const c = f.ctx;
+  clipPlot(f);
+  poly(f, xs, a, css("--acc1"), 2.4); poly(f, xs, b, css("--acc2"), 2.4);
+  c.setLineDash([3,3]); c.strokeStyle = css("--axis");
+  [G.x, G.y].forEach(x => { c.beginPath(); c.moveTo(f.X(x), f.pad.t); c.lineTo(f.X(x), f.h - f.pad.b); c.stroke(); });
+  c.setLineDash([]);
+  const kxy = k(G.x, G.y), X = f.X(G.y), Y = f.Y(kxy);
+  c.strokeStyle = css("--acc3"); c.lineWidth = 2; c.beginPath(); c.moveTo(X, f.Y(0)); c.lineTo(X, Y); c.stroke();
+  c.fillStyle = css("--acc3"); c.beginPath(); c.arc(X, Y, 5.5, 0, 7); c.fill();
+  c.restore();
+  c.font = "13px " + css("--serif"); c.fillStyle = css("--text"); c.textAlign = X > f.w*0.6 ? "right" : "left";
+  c.fillText(`k(x₀, y₀) = ⟨kₓ₀, k_y₀⟩ = ${fmt(kxy)}`, X + (X > f.w*0.6 ? -10 : 10), Math.max(f.pad.t+12, Y - 10));
+  c.textAlign = "left"; c.font = "italic 14px " + css("--serif");
+  c.fillStyle = css("--acc1"); c.fillText("k(·, x₀)", f.pad.l + 8, f.pad.t + 16);
+  c.fillStyle = css("--acc2"); c.fillText("k(·, y₀)", f.pad.l + 8, f.pad.t + 34);
+}
+function arrow(c, x0, y0, x1, y1, color, w){
+  c.strokeStyle = color; c.fillStyle = color; c.lineWidth = w || 2.4;
+  c.beginPath(); c.moveTo(x0,y0); c.lineTo(x1,y1); c.stroke();
+  const a = Math.atan2(y1-y0, x1-x0), L = 11;
+  c.beginPath(); c.moveTo(x1,y1); c.lineTo(x1 - L*Math.cos(a-.4), y1 - L*Math.sin(a-.4)); c.lineTo(x1 - L*Math.cos(a+.4), y1 - L*Math.sin(a+.4)); c.closePath(); c.fill();
+}
+function drawVec(){
+  const k = kfun(), {ctx:c, w, h} = prep($("cvVec"));
+  const kxx = k(G.x,G.x), kyy = k(G.y,G.y), kxy = k(G.x,G.y);
+  const a = Math.sqrt(kxx), b = Math.sqrt(kyy), cs = clamp(kxy/(a*b), -1, 1), th = Math.acos(cs);
+  const dist = Math.sqrt(Math.max(0, kxx + kyy - 2*kxy));
+  const O = [w*0.62, h*0.84], Sc = Math.min(w*0.33, h*0.68)/Math.max(a,b);
+  const pu = Math.PI/2 + th/2, pv = Math.PI/2 - th/2;
+  const U = [O[0] + Sc*a*Math.cos(pu), O[1] - Sc*a*Math.sin(pu)], V = [O[0] + Sc*b*Math.cos(pv), O[1] - Sc*b*Math.sin(pv)];
+  if (normalized()){ c.strokeStyle = css("--grid"); c.lineWidth = 1.5; c.beginPath(); c.arc(O[0], O[1], Sc, Math.PI, 2*Math.PI); c.stroke(); }
+  c.strokeStyle = css("--acc4"); c.lineWidth = 1.5; c.beginPath(); c.arc(O[0], O[1], 34, -pu, -pv); c.stroke();
+  c.setLineDash([6,4]); c.strokeStyle = css("--acc3"); c.lineWidth = 2; c.beginPath(); c.moveTo(U[0],U[1]); c.lineTo(V[0],V[1]); c.stroke(); c.setLineDash([]);
+  arrow(c, O[0], O[1], U[0], U[1], css("--acc1")); arrow(c, O[0], O[1], V[0], V[1], css("--acc2"));
+  c.fillStyle = css("--text"); c.beginPath(); c.arc(O[0], O[1], 3.5, 0, 7); c.fill();
+  c.font = "italic 15px " + css("--serif");
+  c.fillStyle = css("--acc1"); c.textAlign = "right"; c.fillText("Φ(x₀)", U[0] - 8, U[1] - 4);
+  c.fillStyle = css("--acc2"); c.textAlign = "left"; c.fillText("Φ(y₀)", V[0] + 8, V[1] - 4);
+  c.fillStyle = css("--acc4"); c.textAlign = "center"; c.fillText("θ", O[0], O[1] - 42);
+  c.fillStyle = css("--acc3"); c.fillText("‖Φ(x₀) − Φ(y₀)‖", (U[0]+V[0])/2, (U[1]+V[1])/2 - 10);
+  c.font = "12.5px " + css("--mono"); c.textAlign = "left"; c.fillStyle = css("--muted");
+  const L = [`k(x₀,x₀) = ${fmt(kxx)}`, `k(y₀,y₀) = ${fmt(kyy)}`, `k(x₀,y₀) = ${fmt(kxy)}`, `cos θ = ${fmt(cs)}   θ = ${fmt(th*180/Math.PI,1)}°`, `‖Φ(x₀)−Φ(y₀)‖ = ${fmt(dist)}`];
+  L.forEach((s,i) => c.fillText(s, 12, h - 12 - 17*(L.length-1-i)));
+}
+function rot3(p){
+  const [x,y,z] = p, cy = Math.cos(G.yaw), sy = Math.sin(G.yaw), cp = Math.cos(G.pitch), sp = Math.sin(G.pitch);
+  const x1 = cy*x + sy*z, z1 = -sy*x + cy*z;
+  return [x1, cp*y - sp*z1, sp*y + cp*z1];
+}
+function drawEmb(){
+  if (!EMB) computeEmb();
+  const {ctx:c, w, h} = prep($("cvEmb")), Sc = Math.min(w,h)*0.4/EMB.R, O = [w/2, h/2 + 6];
+  const P = p => { const r = rot3(p); return [O[0] + Sc*r[0], O[1] - Sc*r[1], r[2]]; };
+  const R = EMB.R;
+  if (normalized()){
+    c.lineWidth = 1;
+    for (let i = 1; i < 6; i++){
+      const yy = -1 + 2*i/6, rr = Math.sqrt(1 - yy*yy);
+      drawLoop(c, P, t => [rr*Math.cos(t), yy, rr*Math.sin(t)]);
+    }
+    for (let i = 0; i < 6; i++){
+      const ph = Math.PI*i/6;
+      drawLoop(c, P, t => [Math.cos(t)*Math.cos(ph), Math.sin(t), Math.cos(t)*Math.sin(ph)]);
+    }
+  }
+  const ax = [[1,0,0],[0,1,0],[0,0,1]], nm = ["e₁","e₂","e₃"];
+  c.font = "italic 13px " + css("--serif");
+  ax.forEach((e,i) => { const a = P([0,0,0]), b = P(e.map(v => v*R*1.08)); c.strokeStyle = css("--axis"); c.lineWidth = 1; c.beginPath(); c.moveTo(a[0],a[1]); c.lineTo(b[0],b[1]); c.stroke(); c.fillStyle = css("--muted"); c.fillText(nm[i], b[0]+4, b[1]); });
+  const pts = EMB.curve.map(P); let zmin = Infinity, zmax = -Infinity; pts.forEach(p => { zmin = Math.min(zmin,p[2]); zmax = Math.max(zmax,p[2]); });
+  c.lineWidth = 2.6; c.lineCap = "round";
+  for (let i = 0; i < pts.length-1; i++){
+    const t = i/(pts.length-1), d = (pts[i][2]-zmin)/(zmax-zmin+1e-12);
+    c.strokeStyle = `hsla(${215 - 195*t}, 85%, ${normalized() ? 62 : 58}%, ${0.3 + 0.7*d})`;
+    c.beginPath(); c.moveTo(pts[i][0], pts[i][1]); c.lineTo(pts[i+1][0], pts[i+1][1]); c.stroke();
+  }
+  S.pts.forEach(p => { const q = P(EMB.z(p.x)); c.fillStyle = css("--pt"); c.beginPath(); c.arc(q[0], q[1], 3.2, 0, 7); c.fill(); });
+  const o = P([0,0,0]);
+  [[G.x, "--acc1", "Φ(x₀)"], [G.y, "--acc2", "Φ(y₀)"]].forEach(([x, col, lab]) => {
+    const q = P(EMB.z(x)); c.strokeStyle = css(col); c.lineWidth = 1.6; c.setLineDash([4,3]); c.beginPath(); c.moveTo(o[0],o[1]); c.lineTo(q[0],q[1]); c.stroke(); c.setLineDash([]);
+    c.fillStyle = css(col); c.beginPath(); c.arc(q[0], q[1], 6, 0, 7); c.fill();
+    c.font = "italic 14px " + css("--serif"); c.fillText(lab, q[0] + 8, q[1] - 6);
+  });
+  c.font = "12px " + css("--mono"); c.fillStyle = css("--muted"); c.textAlign = "left";
+  c.fillText(`частка «енергії» у 3 компонентах: ${(100*EMB.energy).toFixed(1)}%`, 10, 18);
+  c.fillText("x = −5", 10, h - 24); c.fillStyle = "hsl(215,85%,62%)"; c.fillRect(62, h - 30, 10, 6);
+  c.fillStyle = css("--muted"); c.fillText("x = +5", 10, h - 9); c.fillStyle = "hsl(20,85%,62%)"; c.fillRect(62, h - 15, 10, 6);
+  $("embNote").innerHTML = normalized()
+    ? "Проєкція кривої x ↦ Φ(x) на три головні напрями (ядерний PCA). Оскільки k(x,x) = 1, крива лежить на одиничній сфері в ℋ; її проєкція — всередині кулі. Що менша σ, то більше вимірів «займає» крива і то менша частка енергії видима у 3D."
+    : "Для поліноміального ядра простір ознак має розмірність d + 1; при d ≤ 2 три компоненти відтворюють Φ(x) точно (частка енергії 100%).";
+}
+function drawLoop(c, P, fn){
+  const N = 64; let prev = P(fn(0));
+  for (let i = 1; i <= N; i++){
+    const cur = P(fn(2*Math.PI*i/N)), d = (prev[2] + cur[2])/2;
+    c.strokeStyle = css("--grid"); c.globalAlpha = d > 0 ? 1 : 0.55; c.lineWidth = d > 0 ? 1.4 : 1;
+    c.beginPath(); c.moveTo(prev[0], prev[1]); c.lineTo(cur[0], cur[1]); c.stroke(); prev = cur;
+  }
+  c.globalAlpha = 1;
+}
+function heatColor(t){ // магма
+  const st = [[0,0,0,4],[.25,59,15,112],[.5,140,41,129],[.75,222,73,104],[1,252,253,191]];
+  t = clamp(t,0,1); let i = 0; while (i < st.length-2 && t > st[i+1][0]) i++;
+  const a = st[i], b = st[i+1], u = (t - a[0])/(b[0]-a[0]);
+  return [a[1]+(b[1]-a[1])*u, a[2]+(b[2]-a[2])*u, a[3]+(b[3]-a[3])*u];
+}
+function divColor(t){
+  const light = document.documentElement.dataset.theme === "light";
+  const mid = light ? [246,247,252] : [28,33,60], pos = [232,96,60], neg = [59,111,216];
+  const e = t >= 0 ? pos : neg, u = Math.min(1, Math.abs(t));
+  return mid.map((m,i) => Math.round(m + (e[i]-m)*u));
+}
+function drawGram(){
+  const {ctx:c, w, h} = prep($("cvGram")), k = kfun();
+  const P = S.pts.slice().sort((a,b) => a.x - b.x), n = P.length;
+  if (!n){ c.fillStyle = css("--muted"); c.font = "14px system-ui"; c.textAlign = "center"; c.fillText("Додайте точки на вкладці ①", w/2, h/2); $("gramNote").textContent = ""; return; }
+  const K = P.map(a => P.map(b => k(a.x, b.x)));
+  let mx = 0; K.forEach(r => r.forEach(v => mx = Math.max(mx, Math.abs(v))));
+  const side = Math.min(h - 46, w*0.5 - 20), x0 = 14, y0 = 26, cs = side/n;
+  c.font = "12px system-ui"; c.fillStyle = css("--muted"); c.textAlign = "left"; c.fillText("K = (k(xᵢ, xⱼ)), точки впорядковано за x", x0, 16);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++){ const col = divColor(K[i][j]/mx); c.fillStyle = `rgb(${col})`; c.fillRect(x0 + j*cs, y0 + i*cs, Math.ceil(cs), Math.ceil(cs)); }
+  c.strokeStyle = css("--border"); c.strokeRect(x0, y0, side, side);
+  const {vals} = jacobiEig(K);
+  const bx = x0 + side + 30, bw = w - bx - 12, by = y0, bh = side;
+  const top = Math.ceil(Math.log10(Math.max(vals[0], 1e-12))), bot = top - 14;
+  c.fillStyle = css("--muted"); c.fillText("власні значення (лог. шкала)", bx, 16);
+  c.font = "10.5px " + css("--mono"); c.textAlign = "right";
+  for (let e = bot; e <= top; e += 2){ const Y = by + bh*(top - e)/(top - bot); c.fillText("1e" + e, bx - 3, Y + 3); c.strokeStyle = css("--grid"); c.beginPath(); c.moveTo(bx, Y); c.lineTo(bx + bw, Y); c.stroke(); }
+  const bwid = bw/n;
+  vals.forEach((v, i) => {
+    if (v > 0){ const lv = clamp(Math.log10(v), bot, top), Y = by + bh*(top - lv)/(top - bot); c.fillStyle = css("--acc3"); c.fillRect(bx + i*bwid + 1, Y, Math.max(1, bwid - 2), by + bh - Y); }
+    else { c.fillStyle = css("--acc2"); c.fillRect(bx + i*bwid + 1, by + bh - 3, Math.max(1, bwid - 2), 3); }
+  });
+  const lmin = vals[vals.length-1], rank = vals.filter(v => v > 1e-10*vals[0]).length;
+  $("gramNote").innerHTML = `Найменше власне значення: <b>${lmin.toExponential(2)}</b> (від'ємні значення порядку 10⁻¹⁵ — похибка округлення). Чисельний ранг: <b>${rank}</b> з ${n}. Невід'ємність спектра для будь-яких точок — це і є умова теореми Мура–Ароншайна.`;
+}
+function drawGeo(){ drawKF(); drawVec(); drawEmb(); drawGram(); }
+(function initGeo(){
+  const link = (r, n, key) => {
+    $(r).oninput = () => { $(n).value = $(r).value; G[key] = +$(r).value; drawGeo(); };
+    $(n).oninput = () => { const v = parseFloat(String($(n).value).replace(",", ".")); if (!isFinite(v)) return; G[key] = clamp(v,-5,5); $(r).value = G[key]; drawGeo(); };
+  };
+  link("gx","gxn","x"); link("gy","gyn","y");
+  const cv = $("cvEmb"); let dr = null;
+  cv.addEventListener("pointerdown", e => { dr = [e.clientX, e.clientY, G.yaw, G.pitch]; cv.setPointerCapture(e.pointerId); cv.style.cursor = "grabbing"; });
+  cv.addEventListener("pointermove", e => { if (!dr) return; G.yaw = dr[2] + (e.clientX - dr[0])*0.01; G.pitch = clamp(dr[3] + (e.clientY - dr[1])*0.01, -1.5, 1.5); drawEmb(); });
+  cv.addEventListener("pointerup", () => { dr = null; cv.style.cursor = "grab"; });
+  G.dragging = () => dr !== null;
+})();
+
+/* =========================================================
+   ВКЛАДКА 3: теплопровідність
+   ========================================================= */
+const H = { L:12, M:481, D:0.5, speed:0.2, mode:"points", running:false, t:0, rows:[], lastRec:0, fix:false, yfix:[0,1], edit:null };
+H.dx = 2*H.L/(H.M-1);
+H.xs = linspace(-H.L, H.L, H.M);
+H.i0 = Math.round((-6 + H.L)/H.dx); H.i1 = Math.round((6 + H.L)/H.dx);
+H.prof = new Float64Array(H.M); H.u = new Float64Array(H.M); H.tmp = new Float64Array(H.M); H.u0 = new Float64Array(H.M);
+H.src = [];
+const gridIdx = x => clamp(Math.round((x + H.L)/H.dx), 0, H.M-1);
+function srcToTA(){ $("srcTA").value = H.src.map(s => `${+s.x.toFixed(2)} : ${+s.q.toFixed(2)}`).join("\n"); }
+function heatReset(){
+  H.t = 0; H.rows = []; H.lastRec = -1e9; H.u0.fill(0);
+  if (H.mode === "points") H.src.forEach(s => { s.xg = H.xs[gridIdx(s.x)]; H.u0[gridIdx(s.x)] += s.q/H.dx; });
+  else H.u0.set(H.prof);
+  H.u.set(H.u0); recordRow(true); drawHeat();
+}
+function heatAdvance(T){
+  if (T <= 0) return;
+  const dtMax = 0.45*H.dx*H.dx/H.D, n = Math.ceil(T/dtMax), r = H.D*(T/n)/(H.dx*H.dx), M = H.M;
+  let u = H.u, v = H.tmp;
+  for (let s = 0; s < n; s++){
+    v[0] = u[0] + 2*r*(u[1] - u[0]);
+    for (let i = 1; i < M-1; i++) v[i] = u[i] + r*(u[i+1] - 2*u[i] + u[i-1]);
+    v[M-1] = u[M-1] + 2*r*(u[M-2] - u[M-1]);
+    const w = u; u = v; v = w;
+  }
+  H.u = u; H.tmp = v; H.t += T;
+}
+function exactAt(x){
+  const t = H.t, D = H.D;
+  if (t < 1e-12) return NaN;
+  const a = 1/Math.sqrt(4*Math.PI*D*t), b = 1/(4*D*t);
+  let s = 0;
+  if (H.mode === "points"){ for (const q of H.src) s += q.q*a*Math.exp(-((x - q.xg)**2)*b); }
+  else { const rad = Math.sqrt(4*D*t)*7; for (let j = 0; j < H.M; j++){ const d = x - H.xs[j]; if (Math.abs(d) > rad || H.u0[j] === 0) continue; s += H.u0[j]*H.dx*a*Math.exp(-d*d*b); } }
+  return s;
+}
+function recordRow(force){
+  const tau = H.speed/30;
+  if (!force && H.t - H.lastRec < tau) return;
+  H.lastRec = H.t;
+  const row = new Float32Array(H.i1 - H.i0 + 1); for (let i = H.i0; i <= H.i1; i++) row[i - H.i0] = H.u[i];
+  H.rows.push({t: H.t, d: row}); if (H.rows.length > 260) H.rows.shift();
+}
+let heatF = null;
+function drawHeat(){
+  const xs = [], uf = [], ue = [];
+  for (let i = H.i0; i <= H.i1; i++){ xs.push(H.xs[i]); uf.push(H.u[i]); }
+  const hasEx = H.t > 1e-12;
+  if (hasEx) xs.forEach(x => ue.push(exactAt(x)));
+  let lo = 0, hi = 0;
+  uf.concat(hasEx ? ue : []).forEach(v => { if (isFinite(v)){ lo = Math.min(lo,v); hi = Math.max(hi,v); } });
+  if (H.mode === "points" && !hasEx){ lo = Math.min(0, ...H.src.map(s => s.q), 0); hi = Math.max(1, ...H.src.map(s => s.q)); }
+  let yr = [lo*1.15 - 1e-6, hi*1.15 + 1e-6];
+  if (hi - lo < 1e-9) yr = [-0.1, 1];
+  if (H.edit) yr = H.edit.yr; else if (H.fix) yr = H.yfix; else H.yfix = yr;
+  const f = frame($("cvHeat"), [-6,6], yr); heatF = f; const c = f.ctx;
+  clipPlot(f);
+  const showFD = !(H.mode === "points" && !hasEx);
+  if (showFD){
+    const grd = c.createLinearGradient(0, f.pad.t, 0, f.h - f.pad.b);
+    grd.addColorStop(0, "rgba(255,138,92,.42)"); grd.addColorStop(1, "rgba(255,138,92,.03)");
+    c.fillStyle = grd; c.beginPath(); c.moveTo(f.X(xs[0]), f.Y(0));
+    xs.forEach((x,i) => c.lineTo(f.X(x), clamp(f.Y(uf[i]), -1e4, 1e4)));
+    c.lineTo(f.X(xs[xs.length-1]), f.Y(0)); c.closePath(); c.fill();
+    poly(f, xs, uf, css("--acc2"), 2.4);
+  }
+  if (hasEx) poly(f, xs, ue, css("--acc1"), 1.8, [7,5]);
+  if (H.mode === "points"){
+    H.src.forEach(s => {
+      const X = f.X(s.xg != null ? s.xg : s.x);
+      if (!hasEx){ arrow(c, X, f.Y(0), X, f.Y(s.q), css("--pt"), 2.4); }
+      c.fillStyle = css("--pt"); c.beginPath(); const Y0 = f.h - f.pad.b;
+      c.moveTo(X, Y0 - 11); c.lineTo(X - 6, Y0); c.lineTo(X + 6, Y0); c.closePath(); c.fill();
+    });
+  }
+  c.restore();
+  c.font = "12px " + css("--mono"); c.fillStyle = css("--muted"); c.textAlign = "right";
+  c.fillText(`t = ${H.t.toFixed(3)}   σ = √(2Dt) = ${Math.sqrt(2*H.D*H.t).toFixed(3)}`, f.w - 16, f.pad.t + 14);
+  // статистика
+  let Q = 0, mx = -Infinity, L2 = 0, err = 0;
+  for (let i = 0; i < H.M; i++){ Q += H.u[i]*H.dx; mx = Math.max(mx, H.u[i]); L2 += H.u[i]*H.u[i]*H.dx; }
+  if (hasEx) uf.forEach((v,i) => err = Math.max(err, Math.abs(v - ue[i])));
+  $("heatStats").innerHTML = `<span>час t</span><span>${H.t.toFixed(3)}</span>
+    <span>σ(t) = √(2Dt)</span><span>${Math.sqrt(2*H.D*H.t).toFixed(3)}</span>
+    <span>повне тепло ∫u dx</span><span>${fmt(Q)}</span>
+    <span>max u</span><span>${fmt(mx)}</span>
+    <span>‖u‖<sub>L²</sub></span><span>${fmt(Math.sqrt(L2))}</span>
+    <span>max |u<sub>схема</sub> − u<sub>ядро</sub>|</span><span>${hasEx ? fmt(err) : "—"}</span>`;
+  drawHK(); drawST();
+}
+function drawHK(){
+  const sg = Math.sqrt(2*H.D*H.t), f = frame($("cvHK"), [-6,6], [-0.05, 1.15]), c = f.ctx;
+  clipPlot(f);
+  if (sg > 1e-6){
+    c.fillStyle = css("--band"); c.fillRect(f.X(-sg), f.pad.t, f.X(sg) - f.X(-sg), f.h - f.pad.t - f.pad.b);
+    const xs = linspace(-6,6,300); poly(f, xs, Array.from(xs, x => Math.exp(-x*x/(2*sg*sg))), css("--acc1"), 2.4);
+  } else arrow(c, f.X(0), f.Y(0), f.X(0), f.Y(1.05), css("--acc1"), 2.4);
+  c.restore();
+  c.font = "13px system-ui, sans-serif"; c.fillStyle = css("--text"); c.textAlign = "left";
+  c.fillText("kσ(x, 0) = exp(−x² / 2σ²),   σ = √(2Dt)", f.pad.l + 8, f.pad.t + 16);
+  let html = `Ядро теплопровідності в момент t — це гаусове ядро RKHS з σ = ${sg.toFixed(3)} (смуга ±σ).<br>`;
+  if (H.mode === "points" && H.t > 1e-12){
+    const a = 1/Math.sqrt(4*Math.PI*H.D*H.t);
+    html += `u(·, t) = Σ αᵢ k<sub>σ</sub>(·, xᵢ), αᵢ = qᵢ/√(4πDt): ` + H.src.map((s,i) => `α${SUB(i+1)} = <span class="v">${fmt(s.q*a)}</span>`).join(", ");
+  } else if (H.mode === "profile") html += `u(·, t) = (4πDt)<sup>−1/2</sup>∫ k<sub>σ</sub>(·, y) u₀(y) dy — згладжування початкового профілю ядром; гармоніка частоти ω згасає як e<sup>−Dω²t</sup>.`;
+  else html += "Натисніть «Пуск»: δ-імпульси миттєво стануть гаусовими ядрами.";
+  $("heatInfo").innerHTML = html;
+}
+const stOff = document.createElement("canvas");
+function drawST(){
+  const {ctx:c, w, h} = prep($("cvST")), pad = {l:46, r:12, t:22, b:24};
+  const rows = H.rows, nr = rows.length, nc = H.i1 - H.i0 + 1;
+  c.font = "11px " + css("--mono"); c.fillStyle = css("--muted");
+  if (nr > 0){
+    stOff.width = nc; stOff.height = nr;
+    const sc = stOff.getContext("2d"), img = sc.createImageData(nc, nr);
+    rows.forEach((r, j) => {
+      let m = 0; for (const v of r.d) m = Math.max(m, Math.abs(v));
+      for (let i = 0; i < nc; i++){
+        const v = m > 0 ? r.d[i]/m : 0;
+        const col = v >= 0 ? heatColor(Math.pow(v, 0.7)) : [30 + 20*(-v), 70 + 100*(-v), 140 + 115*(-v)];
+        const o = 4*(j*nc + i); img.data[o] = col[0]; img.data[o+1] = col[1]; img.data[o+2] = col[2]; img.data[o+3] = 255;
+      }
+    });
+    sc.putImageData(img, 0, 0);
+    c.imageSmoothingEnabled = true;
+    c.drawImage(stOff, pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b);
+    c.textAlign = "right";
+    c.fillText("t=" + rows[0].t.toFixed(2), pad.l - 4, pad.t + 8);
+    c.fillText("t=" + rows[nr-1].t.toFixed(2), pad.l - 4, h - pad.b - 2);
+  }
+  c.strokeStyle = css("--border"); c.strokeRect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b);
+  c.textAlign = "center";
+  for (let x = -6; x <= 6; x += 2) c.fillText(String(x), pad.l + (x + 6)/12*(w - pad.l - pad.r), h - pad.b + 14);
+  c.textAlign = "left"; c.fillText("x →     час ↓", pad.l, 14);
+}
+function setHeatMode(m){
+  H.mode = m; $("hMode").value = m;
+  $("hPointsUI").style.display = m === "points" ? "" : "none";
+  $("hProfUI").style.display = m === "profile" ? "" : "none";
+  heatReset();
+}
+function setPlay(on){ H.running = on; $("hPlay").textContent = on ? "⏸ Пауза" : "▶ Пуск"; }
+(function initHeat(){
+  const presetsP = { one:[[0,1]], two:[[-1.5,1],[1.5,1]], three:[[-3,0.5],[0,1.5],[2.5,1]], dip:[[-1,1],[1,-1]] };
+  document.querySelectorAll("[data-hp]").forEach(b => b.onclick = () => { H.src = presetsP[b.dataset.hp].map(([x,q]) => ({x,q})); srcToTA(); heatReset(); });
+  const profFn = {
+    rect: x => Math.abs(x) <= 1.5 ? 1 : 0,
+    bumps: x => Math.exp(-((x+2)**2)/0.3) + 0.7*Math.exp(-((x-2.2)**2)/0.08),
+    comb: x => Math.abs(x) <= 4 ? 0.5 + 0.5*Math.cos(5*x) : 0,
+    step: x => x < 0 ? 1 : 0,
+    rand: (() => { let b = []; return x => { if (x === null){ b = Array.from({length:7}, () => [-5 + 10*Math.random(), 0.2 + Math.random(), 0.05 + 0.5*Math.random()]); return 0; } return b.reduce((s,[c,a,w]) => s + a*Math.exp(-((x-c)**2)/w), 0); }; })()
+  };
+  document.querySelectorAll("[data-pp]").forEach(b => b.onclick = () => {
+    const fn = profFn[b.dataset.pp]; if (b.dataset.pp === "rand") fn(null);
+    for (let i = 0; i < H.M; i++) H.prof[i] = fn(H.xs[i]);
+    heatReset();
+  });
+  $("hMode").onchange = () => setHeatMode($("hMode").value);
+  let tm = null;
+  $("srcTA").addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(() => {
+    const r = parsePairs($("srcTA").value); if (r.err) return;
+    H.src = r.data.slice(0, 20).map(([x,q]) => ({x: clamp(x,-6,6), q})); heatReset();
+  }, 350); });
+  $("hD").oninput = () => { H.D = +$("hD").value; $("hDv").textContent = H.D.toFixed(2); heatReset(); };
+  $("hSp").oninput = () => { H.speed = Math.pow(10, +$("hSp").value); $("hSpv").textContent = H.speed.toFixed(3) + " c/с"; };
+  H.D = +$("hD").value; $("hDv").textContent = H.D.toFixed(2);
+  H.speed = Math.pow(10, +$("hSp").value); $("hSpv").textContent = H.speed.toFixed(3) + " c/с";
+  $("hFix").onchange = () => { H.fix = $("hFix").checked; drawHeat(); };
+  $("hPlay").onclick = () => setPlay(!H.running);
+  $("hReset").onclick = () => { setPlay(false); heatReset(); };
+  $("hStep").onclick = () => { heatAdvance(0.1); recordRow(true); drawHeat(); };
+  const cv = $("cvHeat"), pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener("contextmenu", e => e.preventDefault());
+  cv.addEventListener("pointerdown", e => {
+    if (!heatF) return; const [px, py] = pos(e), x = clamp(heatF.ix(px), -6, 6);
+    if (H.mode === "points"){
+      if (e.shiftKey || e.button === 2){ if (!H.src.length) return; let b = 0; H.src.forEach((s,i) => { if (Math.abs(s.x - x) < Math.abs(H.src[b].x - x)) b = i; }); H.src.splice(b,1); }
+      else if (H.src.length < 20) H.src.push({x: +x.toFixed(2), q: 1});
+      srcToTA(); heatReset(); return;
+    }
+    setPlay(false);
+    const yr = [Math.min(-0.1, heatF.yr[0]), Math.max(1.2, heatF.yr[1])];
+    H.edit = {yr, last: x};
+    paint(x, heatF.iy(py)); cv.setPointerCapture(e.pointerId);
+  });
+  function paint(x, y){
+    y = Math.max(y, H.edit.yr[0]);
+    const a = gridIdx(Math.min(x, H.edit.last)), b = gridIdx(Math.max(x, H.edit.last));
+    for (let i = a; i <= b; i++) H.prof[i] = y;
+    H.edit.last = x; H.t = 0; H.u0.set(H.prof); H.u.set(H.prof); H.rows = []; recordRow(true); drawHeat();
+  }
+  cv.addEventListener("pointermove", e => { if (!H.edit || !heatF) return; const [px, py] = pos(e); paint(clamp(heatF.ix(px),-6,6), heatF.iy(py)); });
+  cv.addEventListener("pointerup", () => { if (H.edit){ H.edit = null; heatReset(); } });
+  H.src = presetsP.three.map(([x,q]) => ({x,q})); srcToTA();
+  for (let i = 0; i < H.M; i++) H.prof[i] = profFn.bumps(H.xs[i]);
+  heatReset();
+})();
+
+/* =========================================================
+   Вкладки, тема, цикл анімації
+   ========================================================= */
+let active = "reg";
+function redraw(){
+  if (active === "reg") drawReg();
+  else if (active === "geo") drawGeo();
+  else if (active === "heat") drawHeat();
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  active = b.dataset.tab;
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + active));
+  $("kbar").style.display = (active === "reg" || active === "geo") ? "" : "none";
+  redraw();
+});
+$("themeBtn").onclick = () => {
+  const h = document.documentElement, light = h.dataset.theme !== "light";
+  h.dataset.theme = light ? "light" : "dark";
+  $("themeBtn").textContent = light ? "☾ Темна тема" : "☀︎ Світла тема";
+  redraw();
+};
+window.addEventListener("resize", redraw);
+document.addEventListener("keydown", e => {
+  if (active !== "heat" || e.code !== "Space") return;
+  const tg = e.target.tagName; if (tg === "TEXTAREA" || tg === "INPUT" || tg === "SELECT") return;
+  e.preventDefault(); setPlay(!H.running);
+});
+let lastT = performance.now();
+function loop(now){
+  const dt = Math.min(0.05, (now - lastT)/1000); lastT = now;
+  if (active === "heat" && H.running && !H.edit){ heatAdvance(H.speed*dt); recordRow(false); drawHeat(); }
+  if (active === "geo" && $("autoRot").checked && !G.dragging()){ G.yaw += 0.35*dt; drawEmb(); }
+  requestAnimationFrame(loop);
+}
+kernelChanged();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
