@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гамільтонові послідовності</title>
+<style>
+:root{
+  --brand:#345a53; --brand-d:#26443e; --gold:#ca9d48; --gold-l:#e8cf9a;
+  --bg:#f5f3ee; --panel:#ffffff; --ink:#1e2927; --muted:#5f6d69; --line:#dcd6c9;
+  --edge:#7f918c; --bad:#b4473a; --good:#3d8a5a; --vert:#345a53; --vtext:#ffffff;
+  --chip:#eef1ee; --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(30,40,38,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#121816;--panel:#1b2321;--ink:#e7ece9;--muted:#9aaaa5;--line:#2f3c39;
+    --edge:#6c807b;--bad:#e4806f;--good:#6fc391;--vert:#4c8377;--chip:#24302d;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif}
+header{background:var(--brand);color:#fff;padding:18px 24px 0;border-bottom:3px solid var(--gold)}
+.kicker{color:var(--gold-l);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:26px;margin:2px 0 14px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:transparent;border:0;color:#dfe9e6;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;border-radius:10px 10px 0 0}
+nav button:hover{background:rgba(255,255,255,.08)}
+nav button.active{background:var(--bg);color:var(--brand)}
+@media (prefers-color-scheme: dark){nav button.active{color:var(--gold)}}
+main{padding:20px 24px 40px;max-width:1400px;margin:0 auto}
+.tab{display:none}.tab.active{display:block}
+.grid{display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:18px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+h2{font-family:Georgia,serif;font-size:20px;margin:0 0 6px;color:var(--brand)}
+@media (prefers-color-scheme: dark){h2{color:var(--gold)}}
+h3{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px}
+.hint{color:var(--muted);font-size:13.5px;margin:4px 0 10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:160px;font:15px ui-monospace,Consolas,monospace;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+input[type=text]:focus{outline:2px solid var(--gold);border-color:transparent}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 13px;border-radius:9px;font-weight:600}
+.btn:hover{border-color:var(--gold)}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.primary:hover{background:var(--brand-d)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.presets button{border:1px dashed var(--line);background:transparent;color:var(--muted);padding:4px 9px;border-radius:7px;font:12.5px ui-monospace,Consolas,monospace}
+.presets button:hover{color:var(--ink);border-color:var(--gold);border-style:solid}
+.verdict{margin:10px 0;padding:11px 13px;border-radius:10px;font-weight:600;border-left:4px solid var(--muted);background:var(--chip)}
+.verdict.ok{border-color:var(--good)}.verdict.bad{border-color:var(--bad)}.verdict.warn{border-color:var(--gold)}
+.checks{display:grid;gap:5px;font-size:14px}
+.ck{display:flex;gap:8px;align-items:baseline}
+.ck b{min-width:18px;text-align:center}
+.ck .y{color:var(--good)}.ck .n{color:var(--bad)}.ck .q{color:var(--muted)}
+.ck small{color:var(--muted)}
+.steps{display:grid;gap:4px;max-height:330px;overflow:auto;padding-right:4px}
+.srow{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:5px 6px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.srow:hover{border-color:var(--line)}
+.srow.cur{background:var(--chip);border-color:var(--gold)}
+.chip{display:inline-flex;flex-direction:column;align-items:center;min-width:30px;padding:2px 5px;border-radius:7px;background:var(--chip);font:600 14px ui-monospace,Consolas,monospace;border:1.5px solid transparent;line-height:1.15}
+.chip sub{font:10px system-ui;color:var(--muted)}
+.chip.rm{border-color:var(--gold);background:rgba(202,157,72,.18)}
+.chip.dec{border-color:var(--brand);border-style:dashed}
+.chip.neg{color:var(--bad)}
+.arrow{color:var(--muted);padding:0 3px}
+.stepper{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stepper input[type=range]{flex:1;min-width:120px;accent-color:var(--gold)}
+#stepLbl1{font-size:13px;color:var(--muted);min-width:70px}
+svg.gr{width:100%;height:auto;display:block;background:var(--bg);border-radius:12px;border:1px solid var(--line);touch-action:none;user-select:none}
+.edge{stroke:var(--edge);stroke-width:2}
+.edge.hi{stroke:var(--gold);stroke-width:4.5}
+.edge.cur{stroke:var(--gold);stroke-width:4.5}
+.edge.dim{stroke-opacity:.25}
+.hit{stroke:transparent;stroke-width:14;cursor:context-menu}
+.vert circle{fill:var(--vert);stroke:var(--panel);stroke-width:2.5}
+.vert text{fill:var(--vtext);font:600 12px system-ui;text-anchor:middle;pointer-events:none}
+.vert.sel circle{fill:var(--gold)}
+.vert.mark circle{stroke:var(--gold);stroke-width:4}
+.vert.done circle{fill:var(--panel);stroke:var(--vert);stroke-width:2}
+.vert.done text{fill:var(--ink)}
+.vert.ind circle{fill:var(--gold)}
+.vert.cut circle{fill:var(--bad)}
+.vert.A circle{fill:var(--gold)}.vert.B circle{fill:var(--bad)}.vert.C circle{fill:var(--vert)}
+.vert.k0 circle{fill:#345a53}.vert.k1 circle{fill:#ca9d48}.vert.k2 circle{fill:#8a5a8f}.vert.k3 circle{fill:#4f7fb0}.vert.k4 circle{fill:#b4473a}.vert.k5 circle{fill:#6b8e3a}
+#ed .vert{cursor:grab}
+.cap{font-size:13.5px;color:var(--muted);margin:8px 2px 0}
+table.t{border-collapse:collapse;font:13px ui-monospace,Consolas,monospace;width:100%}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:center}
+table.t th{color:var(--muted);font-weight:600;font-family:system-ui}
+table.t tr.bad td{color:var(--bad)}
+table.t tr.off td{color:var(--muted)}
+.tablewrap{overflow-x:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.bar{cursor:pointer}
+.stats{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.stats dt{color:var(--muted)}.stats dd{margin:0;font-weight:600;font-family:ui-monospace,Consolas,monospace}
+.radio{display:flex;flex-wrap:wrap;gap:6px}
+.radio label{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:13.5px;cursor:pointer}
+.radio input{display:none}
+.radio label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
+canvas{display:block;width:100%;border-radius:12px;border:1px solid var(--line);background:var(--bg);touch-action:none}
+#simc{height:500px}#strip{height:120px;margin-top:10px}
+.slider{display:grid;grid-template-columns:110px 1fr 46px;gap:8px;align-items:center;font-size:14px}
+.slider input{accent-color:var(--gold)}
+.note{font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);margin-top:14px;padding-top:10px}
+.theory{max-width:880px;margin:0 auto;font-size:16px;line-height:1.7}
+.theory h2{margin-top:26px}
+.theory .f{display:block;text-align:center;font-family:Georgia,serif;font-size:17px;margin:10px 0;padding:8px;background:var(--chip);border-radius:8px}
+.theory p{margin:8px 0}
+i.m{font-family:Georgia,serif}
+footer{text-align:center;color:var(--muted);font-size:12.5px;padding:10px 0 24px}
+.prog{height:6px;background:var(--chip);border-radius:3px;overflow:hidden;margin-top:8px;display:none}
+.prog div{height:100%;width:0;background:var(--gold)}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">Теорія графів · Лекція 7</div>
+  <h1>Гамільтонові послідовності та теореми Хватала</h1>
+  <nav id="tabs">
+    <button data-tab="t1" class="active">1. Графічність</button>
+    <button data-tab="t2">2. Умова Хватала</button>
+    <button data-tab="t3">3. Хватал–Ердеш</button>
+    <button data-tab="t4">4. Симуляція</button>
+    <button data-tab="t5">Довідка</button>
+  </nav>
+</header>
+<main>
+
+<!-- ========== TAB 1 ========== -->
+<section id="t1" class="tab active">
+ <div class="grid">
+  <div class="card">
+   <h2>Чи є послідовність графічною?</h2>
+   <p class="hint">Введіть цілі невід’ємні числа через пробіл або кому. Порядок неважливий — послідовність буде впорядковано за неспаданням, вершини позначено v₁,…,vₙ.</p>
+   <div class="row"><input type="text" id="seq1" value="3 3 3 5 5 5 6 6"><button class="btn primary" id="go1">Перевірити</button></div>
+   <div class="presets" id="pre1"></div>
+   <div id="verdict1" class="verdict"></div>
+   <div id="checks1" class="checks"></div>
+   <h3>Кроки алгоритму Гавела–Хакімі</h3>
+   <div class="stepper"><button class="btn" id="prev1">◀</button><input type="range" id="step1" min="0" max="0" value="0"><button class="btn" id="next1">▶</button><button class="btn" id="play1">Анімація</button><span id="stepLbl1"></span></div>
+   <p class="hint">Золота рамка — член dₙ, що видаляється; пунктир — члени, які зменшуються на 1. Клацніть рядок, щоб перейти до кроку.</p>
+   <div id="steps1" class="steps"></div>
+  </div>
+  <div class="card">
+   <h3 style="margin-top:0">Геометрія: реалізація будується зірками</h3>
+   <svg id="g1" class="gr" viewBox="0 0 600 460"></svg>
+   <p class="cap" id="cap1"></p>
+   <h3>Критерій Ердеша–Галлаї (зауваження 1.5)</h3>
+   <p class="hint">Для кожного k сума k найбільших степенів L не перевищує R = k(k−1) + Σ min(dᵢ,k): k вершин можуть «витратити» не більше k(k−1) кінців ребер усередині своєї групи, а кожна інша вершина дає їм не більше min(dᵢ,k).</p>
+   <div id="eg1" class="tablewrap"></div>
+  </div>
+ </div>
+</section>
+
+<!-- ========== TAB 2 ========== -->
+<section id="t2" class="tab">
+ <div class="grid">
+  <div class="card">
+   <h2>Умова Хватала (Х)</h2>
+   <p class="hint">dᵢ ⩽ i ⟹ dₙ₋ᵢ ⩾ n − i для всіх 1 ⩽ i &lt; n/2. Введіть послідовність або змінюйте стовпчики діаграми мишею: клацання — +1, Shift+клацання чи правий клік — −1. Так зручно перевіряти лему 2.3: збільшення степенів умову не руйнує.</p>
+   <div class="row"><input type="text" id="seq2" value="2 2 2 2 2 2"><button class="btn primary" id="go2">Перевірити</button></div>
+   <div class="presets" id="pre2"></div>
+   <div id="verdict2" class="verdict"></div>
+   <div id="checks2" class="checks"></div>
+   <h3>Перевірка імплікацій</h3>
+   <div id="rows2" class="tablewrap"></div>
+   <h3>Дослідження</h3>
+   <div class="row"><button class="btn" id="gm2">Показати граф Gₘ</button><button class="btn" id="ex2">Дослідити реалізації</button></div>
+   <div class="prog" id="prog2"><div></div></div>
+   <p class="hint" style="margin-top:8px">Gₘ — екстремальний негамільтонів граф з теореми 4.2 лекції 6, степені якого мажорують d. «Дослідити реалізації» генерує випадкові реалізації d ланцюжками 2-перемикань і для кожної шукає гамільтонів цикл.</p>
+  </div>
+  <div class="card">
+   <h3 style="margin-top:0">Геометричний зміст умови</h3>
+   <svg id="bars" class="gr" viewBox="0 0 720 370"></svg>
+   <div class="legend">
+     <span><span class="sw" style="background:var(--vert)"></span>dᵢ &gt; i — імплікація виконана тривіально</span>
+     <span><span class="sw" style="background:var(--gold)"></span>dᵢ ⩽ i — «слабка» вершина, діє вимога</span>
+     <span><span class="sw" style="background:var(--good)"></span>вимога dₙ₋ᵢ ⩾ n−i виконана</span>
+     <span><span class="sw" style="background:var(--bad)"></span>порушення</span>
+   </div>
+   <p class="cap">Пунктирна сходинка — рівень i над стовпчиком i. Якщо стовпчик i не піднімається над нею, стрілка вказує на стовпчик n−i, який мусить сягнути позначки n−i. Інакше кажучи: мало «бідних» вершин може бути лише тоді, коли їм протистоїть достатньо «багатих».</p>
+   <div class="two">
+     <div><svg id="g2a" class="gr" viewBox="0 0 520 420"></svg><p class="cap" id="cap2a"></p></div>
+     <div><svg id="g2b" class="gr" viewBox="0 0 520 420"></svg><p class="cap" id="cap2b"></p></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ========== TAB 3 ========== -->
+<section id="t3" class="tab">
+ <div class="grid">
+  <div class="card">
+   <h2>κ(G) ⩾ α(G) ⟹ гамільтоновість</h2>
+   <p class="hint">Редактор графа: клік по порожньому місцю — нова вершина; клік по двох вершинах — додати/видалити ребро; перетягування — пересунути; правий клік по вершині чи ребру — видалити. До 30 вершин (κ — до 24, жорсткість — до 14).</p>
+   <div class="presets" id="pre3"></div>
+   <h3>Підсвітити</h3>
+   <div class="radio" id="mode3">
+     <label><input type="radio" name="m3" value="cycle" checked>гамільтонів цикл / шлях</label>
+     <label><input type="radio" name="m3" value="indep">незалежну множину</label>
+     <label><input type="radio" name="m3" value="cut">мінімальну розділяючу множину</label>
+     <label><input type="radio" name="m3" value="tough">множину, що дає жорсткість</label>
+     <label><input type="radio" name="m3" value="none">нічого</label>
+   </div>
+   <div id="verdict3" class="verdict"></div>
+   <h3>Характеристики</h3>
+   <dl class="stats" id="stats3"></dl>
+   <h3>Достатні умови</h3>
+   <div id="checks3" class="checks"></div>
+  </div>
+  <div class="card">
+   <svg id="ed" class="gr" viewBox="0 0 640 470"></svg>
+   <p class="cap" id="cap3"></p>
+   <div class="note">Чому працює доведення теореми 4.3: якщо найдовший цикл C не гамільтонів, то для компоненти H графа G − V(C) множина S сусідів H на циклі є розділяючою (|S| ⩾ κ), а наступники x⁺ вершин x ∈ S разом із довільною h ∈ H утворюють незалежну множину розміру |S| + 1 &gt; κ ⩾ α — суперечність. На графі K₃,₄ видно, що умова точна: κ = 3, α = 4, і гамільтонового циклу немає.</div>
+  </div>
+ </div>
+</section>
+
+<!-- ========== TAB 4 ========== -->
+<section id="t4" class="tab">
+ <div class="grid">
+  <div class="card">
+   <h2>Термодинаміка реалізацій</h2>
+   <p class="hint">Граф — це механічна система: вершини відштовхуються як однойменні заряди, ребра — пружини. Під дією «температури» відбуваються 2-перемикання ab, cd → ad, cb — ті самі, що в доведенні теореми 1.3. Як у хімічній реакції, де валентність атомів зберігається, степені всіх вершин незмінні, а топологія блукає простором усіх реалізацій послідовності.</p>
+   <div class="row"><input type="text" id="seq4" value="2 2 2 2 2 2 2 2 2"><button class="btn primary" id="go4">Завантажити</button></div>
+   <div class="presets" id="pre4"></div>
+   <div id="verdict4" class="verdict"></div>
+   <div class="slider"><span>Температура</span><input type="range" id="temp4" min="0" max="100" value="30"><span id="tempv4">30</span></div>
+   <div class="slider"><span>Довжина пружин</span><input type="range" id="len4" min="40" max="160" value="85"><span id="lenv4">85</span></div>
+   <div class="row" style="margin-top:10px">
+     <button class="btn" id="run4">Пауза</button>
+     <button class="btn" id="one4">Одне перемикання</button>
+     <button class="btn" id="shake4">Струснути</button>
+     <label style="font-size:14px"><input type="checkbox" id="hc4" checked> показувати гамільтонів цикл</label>
+   </div>
+   <h3>Стан системи</h3>
+   <dl class="stats" id="stats4"></dl>
+   <div class="note">Що спостерігати. Для (2,…,2) з n ⩾ 6 система постійно розпадається на кілька циклів і знову зливається в один — це приклад 2.2: послідовність лише потенційно гамільтонова. Для послідовностей, що задовольняють умову Хватала, золотий цикл не зникає ніколи, хоч би як «кипіла» система: гамільтоновість є інваріантом усього простору реалізацій. Будь-які дві реалізації однієї послідовності з’єднуються ланцюжком 2-перемикань, тож блукання справді може відвідати кожну з них.</div>
+  </div>
+  <div class="card">
+   <canvas id="simc"></canvas>
+   <canvas id="strip"></canvas>
+   <p class="cap">Нижня стрічка — історія останніх перемикань: висота — кількість компонент зв’язності, золоте тло — реалізація гамільтонова. Кольори вершин — компоненти, число у вершині — її степінь. Червоний пунктир — щойно розірвані ребра, зелене — щойно утворені. Вершини можна перетягувати.</p>
+  </div>
+ </div>
+</section>
+
+<!-- ========== TAB 5 ========== -->
+<section id="t5" class="tab">
+ <div class="card theory">
+  <h2 style="margin-top:0">Послідовності степенів і графічність</h2>
+  <p>Якщо вершини графа <i class="m">G</i> занумерувати так, що deg v₁ ⩽ … ⩽ deg vₙ, то набір (deg v₁, …, deg vₙ) називають послідовністю степенів графа. Неспадну послідовність цілих невід’ємних чисел <i class="m">d</i> називають графічною, якщо існує граф, що її реалізує. Реалізація, взагалі кажучи, не єдина: послідовність (2,2,2,2,2,2) реалізують і цикл C₆, і два неспільні трикутники, — і саме ця неоднозначність робить змістовним питання, чи успадковує гамільтоновість кожна реалізація.</p>
+  <p>Лема про рукостискання дає дві очевидні необхідні умови: сума членів парна, а dₙ ⩽ n − 1. Вони не достатні: послідовність (1,1,3,3) їх задовольняє, але не графічна. Повну відповідь дає рекурсивний критерій Гавела–Хакімі.</p>
+  <span class="f">d графічна ⟺ графічна d′ = (d₁, …, dₙ₋dₙ₋₁, dₙ₋dₙ − 1, …, dₙ₋₁ − 1)</span>
+  <p>Інакше кажучи, найбагатшу вершину можна вважати сусідньою саме з dₙ наступними за багатством вершинами. Серцевиною доведення є 2-перемикання: ребра vₙvₖ і vⱼx замінюють на vₙvⱼ і vₖx, не змінюючи жодного степеня. Нерекурсивний критерій дає теорема Ердеша–Галлаї: послідовність з парною сумою графічна тоді й лише тоді, коли для кожного k сума k найбільших членів не перевищує k(k−1) + Σᵢ₌₁ⁿ⁻ᵏ min(dᵢ, k).</p>
+
+  <h2>Гамільтонові послідовності</h2>
+  <p>Графічну послідовність називають гамільтоновою (примусово гамільтоновою), якщо кожна її реалізація гамільтонова, і потенційно гамільтоновою, якщо гамільтонова хоча б одна. Послідовність (2,…,2) довжини n гамільтонова при n ∈ {3,4,5} і лише потенційно гамільтонова при n ⩾ 6, бо її реалізує незв’язний граф C₃ ∪ Cₙ₋₃.</p>
+  <p>Умова Хватала на неспадну послідовність довжини n ⩾ 3 така:</p>
+  <span class="f">dᵢ ⩽ i ⟹ dₙ₋ᵢ ⩾ n − i,  1 ⩽ i &lt; n/2.   (Х)</span>
+  <p>Теорема 4.1 лекції 6 стверджує, що кожна графічна послідовність з (Х) гамільтонова. Обернене хибне — (2,2,2,2,2) гамільтонова, але (Х) порушує при i = 2. Проте (Х) стає точним критерієм, якщо вимагати гамільтоновості разом з усіма мажорантами: за теоремою Хватала 2.4, (Х) виконується тоді й лише тоді, коли кожна графічна послідовність d* ⪰ d гамільтонова. Ключові інгредієнти — лема 2.3 (умова (Х) зберігається при збільшенні членів) і екстремальний граф Gₘ: при порушенні в точці i = m він складається з m попарно несумісних вершин A, кліки B з m вершин, сумісної з усім, і кліки C на n − 2m вершинах; видалення B лишає m + 1 компоненту, тож Gₘ негамільтонів. Тому серед усіх достатніх умов мовою степенів, що зберігаються при збільшенні степенів, умова Хватала найслабша; умови Дірака (δ ⩾ n/2) і Поша є її наслідками.</p>
+
+  <h2>Гамільтонові шляхи</h2>
+  <p>Додавши до G вершину w, сумісну з усіма, отримуємо граф G*, який гамільтонів тоді й лише тоді, коли G має гамільтонів шлях. Його послідовність степенів (d₁+1, …, dₙ+1, n), і умова (Х) для неї перекладається у таку умову існування гамільтонового шляху (теорема 3.1):</p>
+  <span class="f">dᵢ ⩽ i − 1 ⟹ dₙ₊₁₋ᵢ ⩾ n − i,  1 ⩽ i &lt; (n+1)/2.</span>
+  <p>Граф Kₘ,ₘ₊₁ її задовольняє, а Kₘ,ₘ₊₂ уже ні — і справді не має гамільтонового шляху.</p>
+
+  <h2>Зв’язність, незалежність і теорема Хватала–Ердеша</h2>
+  <p>Число незалежності α(G) — найбільша потужність множини попарно несумісних вершин; вершинна зв’язність κ(G) — найменша потужність розділяючої множини (для Kₙ покладаємо n − 1). Завжди κ(G) ⩽ δ(G). Теорема Хватала–Ердеша (1972) має зовсім іншу природу, ніж умови на степені:</p>
+  <span class="f">n ⩾ 3,  κ(G) ⩾ α(G)  ⟹  G гамільтонів;   κ(G) ⩾ α(G) − 1  ⟹  є гамільтонів шлях.</span>
+  <p>Вона може спрацьовувати для графів з малими степенями (наприклад, для C₅, де κ = α = 2, хоча умова Хватала порушена). Умова точна: Kₘ,ₘ₊₁ має κ = m, α = m + 1 і не гамільтонів. Для графа Петерсена κ = 3 &lt; 4 = α.</p>
+
+  <h2>Жорсткість</h2>
+  <p>Граф t-жорсткий, якщо для кожної розділяючої множини S кількість компонент c(G − S) не перевищує |S|/t; найбільше таке t — жорсткість τ(G). Кожен гамільтонів граф 1-жорсткий, але не навпаки: граф Петерсена має τ = 4/3 і негамільтонів. Гіпотеза Хватала про існування сталої t₀, для якої кожен t₀-жорсткий граф гамільтонів, досі відкрита; відомо, що t₀ ⩾ 9/4 (Бауер, Брусма, Вельдман, 2000).</p>
+
+  <h2>Як читати додаток</h2>
+  <p>Перша вкладка показує алгоритм Гавела–Хакімі як покрокову побудову реалізації: кожен крок додає «зірку» від найбагатшої вершини. Друга перетворює умову Хватала на картинку зі стовпчиками і будує контрприклад Gₘ, коли умова порушена. Третя дає довільний граф і обчислює α, κ, жорсткість та гамільтонові цикли точними переборами. Четверта — фізична модель: пружинна система, у якій тепловий рух перемикає ребра, зберігаючи степені, і можна спостерігати, чи переживає гамільтоновість «кипіння» простору реалізацій.</p>
+ </div>
+</section>
+</main>
+<footer>Кафедра фундаментальної математики · ХНУ імені В. Н. Каразіна · Теорія графів, лекція 7</footer>
+
+<script id="core">
+/* ===================== CORE ALGORITHMS (no DOM) ===================== */
+const key=(a,b)=>a<b?a*1024+b:b*1024+a;
+function parseSeq(s){return (String(s).match(/-?\d+/g)||[]).map(Number);}
+function sortAsc(a){return a.slice().sort((x,y)=>x-y);}
+function popc(x){x=x-((x>>>1)&0x55555555);x=(x&0x33333333)+((x>>>2)&0x33333333);return (((x+(x>>>4))&0x0F0F0F0F)*0x01010101)>>>24;}
+const bitIdx=lb=>31-Math.clz32(lb);
+const fullMask=n=>n?((1<<n)-1):0;
+function adjMasks(n,E){const A=new Array(n).fill(0);for(const[u,v] of E){A[u]|=1<<v;A[v]|=1<<u;}return A;}
+function degreesOf(n,E){const d=new Array(n).fill(0);for(const[u,v] of E){d[u]++;d[v]++;}return d;}
+const subD=k=>String(k).replace(/\d/g,c=>'₀₁₂₃₄₅₆₇₈₉'[c]);
+
+function havelHakimi(d0){
+  const d=sortAsc(d0);
+  let items=d.map((r,id)=>({id,r}));
+  const cmp=(a,b)=>a.r-b.r||a.id-b.id;
+  const snap=()=>items.slice().sort(cmp).map(x=>({id:x.id,r:x.r}));
+  const steps=[{seq:snap()}],edges=[];
+  if(d.some(x=>x<0))return{ok:false,steps,edges,reason:'послідовність містить від’ємний член'};
+  while(true){
+    items.sort(cmp);
+    if(items.some(x=>x.r<0))return{ok:false,steps,edges,reason:'на останньому кроці з’явився від’ємний член'};
+    if(items.every(x=>x.r===0))return{ok:true,steps,edges};
+    const L=items.length,last=items[L-1],k=last.r;
+    if(k>L-1)return{ok:false,steps,edges,reason:`найбільший член ${k} > n − 1 = ${L-1}`};
+    const T=items.slice(L-1-k,L-1);
+    for(const t of T){t.r--;edges.push([last.id,t.id,steps.length]);}
+    items.pop();
+    steps.push({seq:snap(),from:last.id,k,T:T.map(t=>t.id)});
+  }
+}
+function erdosGallai(d0){
+  const d=sortAsc(d0),n=d.length,rows=[];let ok=true;
+  for(let k=1;k<=n;k++){let L=0;for(let i=n-k;i<n;i++)L+=d[i];let R=k*(k-1);for(let i=0;i<n-k;i++)R+=Math.min(d[i],k);rows.push({k,L,R,ok:L<=R});if(L>R)ok=false;}
+  const sum=d.reduce((a,b)=>a+b,0);
+  return{rows,ok:ok&&sum%2===0&&d.every(x=>x>=0),sum,ineqOk:ok};
+}
+function chvatalRows(d){const n=d.length,rows=[];for(let i=1;i<n/2;i++){const di=d[i-1],dj=d[n-i-1],ante=di<=i;rows.push({i,di,j:n-i,dj,ante,ok:!ante||dj>=n-i});}return rows;}
+function chvatalOk(d){return d.length>=3&&chvatalRows(d).every(r=>r.ok);}
+function firstViolation(d){const r=chvatalRows(d).find(r=>!r.ok);return r?r.i:0;}
+function pathRows(d){const n=d.length,rows=[];for(let i=1;i<(n+1)/2;i++){const di=d[i-1],dj=d[n-i],ante=di<=i-1;rows.push({i,di,j:n+1-i,dj,ante,ok:!ante||dj>=n-i});}return rows;}
+function posaOk(d){const n=d.length;if(n<3)return false;for(let k=1;k<(n-1)/2;k++){if(!(d.filter(x=>x<=k).length<k))return false;}if(n%2===1){const h=(n-1)/2;if(d.filter(x=>x<=h).length>h)return false;}return true;}
+function diracOk(d){return d.length>=3&&d[0]>=d.length/2;}
+
+function compCount(R,A){let c=0,left=R;while(left){const s=left&-left;let seen=s,fr=s;while(fr){const lb=fr&-fr;fr^=lb;const nb=A[bitIdx(lb)]&R&~seen;seen|=nb;fr|=nb;}left&=~seen;c++;}return c;}
+function compLabels(n,A){const lab=new Array(n).fill(-1);let c=0;for(let v=0;v<n;v++){if(lab[v]>=0)continue;const st=[v];lab[v]=c;while(st.length){const x=st.pop();let nb=A[x];while(nb){const lb=nb&-nb;nb^=lb;const u=bitIdx(lb);if(lab[u]<0){lab[u]=c;st.push(u);}}}c++;}return{lab,c};}
+
+function hamCycle(n,A){
+  if(n<3)return{status:'no'};
+  for(let v=0;v<n;v++)if(popc(A[v])<2)return{status:'no'};
+  if(compCount(fullMask(n),A)>1)return{status:'no'};
+  if(n<=18){
+    const F=fullMask(n),dp=new Int32Array(1<<n);dp[1]=1;
+    for(let mask=1;mask<=F;mask+=2){let e=dp[mask];while(e){const lb=e&-e;e^=lb;let nb=A[bitIdx(lb)]&~mask;while(nb){const b=nb&-nb;nb^=b;dp[mask|b]|=b;}}}
+    const ends=dp[F]&A[0]&~1;if(!ends)return{status:'no'};
+    let cur=bitIdx(ends&-ends),mask=F;const path=[cur];
+    while(mask!==1){const pm=mask^(1<<cur);const c=dp[pm]&A[cur];cur=bitIdx(c&-c);path.push(cur);mask=pm;}
+    return{status:'yes',cycle:path.reverse()};
+  }
+  let steps=0;const path=[0];let vis=1;
+  function dfs(v){if(++steps>3e6)throw 0;if(path.length===n)return(A[v]&1)!==0;let nb=A[v]&~vis;while(nb){const b=nb&-nb;nb^=b;vis|=b;path.push(bitIdx(b));if(dfs(bitIdx(b)))return true;path.pop();vis^=b;}return false;}
+  try{return dfs(0)?{status:'yes',cycle:path.slice()}:{status:'no'};}catch(e){return{status:'unknown'};}
+}
+function hamPath(n,A){
+  if(n===0)return{status:'no'};if(n===1)return{status:'yes',path:[0]};
+  if(compCount(fullMask(n),A)>1)return{status:'no'};
+  if(n<=17){
+    const F=fullMask(n),dp=new Int32Array(1<<n);for(let v=0;v<n;v++)dp[1<<v]=1<<v;
+    for(let mask=1;mask<=F;mask++){let e=dp[mask];while(e){const lb=e&-e;e^=lb;let nb=A[bitIdx(lb)]&~mask;while(nb){const b=nb&-nb;nb^=b;dp[mask|b]|=b;}}}
+    if(!dp[F])return{status:'no'};
+    let cur=bitIdx(dp[F]&-dp[F]),mask=F;const path=[cur];
+    while(popc(mask)>1){const pm=mask^(1<<cur);const c=dp[pm]&A[cur];cur=bitIdx(c&-c);path.push(cur);mask=pm;}
+    return{status:'yes',path};
+  }
+  let steps=0;
+  for(let s=0;s<n;s++){const path=[s];let vis=1<<s;
+    const dfs=v=>{if(++steps>3e6)throw 0;if(path.length===n)return true;let nb=A[v]&~vis;while(nb){const b=nb&-nb;nb^=b;vis|=b;path.push(bitIdx(b));if(dfs(bitIdx(b)))return true;path.pop();vis^=b;}return false;};
+    try{if(dfs(s))return{status:'yes',path};}catch(e){return{status:'unknown'};}}
+  return{status:'no'};
+}
+function maxIndep(n,A){
+  let best=0,bestSet=0;
+  (function rec(P,cur,cnt){
+    if(cnt+popc(P)<=best)return;
+    if(!P){best=cnt;bestSet=cur;return;}
+    let v=-1,md=-1,Q=P;while(Q){const lb=Q&-Q;Q^=lb;const u=bitIdx(lb),dg=popc(A[u]&P);if(dg<=1){v=u;md=dg;break;}if(dg>md){md=dg;v=u;}}
+    const b=1<<v;
+    if(md<=1){rec(P&~A[v]&~b,cur|b,cnt+1);return;}
+    rec(P&~A[v]&~b,cur|b,cnt+1);
+    rec(P&~b,cur,cnt);
+  })(fullMask(n),0,0);
+  return{size:best,set:bestSet};
+}
+function binom(n,k){let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r;}
+function vertexConn(n,A){
+  if(n<=1)return{k:0,S:0};
+  const F=fullMask(n);
+  if(A.every(m=>popc(m)===n-1))return{k:n-1,S:0,complete:true};
+  if(compCount(F,A)>1)return{k:0,S:0};
+  let delta=n,vmin=0;for(let v=0;v<n;v++){const d=popc(A[v]);if(d<delta){delta=d;vmin=v;}}
+  for(let k=1;k<delta;k++){
+    if(binom(n,k)>3e6)return{k:null};
+    let s=(1<<k)-1;const lim=1<<n;
+    while(s<lim){if(compCount(F&~s,A)>1)return{k,S:s};const c=s&-s,r=s+c;s=(((r^s)>>>2)/c)|r;}
+  }
+  return{k:delta,S:A[vmin]};
+}
+function toughness(n,A){
+  if(n<2)return null;
+  if(A.every(m=>popc(m)===n-1))return{t:Infinity};
+  if(n>14)return null;
+  const F=fullMask(n);let best=Infinity,bS=0,bc=0;
+  for(let S=0;S<=F;S++){const R=F&~S;if(popc(R)<2)continue;const c=compCount(R,A);if(c>=2){const v=popc(S)/c;if(v<best){best=v;bS=S;bc=c;}}}
+  return{t:best,S:bS,c:bc,num:popc(bS)};
+}
+function oreOk(n,A){if(n<3)return false;const d=A.map(popc);for(let u=0;u<n;u++)for(let v=u+1;v<n;v++)if(!(A[u]>>v&1)&&d[u]+d[v]<n)return false;return true;}
+function buildGm(n,m){
+  const E=[];const A=[...Array(m).keys()],B=A.map(x=>x+m),C=[];for(let v=2*m;v<n;v++)C.push(v);
+  for(const a of A)for(const b of B)E.push([a,b]);
+  for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++)E.push([B[i],B[j]]);
+  for(const b of B)for(const c of C)E.push([b,c]);
+  for(let i=0;i<C.length;i++)for(let j=i+1;j<C.length;j++)E.push([C[i],C[j]]);
+  return{E,A,B,C};
+}
+function twoSwitch(E,eset){
+  const m=E.length;if(m<2)return null;
+  const i=Math.floor(Math.random()*m),j=Math.floor(Math.random()*m);if(i===j)return null;
+  const[a,b]=E[i];let[c,d]=E[j];if(Math.random()<.5)[c,d]=[d,c];
+  if(a===c||a===d||b===c||b===d)return null;
+  if(eset.has(key(a,d))||eset.has(key(c,b)))return null;
+  eset.delete(key(a,b));eset.delete(key(c,d));eset.add(key(a,d));eset.add(key(c,b));
+  E[i]=[a,d];E[j]=[c,b];
+  return{removed:[[a,b],[c,d]],added:[[a,d],[c,b]]};
+}
+const realKey=E=>E.map(([a,b])=>key(a,b)).sort((x,y)=>x-y).join(',');
+</script>
+
+<script>
+/* ===================== UI ===================== */
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const fmtSeq=d=>'('+d.join(', ')+')';
+function circlePos(n,W,H,pad=48){const cx=W/2,cy=H/2,R=Math.min(W,H)/2-pad;if(n===1)return[[cx,cy]];return[...Array(n)].map((_,i)=>{const t=-Math.PI/2+2*Math.PI*i/n;return[cx+R*Math.cos(t),cy+R*Math.sin(t)];});}
+function drawGraph(svg,o){
+  svg.innerHTML='';const{n,edges,pos}=o;const r=o.r||(n>18?11:n>12?13:16);
+  const gE=el('g',{},svg),gV=el('g',{},svg);
+  edges.forEach((e,idx)=>{const[a,b]=e;const c=o.edgeClass?o.edgeClass(a,b,idx):'';
+    el('line',{x1:pos[a][0],y1:pos[a][1],x2:pos[b][0],y2:pos[b][1],class:'edge '+c},gE);
+    if(o.hit){const h=el('line',{x1:pos[a][0],y1:pos[a][1],x2:pos[b][0],y2:pos[b][1],class:'hit'},gE);h.dataset.e=idx;}});
+  for(let v=0;v<n;v++){const g=el('g',{class:'vert '+(o.vertClass?o.vertClass(v):''),transform:`translate(${pos[v][0].toFixed(1)},${pos[v][1].toFixed(1)})`},gV);g.dataset.v=v;el('circle',{r},g);const t=el('text',{y:4},g);t.textContent=o.label?o.label(v):String(v+1);}
+}
+const ck=(state,html)=>`<div class="ck"><b class="${state===true?'y':state===false?'n':'q'}">${state===true?'✓':state===false?'✗':'·'}</b><span>${html}</span></div>`;
+function presets(container,list,cb){const c=$(container);c.innerHTML='';list.forEach(p=>{const b=document.createElement('button');b.textContent=p.label||p;b.title=p.title||'';b.onclick=()=>cb(p.value||p);c.appendChild(b);});}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.id===b.dataset.tab));
+  if(b.dataset.tab==='t4')simResize();
+});
+
+/* ===================== TAB 1 ===================== */
+const T1={hh:null,d:[],step:0,timer:null};
+presets('#pre1',['1 1 3 3','2 2 2 4 4 4','3 3 3 5 5 5 6 6','1 2 2 3 3 4 5','2 2 4 4 4 4','1 1 1 1 4 4','2 2 2 2 2 2','3 3 3 3 3 3 3 3 3 3','1 3 3 3 4 4 5 5 6'],v=>{$('#seq1').value=v;run1();});
+function run1(){
+  stopPlay1();
+  let d=parseSeq($('#seq1').value);
+  if(!d.length){$('#verdict1').className='verdict bad';$('#verdict1').textContent='Введіть хоча б одне число.';return;}
+  if(d.length>30)d=d.slice(0,30);
+  T1.d=sortAsc(d);T1.hh=havelHakimi(d);
+  const S=T1.hh.steps.length-1;const sl=$('#step1');sl.max=S;T1.step=S;sl.value=S;render1();
+}
+function render1(){
+  const{hh,d}=T1,n=d.length,s=T1.step,S=hh.steps.length-1;
+  $('#step1').value=s;$('#stepLbl1').textContent=`крок ${s} / ${S}`;
+  const V=$('#verdict1');
+  V.className='verdict '+(hh.ok?'ok':'bad');
+  V.innerHTML=hh.ok?`Послідовність ${fmtSeq(d)} графічна.`:`Послідовність ${fmtSeq(d)} не графічна: ${hh.reason}.`;
+  const sum=d.reduce((a,b)=>a+b,0),eg=erdosGallai(d);
+  $('#checks1').innerHTML=
+    ck(sum%2===0,`сума членів ${sum} — ${sum%2?'непарна':'парна'} (твердження 1.2)`)+
+    ck(d[n-1]<=n-1,`dₙ = ${d[n-1]} ${d[n-1]<=n-1?'⩽':'>'} n − 1 = ${n-1}`)+
+    ck(eg.ineqOk,`нерівності Ердеша–Галлаї ${eg.ineqOk?'виконані':'порушені'}`)+
+    (hh.ok?ck(true,`кількість ребер реалізації |E| = ${sum/2}`):'');
+  // steps
+  const rows=[];
+  for(let k=1;k<=S;k++){const before=hh.steps[k-1].seq,op=hh.steps[k];
+    const chips=before.map(it=>`<span class="chip ${it.id===op.from?'rm':op.T.includes(it.id)?'dec':''} ${it.r<0?'neg':''}">${it.r}<sub>v${subD(it.id+1)}</sub></span>`).join('');
+    rows.push(`<div class="srow ${k===s?'cur':''}" data-k="${k}">${chips}<span class="arrow">↦</span></div>`);}
+  const fin=hh.steps[S].seq;
+  rows.push(`<div class="srow ${s===0&&S===0?'cur':''}" data-k="${S}">${fin.length?fin.map(it=>`<span class="chip ${it.r<0?'neg':''}">${it.r}<sub>v${subD(it.id+1)}</sub></span>`).join(''):'<span class="chip">∅</span>'}<span class="arrow">${hh.ok?'— нульова послідовність, кінець':'— збій'}</span></div>`);
+  $('#steps1').innerHTML=rows.join('');
+  $('#steps1').querySelectorAll('.srow').forEach(r=>r.onclick=()=>{stopPlay1();T1.step=+r.dataset.k;render1();});
+  const cur=$('#steps1 .srow.cur');if(cur)cur.scrollIntoView({block:'nearest'});
+  // graph
+  const pos=circlePos(n,600,460,44);const op=s>0?hh.steps[s]:null;
+  const removed=new Set();for(let k=1;k<s;k++)removed.add(hh.steps[k].from);
+  const edges=hh.edges.filter(e=>e[2]<=s);
+  drawGraph($('#g1'),{n,pos,edges,
+    edgeClass:(a,b,i)=>edges[i][2]===s?'cur':'',
+    vertClass:v=>op&&v===op.from?'sel':op&&op.T.includes(v)?'mark':removed.has(v)?'done':'',
+    label:v=>'v'+subD(v+1)});
+  let cap;
+  if(!op)cap='Початковий стан: жодного ребра ще немає. Рухайте повзунок, щоб додавати зірки.';
+  else cap=`Крок ${s}: вершина v${subD(op.from+1)} з залишковим степенем ${op.k} з’єднується з ${op.k?op.T.map(t=>'v'+subD(t+1)).join(', '):'жодною вершиною'}; їхні залишкові степені зменшуються на 1. Порожні кружечки — вершини, що вже «насичені» й вибули.`;
+  if(s===S&&hh.ok&&S>0)cap+=` Результат — реалізація: deg vᵢ = dᵢ для всіх i.`;
+  $('#cap1').textContent=cap;
+  // EG table
+  $('#eg1').innerHTML=`<table class="t"><tr><th>k</th>${eg.rows.map(r=>`<td>${r.k}</td>`).join('')}</tr><tr><th>L</th>${eg.rows.map(r=>`<td style="${r.ok?'':'color:var(--bad)'}">${r.L}</td>`).join('')}</tr><tr><th>R</th>${eg.rows.map(r=>`<td>${r.R}</td>`).join('')}</tr><tr><th></th>${eg.rows.map(r=>`<td style="color:var(--${r.ok?'good':'bad'})">${r.ok?'✓':'✗'}</td>`).join('')}</tr></table>`;
+}
+function stopPlay1(){if(T1.timer){clearInterval(T1.timer);T1.timer=null;$('#play1').textContent='Анімація';}}
+$('#go1').onclick=run1;$('#seq1').onkeydown=e=>{if(e.key==='Enter')run1();};
+$('#step1').oninput=e=>{stopPlay1();T1.step=+e.target.value;render1();};
+$('#prev1').onclick=()=>{stopPlay1();if(T1.step>0){T1.step--;render1();}};
+$('#next1').onclick=()=>{stopPlay1();if(T1.step<T1.hh.steps.length-1){T1.step++;render1();}};
+$('#play1').onclick=()=>{if(T1.timer){stopPlay1();return;}T1.step=0;render1();$('#play1').textContent='Стоп';
+  T1.timer=setInterval(()=>{if(T1.step>=T1.hh.steps.length-1){stopPlay1();return;}T1.step++;render1();},1100);};
+
+/* ===================== TAB 2 ===================== */
+const T2={d:[]};
+presets('#pre2',[
+  {label:'2⁵',value:'2 2 2 2 2'},{label:'2⁶',value:'2 2 2 2 2 2'},'3 3 3 5 5 5 6 6','2 2 3 3 3 3','2 2 2 4 4 4',
+  {label:'3¹⁰ (Петерсен)',value:'3 3 3 3 3 3 3 3 3 3'},{label:'4⁸',value:'4 4 4 4 4 4 4 4'},{label:'K₃,₄',value:'3 3 3 3 4 4 4'},'1 3 3 4 4 4 5 6'],v=>{$('#seq2').value=v;run2();});
+function run2(){let d=parseSeq($('#seq2').value);if(d.length>24)d=d.slice(0,24);T2.d=sortAsc(d);clearG2();render2();}
+function clearG2(){$('#g2a').innerHTML='';$('#g2b').innerHTML='';$('#cap2a').textContent='';$('#cap2b').textContent='';}
+function render2(){
+  const d=T2.d,n=d.length,V=$('#verdict2');
+  if(n<3){V.className='verdict bad';V.textContent='Потрібно щонайменше 3 члени (n ⩾ 3).';$('#bars').innerHTML='';$('#checks2').innerHTML='';$('#rows2').innerHTML='';return;}
+  const range=d.every(x=>x>=0&&x<=n-1);
+  const hh=havelHakimi(d),gr=hh.ok,ch=chvatalOk(d),viol=firstViolation(d);
+  const pr=pathRows(d),pathOk=pr.every(r=>r.ok);
+  if(!range){V.className='verdict bad';V.textContent='Усі члени мають лежати в межах 0 ⩽ dᵢ ⩽ n − 1.';}
+  else if(ch&&gr){V.className='verdict ok';V.innerHTML=`Умова (Х) виконана, послідовність графічна ⟹ вона <u>гамільтонова</u>: кожен граф зі степенями ${fmtSeq(d)} має гамільтонів цикл.`;}
+  else if(ch){V.className='verdict warn';V.innerHTML='Умова (Х) виконана, але сама послідовність не графічна. За теоремою 2.4 кожна графічна мажоранта d* ⪰ d гамільтонова.';}
+  else{V.className='verdict bad';V.innerHTML=`Умова (Х) порушена при i = ${viol}. Існує негамільтонів граф G${subD(viol)} зі степенями, що мажорують d. ${gr?'Сама d може бути як гамільтоновою, так і ні — перевірте кнопкою «Дослідити реалізації».':''}`;}
+  $('#checks2').innerHTML=
+    ck(gr,`графічність (Гавел–Хакімі)${gr?'':': '+hh.reason}`)+
+    ck(diracOk(d),`Дірак: δ = ${d[0]} ${d[0]>=n/2?'⩾':'<'} n/2 = ${n/2}`)+
+    ck(posaOk(d),'Поша (наслідок 2.5)')+
+    ck(ch,'Хватал (Х) — гамільтонів цикл')+
+    ck(pathOk,'теорема 3.1 — гамільтонів шлях');
+  const rows=chvatalRows(d);
+  $('#rows2').innerHTML=`<table class="t"><tr><th>i</th><th>dᵢ</th><th>dᵢ ⩽ i ?</th><th>n−i</th><th>dₙ₋ᵢ</th><th>dₙ₋ᵢ ⩾ n−i ?</th></tr>${rows.map(r=>`<tr class="${!r.ok?'bad':r.ante?'':'off'}"><td>${r.i}</td><td>${r.di}</td><td>${r.ante?'так':'ні'}</td><td>${r.j}</td><td>${r.dj}</td><td>${r.ante?(r.ok?'так ✓':'ні ✗'):'— (не потрібно)'}</td></tr>`).join('')}</table>`;
+  $('#gm2').disabled=!(viol&&range);$('#ex2').disabled=!(gr&&n<=16);
+  $('#ex2').title=n>16?'Доступно для n ⩽ 16':'';
+  drawBars();
+}
+function drawBars(){
+  const svg=$('#bars'),d=T2.d,n=d.length;svg.innerHTML='';
+  const W=720,H=370,ml=40,mr=14,mt=34,mb=42,pw=W-ml-mr,ph=H-mt-mb,maxV=Math.max(n-1,...d,1);
+  const bw=pw/n,X=i=>ml+i*bw,Y=v=>mt+ph*(1-v/maxV);
+  const defs=el('defs',{},svg);
+  for(const[id,col]of[['ag','var(--good)'],['ab','var(--bad)']]){const mk=el('marker',{id,viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},defs);el('path',{d:'M0,0L10,5L0,10z',style:`fill:${col}`},mk);}
+  const stepv=maxV>14?2:1;
+  for(let v=0;v<=maxV;v+=stepv){el('line',{x1:ml,x2:W-mr,y1:Y(v),y2:Y(v),style:'stroke:var(--line);stroke-width:1'},svg);const t=el('text',{x:ml-8,y:Y(v)+4,style:'fill:var(--muted);font:11px system-ui;text-anchor:end'},svg);t.textContent=v;}
+  const xh=ml+(n/2)*bw;el('line',{x1:xh,x2:xh,y1:mt-14,y2:Y(0),style:'stroke:var(--muted);stroke-dasharray:3 4'},svg);
+  const th=el('text',{x:xh+4,y:mt-18,style:'fill:var(--muted);font:12px system-ui'},svg);th.textContent='n/2';
+  const rows=chvatalRows(d),byI={},byJ={};rows.forEach(r=>{byI[r.i]=r;if(r.ante)byJ[r.j]=r;});
+  for(let idx=0;idx<n;idx++){const i=idx+1,v=d[idx];
+    let col='var(--vert)';const r=byI[i];if(r&&r.ante)col=r.ok?'var(--gold)':'var(--bad)';const t=byJ[i];if(t)col=t.ok?'var(--good)':'var(--bad)';
+    el('rect',{x:X(idx)+bw*.14,width:bw*.72,y:Math.min(Y(v),Y(0)-2),height:Math.max(2,Y(0)-Y(v)),rx:4,style:`fill:${col};opacity:.92`},svg);
+    const tv=el('text',{x:X(idx)+bw/2,y:Y(v)-6,style:'fill:var(--ink);font:600 13px ui-monospace,monospace;text-anchor:middle'},svg);tv.textContent=v;
+    const ti=el('text',{x:X(idx)+bw/2,y:Y(0)+18,style:'fill:var(--muted);font:12px system-ui;text-anchor:middle'},svg);ti.textContent=i;
+    if(i<n/2&&i<=maxV)el('line',{x1:X(idx)+2,x2:X(idx)+bw-2,y1:Y(i),y2:Y(i),style:'stroke:var(--ink);stroke-width:2;stroke-dasharray:5 3;opacity:.7'},svg);
+    if(t)el('line',{x1:X(idx)-2,x2:X(idx)+bw+2,y1:Y(n-i),y2:Y(n-i),style:`stroke:${t.ok?'var(--good)':'var(--bad)'};stroke-width:3`},svg);
+  }
+  rows.filter(r=>r.ante).forEach(r=>{const x1=X(r.i-1)+bw/2,y1=Y(r.di)-20,x2=X(r.j-1)+bw/2,y2=Math.min(Y(r.dj),Y(r.j))-20;const cy=Math.max(8,Math.min(y1,y2)-50);
+    el('path',{d:`M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}`,style:`fill:none;stroke:${r.ok?'var(--good)':'var(--bad)'};stroke-width:2`,'marker-end':`url(#${r.ok?'ag':'ab'})`},svg);});
+  const xl=el('text',{x:W/2,y:H-6,style:'fill:var(--muted);font:12px system-ui;text-anchor:middle'},svg);xl.textContent='номер i у неспадному впорядкуванні; висота — dᵢ';
+  for(let idx=0;idx<n;idx++){const h=el('rect',{x:X(idx),y:mt-20,width:bw,height:ph+20,class:'bar',style:'fill:transparent'},svg);
+    h.addEventListener('mousedown',e=>{e.preventDefault();const dec=e.shiftKey||e.button===2;const dd=T2.d.slice();dd[idx]=Math.max(0,Math.min(n-1,dd[idx]+(dec?-1:1)));T2.d=sortAsc(dd);$('#seq2').value=T2.d.join(' ');clearG2();render2();});
+    h.addEventListener('contextmenu',e=>e.preventDefault());}
+}
+$('#go2').onclick=run2;$('#seq2').onkeydown=e=>{if(e.key==='Enter')run2();};
+$('#gm2').onclick=()=>{
+  const d=T2.d,n=d.length,m=firstViolation(d);if(!m)return;
+  const{E,A,B,C}=buildGm(n,m);const pos=[];
+  A.forEach((v,k)=>pos[v]=[70,210+(k-(A.length-1)/2)*Math.min(70,320/Math.max(1,A.length))]);
+  B.forEach((v,k)=>pos[v]=[220,210+(k-(B.length-1)/2)*Math.min(70,320/Math.max(1,B.length))]);
+  const cp=circlePos(C.length,240,300,30);C.forEach((v,k)=>pos[v]=[300+cp[k][0],60+cp[k][1]]);
+  drawGraph($('#g2a'),{n,pos,edges:E,vertClass:v=>v<m?'A':v<2*m?'B':'C',r:13,edgeClass:(a,b)=>(a<m||b<m)?'':'dim'});
+  const ds=sortAsc(degreesOf(n,E));const hc=hamCycle(n,adjMasks(n,E));
+  $('#cap2a').innerHTML=`G${subD(m)}: золоті — ${m} попарно несумісні вершини A (степінь ${m}), червоні — кліка B (степінь ${n-1}), зелені — кліка C (степінь ${n-m-1}). Після видалення B лишається ${m+1} компонент &gt; |B| = ${m}, тому граф негамільтонів (перевірка перебором: ${hc.status==='yes'?'цикл знайдено?!':'циклу немає'}).`;
+  const svgB=$('#g2b');svgB.innerHTML='';
+  const W=520,bw=(W-40)/n;el('text',{x:20,y:28,style:'fill:var(--muted);font:13px system-ui'},svgB).textContent='Мажорування d ⪯ d* (сірий — d, контур — d*):';
+  const Y=v=>380-v*(320/(n-1));
+  for(let i=0;i<n;i++){const x=20+i*bw;el('rect',{x:x+bw*.12,width:bw*.76,y:Y(ds[i]),height:380-Y(ds[i]),rx:3,style:'fill:none;stroke:var(--bad);stroke-width:2'},svgB);
+    el('rect',{x:x+bw*.25,width:bw*.5,y:Y(d[i]),height:Math.max(2,380-Y(d[i])),rx:2,style:'fill:var(--edge);opacity:.8'},svgB);
+    el('text',{x:x+bw/2,y:400,style:'fill:var(--muted);font:11px system-ui;text-anchor:middle'},svgB).textContent=`${d[i]}⩽${ds[i]}`;}
+  $('#cap2b').textContent=`d* = ${fmtSeq(ds)} — послідовність степенів G${subD(m)}. Це доведення імплікації (б)⇒(а) теореми 2.4: d* графічна, мажорує d, але не гамільтонова.`;
+};
+$('#ex2').onclick=()=>{
+  const d=T2.d,n=d.length,hh=havelHakimi(d);if(!hh.ok||n>16)return;
+  const E=hh.edges.map(e=>[e[0],e[1]]),eset=new Set(E.map(([a,b])=>key(a,b)));
+  const SAMPLES=n<=10?400:250,BETWEEN=Math.max(10,E.length*3);
+  let done=0,non=0,hamEx=null,nonEx=null;const seen=new Set();
+  $('#ex2').disabled=true;const pg=$('#prog2');pg.style.display='block';
+  function chunk(){
+    for(let c=0;c<20&&done<SAMPLES;c++,done++){
+      for(let k=0;k<BETWEEN;k++)twoSwitch(E,eset);
+      const A=adjMasks(n,E),h=hamCycle(n,A);seen.add(realKey(E));
+      if(h.status==='yes'){if(!hamEx)hamEx={E:E.map(e=>e.slice()),cyc:h.cycle};}
+      else{non++;if(!nonEx)nonEx={E:E.map(e=>e.slice()),A};}
+    }
+    pg.firstElementChild.style.width=(100*done/SAMPLES)+'%';
+    if(done<SAMPLES){setTimeout(chunk,0);return;}
+    pg.style.display='none';$('#ex2').disabled=false;
+    const pos=circlePos(n,520,420,40);
+    if(hamEx){const ce=new Set();for(let i=0;i<n;i++)ce.add(key(hamEx.cyc[i],hamEx.cyc[(i+1)%n]));
+      drawGraph($('#g2a'),{n,pos,edges:hamEx.E,edgeClass:(a,b)=>ce.has(key(a,b))?'hi':'',label:v=>'v'+subD(v+1)});
+      $('#cap2a').textContent='Гамільтонова реалізація: золотий — знайдений гамільтонів цикл.';}
+    else{$('#g2a').innerHTML='';$('#cap2a').textContent='Жодної гамільтонової реалізації серед вибірки не трапилося.';}
+    if(nonEx){const{lab,c}=compLabels(n,nonEx.A);drawGraph($('#g2b'),{n,pos,edges:nonEx.E,vertClass:v=>'k'+(lab[v]%6),label:v=>'v'+subD(v+1)});
+      $('#cap2b').textContent=`Негамільтонова реалізація${c>1?` (${c} компонент — кольори)`:''}. Отже, ${fmtSeq(d)} не є гамільтоновою послідовністю.`;}
+    else{$('#g2b').innerHTML='';$('#cap2b').textContent=chvatalOk(d)?'Негамільтонових реалізацій немає — як і гарантує теорема Хватала.':'Негамільтонових реалізацій у вибірці не знайдено (вибірка — свідчення, а не доведення).';}
+    $('#cap2a').textContent+=` Переглянуто ${SAMPLES} випадкових реалізацій, різних (з урахуванням нумерації): ${seen.size}; негамільтонових серед вибірки: ${non}.`;
+  }
+  chunk();
+};
+
+/* ===================== TAB 3 ===================== */
+const ED={V:[],E:[],sel:-1,drag:-1,moved:false,res:null};
+const EW=640,EH=470,ecx=EW/2,ecy=EH/2;
+function ring(k,R,off=-Math.PI/2,cx=ecx,cy=ecy){return[...Array(k)].map((_,i)=>[cx+R*Math.cos(off+2*Math.PI*i/k),cy+R*Math.sin(off+2*Math.PI*i/k)]);}
+const P3={
+  'Граф Петерсена':()=>{const V=[...ring(5,190),...ring(5,85)],E=[];for(let i=0;i<5;i++){E.push([i,(i+1)%5],[i,i+5],[i+5,(i+2)%5+5]);}return{V,E};},
+  'K₃,₄ (заув. 4.4)':()=>bip(3,4),
+  'K₂,₄ (без шляху)':()=>bip(2,4),
+  'C₅ (вправа 5)':()=>{const V=ring(5,170),E=[];for(let i=0;i<5;i++)E.push([i,(i+1)%5]);return{V,E};},
+  'Колесо W₇':()=>{const V=[[ecx,ecy],...ring(6,180)],E=[];for(let i=0;i<6;i++)E.push([0,i+1],[i+1,(i+1)%6+1]);return{V,E};},
+  'Куб Q₃':()=>{const V=[...ring(4,190,-Math.PI/4),...ring(4,90,-Math.PI/4)],E=[];for(let i=0;i<4;i++)E.push([i,(i+1)%4],[i+4,(i+1)%4+4],[i,i+4]);return{V,E};},
+  'K₅':()=>{const V=ring(5,170),E=[];for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)E.push([i,j]);return{V,E};},
+  'Метелик':()=>({V:[[ecx,ecy],[ecx-200,ecy-120],[ecx-200,ecy+120],[ecx+200,ecy-120],[ecx+200,ecy+120]],E:[[0,1],[0,2],[1,2],[0,3],[0,4],[3,4]]}),
+  'Очистити':()=>({V:[],E:[]})
+};
+function bip(a,b){const V=[],E=[];for(let i=0;i<a;i++)V.push([ecx-150,ecy+(i-(a-1)/2)*95]);for(let j=0;j<b;j++)V.push([ecx+150,ecy+(j-(b-1)/2)*95]);for(let i=0;i<a;i++)for(let j=0;j<b;j++)E.push([i,a+j]);return{V,E};}
+presets('#pre3',Object.keys(P3),name=>{const g=P3[name]();ED.V=g.V;ED.E=g.E;ED.sel=-1;analyze3();});
+document.querySelectorAll('#mode3 input').forEach(r=>r.onchange=draw3);
+function edMode(){return document.querySelector('#mode3 input:checked').value;}
+function analyze3(){
+  const n=ED.V.length,E=ED.E,A=adjMasks(n,E),deg=A.map(popc);
+  const res={n,m:E.length,A,deg};
+  if(n>0){res.mis=maxIndep(n,A);res.kap=n<=24?vertexConn(n,A):{k:null};res.hc=hamCycle(n,A);if(res.hc.status!=='yes')res.hp=hamPath(n,A);res.tough=toughness(n,A);}
+  ED.res=res;draw3();stats3();
+}
+function draw3(){
+  const r=ED.res,n=ED.V.length,mode=edMode();const pos=ED.V;
+  let ce=new Set(),vc=()=>'';let cap='';
+  if(r&&n){
+    if(mode==='cycle'){const c=r.hc&&r.hc.status==='yes'?r.hc.cycle:null,p=!c&&r.hp&&r.hp.status==='yes'?r.hp.path:null;
+      if(c){for(let i=0;i<c.length;i++)ce.add(key(c[i],c[(i+1)%c.length]));cap='Золотий — гамільтонів цикл.';}
+      else if(p){for(let i=0;i+1<p.length;i++)ce.add(key(p[i],p[i+1]));cap='Гамільтонового циклу немає; золотий — гамільтонів шлях.';}
+      else cap=n>=1?'Немає ні гамільтонового циклу, ні гамільтонового шляху.':'';}
+    if(mode==='indep'){const S=r.mis.set;vc=v=>(S>>v&1)?'ind':'';cap=`Золоті вершини — найбільша незалежна множина, α = ${r.mis.size}.`;}
+    if(mode==='cut'&&r.kap){const S=r.kap.S||0;vc=v=>(S>>v&1)?'cut':'';cap=r.kap.complete?'Граф повний: розділяючих множин немає, κ = n − 1.':r.kap.k===0?'Граф уже незв’язний: κ = 0.':r.kap.k==null?'Обчислення κ завелике.':`Червоні — мінімальна розділяюча множина, κ = ${r.kap.k}.`;}
+    if(mode==='tough'&&r.tough){const S=r.tough.S||0;vc=v=>(S>>v&1)?'cut':'';cap=r.tough.t===Infinity?'Повний граф: жорсткість нескінченна.':`Червоні — множина S, на якій досягається τ = |S| / c(G − S) = ${r.tough.num}/${r.tough.c}.`;}
+  }
+  if(ED.sel>=0){const old=vc;vc=v=>v===ED.sel?'sel':old(v);}
+  drawGraph($('#ed'),{n,pos,edges:ED.E,hit:true,edgeClass:(a,b)=>ce.has(key(a,b))?'hi':'',vertClass:vc});
+  $('#cap3').textContent=cap||(n?'':'Порожньо: клацніть на полотні, щоб додати вершини, або виберіть приклад.');
+}
+function frac(t){if(t===Infinity)return'∞';for(let q=1;q<=30;q++){const p=Math.round(t*q);if(Math.abs(p/q-t)<1e-9)return q===1?String(p):`${p}/${q}`;}return t.toFixed(3);}
+function stats3(){
+  const r=ED.res,n=r.n;const V=$('#verdict3');
+  if(!n){$('#stats3').innerHTML='';$('#checks3').innerHTML='';V.className='verdict';V.textContent='Граф порожній.';return;}
+  const k=r.kap.k,a=r.mis.size;const ds=sortAsc(r.deg);
+  const hcS=r.hc.status,hpS=r.hc.status==='yes'?'yes':r.hp.status;
+  $('#stats3').innerHTML=`<dt>n, |E|</dt><dd>${n}, ${r.m}</dd><dt>степені</dt><dd>${fmtSeq(ds)}</dd><dt>δ(G)</dt><dd>${ds[0]}</dd><dt>α(G)</dt><dd>${a}</dd><dt>κ(G)</dt><dd>${k==null?'—':k}</dd><dt>жорсткість τ</dt><dd>${r.tough?frac(r.tough.t):'— (n > 14)'}</dd><dt>гамільт. цикл</dt><dd>${hcS==='yes'?'є':hcS==='no'?'немає':'невідомо'}</dd><dt>гамільт. шлях</dt><dd>${hpS==='yes'?'є':hpS==='no'?'немає':'невідомо'}</dd>`;
+  const ce=k!=null&&n>=3&&k>=a,cp=k!=null&&k>=a-1;
+  if(n<3){V.className='verdict';V.textContent='Для гамільтонового циклу потрібно n ⩾ 3.';}
+  else if(ce){V.className='verdict ok';V.textContent=`κ = ${k} ⩾ α = ${a}: теорема Хватала–Ердеша гарантує гамільтонів цикл.`;}
+  else if(k!=null){V.className='verdict '+(hcS==='yes'?'warn':'bad');V.textContent=`κ = ${k} < α = ${a}: теорема Хватала–Ердеша не застосовна; ${hcS==='yes'?'проте граф усе одно гамільтонів (умова лише достатня).':hcS==='no'?'граф справді негамільтонів.':'гамільтоновість не встановлено.'}`;}
+  const ch=n>=3&&chvatalOk(ds);
+  $('#checks3').innerHTML=
+    ck(n>=3?ce:null,'Хватал–Ердеш: κ ⩾ α (цикл)')+
+    ck(cp,'наслідок 4.5: κ ⩾ α − 1 (шлях)')+
+    ck(n>=3?ch:null,'Хватал (Х) для послідовності степенів')+
+    ck(n>=3?oreOk(n,r.A):null,'Оре: deg u + deg v ⩾ n для несумісних u, v')+
+    ck(n>=3?diracOk(ds):null,'Дірак: δ ⩾ n/2')+
+    ck(r.tough?r.tough.t>=1:null,`1-жорсткість (необхідна умова) ${r.tough?'':'— не обчислено'}`);
+}
+(function edInit(){
+  const svg=$('#ed');
+  const pt=e=>{const b=svg.getBoundingClientRect();return[(e.clientX-b.left)*EW/b.width,(e.clientY-b.top)*EH/b.height];};
+  svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;const g=e.target.closest('.vert');
+    if(g){ED.drag=+g.dataset.v;ED.moved=false;svg.setPointerCapture(e.pointerId);return;}
+    if(e.target.classList.contains('hit'))return;
+    if(ED.V.length>=30)return;const[x,y]=pt(e);ED.V.push([x,y]);ED.sel=-1;analyze3();});
+  svg.addEventListener('pointermove',e=>{if(ED.drag<0)return;const[x,y]=pt(e);const p=ED.V[ED.drag];if(Math.hypot(x-p[0],y-p[1])>2)ED.moved=true;if(ED.moved){ED.V[ED.drag]=[Math.max(16,Math.min(EW-16,x)),Math.max(16,Math.min(EH-16,y))];draw3();}});
+  svg.addEventListener('pointerup',()=>{if(ED.drag<0)return;const v=ED.drag;ED.drag=-1;
+    if(ED.moved)return;
+    if(ED.sel<0){ED.sel=v;draw3();return;}
+    if(ED.sel===v){ED.sel=-1;draw3();return;}
+    const kk=key(ED.sel,v),i=ED.E.findIndex(([a,b])=>key(a,b)===kk);
+    if(i>=0)ED.E.splice(i,1);else ED.E.push([ED.sel,v]);ED.sel=-1;analyze3();});
+  svg.addEventListener('contextmenu',e=>{e.preventDefault();const g=e.target.closest('.vert');
+    if(g){const v=+g.dataset.v;ED.V.splice(v,1);ED.E=ED.E.filter(x=>x[0]!==v&&x[1]!==v).map(([a,b])=>[a>v?a-1:a,b>v?b-1:b]);ED.sel=-1;analyze3();return;}
+    if(e.target.classList.contains('hit')){ED.E.splice(+e.target.dataset.e,1);analyze3();}});
+})();
+
+/* ===================== TAB 4: SIMULATION ===================== */
+const SIM={n:0,E:[],eset:new Set(),x:[],y:[],vx:[],vy:[],deg:[],run:true,acc:0,flashes:[],ham:null,lab:[],comp:1,hist:[],tot:0,hamTime:0,time:0,seen:new Set(),drag:-1,L:85,T:30,W:600,H:500,last:0,ek:0,ep:0};
+const PAL=['#345a53','#ca9d48','#8a5a8f','#4f7fb0','#b4473a','#6b8e3a'];
+presets('#pre4',[{label:'2⁹',value:'2 2 2 2 2 2 2 2 2'},{label:'2¹²',value:'2 2 2 2 2 2 2 2 2 2 2 2'},{label:'3¹⁰',value:'3 3 3 3 3 3 3 3 3 3'},'3 3 3 5 5 5 6 6','2 2 3 3 3 3','1 1 2 2 2 2 3 3',{label:'4¹²',value:'4 4 4 4 4 4 4 4 4 4 4 4'},{label:'6¹²',value:'6 6 6 6 6 6 6 6 6 6 6 6'}],v=>{$('#seq4').value=v;simLoad();});
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function simResize(){for(const c of[$('#simc'),$('#strip')]){const r=c.getBoundingClientRect();if(!r.width)continue;const dpr=window.devicePixelRatio||1;c.width=r.width*dpr;c.height=r.height*dpr;c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
+  const r=$('#simc').getBoundingClientRect();if(r.width){SIM.W=r.width;SIM.H=r.height;}}
+window.addEventListener('resize',simResize);
+function simLoad(){
+  let d=parseSeq($('#seq4').value);const V=$('#verdict4');
+  if(d.length>24){d=d.slice(0,24);}
+  const hh=havelHakimi(d);
+  if(!hh.ok||d.length<2){V.className='verdict bad';V.textContent=d.length<2?'Потрібно щонайменше 2 вершини.':'Послідовність не графічна: '+hh.reason+'.';return;}
+  const n=d.length;SIM.n=n;SIM.E=hh.edges.map(e=>[e[0],e[1]]);SIM.eset=new Set(SIM.E.map(([a,b])=>key(a,b)));
+  const ps=circlePos(n,SIM.W||600,SIM.H||500,80);SIM.x=ps.map(p=>p[0]+Math.random()*10);SIM.y=ps.map(p=>p[1]+Math.random()*10);
+  SIM.vx=new Array(n).fill(0);SIM.vy=new Array(n).fill(0);SIM.deg=sortAsc(d);
+  SIM.flashes=[];SIM.hist=[];SIM.tot=0;SIM.hamTime=0;SIM.time=0;SIM.seen=new Set();SIM.acc=0;
+  const ch=chvatalOk(sortAsc(d));
+  V.className='verdict '+(ch?'ok':'warn');
+  V.textContent=ch?`${fmtSeq(sortAsc(d))} задовольняє (Х): гамільтоновість має пережити будь-які перемикання.`:`${fmtSeq(sortAsc(d))} не задовольняє (Х): гамільтоновість може зникати.`+(n>16?' (Гамільтонів цикл перевіряється лише при n ⩽ 16.)':'');
+  simEval();
+}
+function simEval(){
+  const n=SIM.n,A=adjMasks(n,SIM.E);const{lab,c}=compLabels(n,A);SIM.lab=lab;SIM.comp=c;
+  SIM.ham=n<=16?hamCycle(n,A):{status:'unknown'};
+  if(SIM.seen.size<200000)SIM.seen.add(realKey(SIM.E));
+  SIM.hist.push({c,h:SIM.ham.status==='yes'});if(SIM.hist.length>240)SIM.hist.shift();
+}
+function simSwitch(now){const r=twoSwitch(SIM.E,SIM.eset);if(r){SIM.flashes.push({r,t:now});SIM.tot++;simEval();}return r;}
+function physics(){
+  const n=SIM.n,{x,y,vx,vy}=SIM,W=SIM.W,H=SIM.H,L=SIM.L,KR=L*L*0.35,KS=0.025,KG=0.0035,DAMP=0.82,noise=SIM.T*0.03;
+  const fx=new Float64Array(n),fy=new Float64Array(n);
+  for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){let dx=x[i]-x[j],dy=y[i]-y[j];let d2=dx*dx+dy*dy;if(d2<1){dx=Math.random()-.5;dy=Math.random()-.5;d2=1;}const d=Math.sqrt(d2),f=KR/d2;fx[i]+=f*dx/d;fy[i]+=f*dy/d;fx[j]-=f*dx/d;fy[j]-=f*dy/d;}
+  let ep=0;for(const[a,b]of SIM.E){const dx=x[b]-x[a],dy=y[b]-y[a],d=Math.sqrt(dx*dx+dy*dy)||1,f=KS*(d-L);ep+=.5*KS*(d-L)*(d-L);fx[a]+=f*dx/d;fy[a]+=f*dy/d;fx[b]-=f*dx/d;fy[b]-=f*dy/d;}
+  let ek=0;
+  for(let i=0;i<n;i++){if(i===SIM.drag){vx[i]=vy[i]=0;continue;}
+    fx[i]+=KG*(W/2-x[i])+noise*(Math.random()-.5);fy[i]+=KG*(H/2-y[i])+noise*(Math.random()-.5);
+    vx[i]=(vx[i]+fx[i])*DAMP;vy[i]=(vy[i]+fy[i])*DAMP;const sp=Math.hypot(vx[i],vy[i]);if(sp>14){vx[i]*=14/sp;vy[i]*=14/sp;}
+    x[i]=Math.max(18,Math.min(W-18,x[i]+vx[i]));y[i]=Math.max(18,Math.min(H-18,y[i]+vy[i]));ek+=.5*(vx[i]*vx[i]+vy[i]*vy[i]);}
+  SIM.ek=ek;SIM.ep=ep;
+}
+function simDraw(now){
+  const c=$('#simc'),g=c.getContext('2d'),W=SIM.W,H=SIM.H,{x,y,n}=SIM;
+  g.clearRect(0,0,W,H);if(!n)return;
+  const cEdge=css('--edge'),cGold=css('--gold'),cBad=css('--bad'),cGood=css('--good'),cPanel=css('--panel');
+  const hamSet=new Set();if($('#hc4').checked&&SIM.ham&&SIM.ham.status==='yes'){const cy=SIM.ham.cycle;for(let i=0;i<n;i++)hamSet.add(key(cy[i],cy[(i+1)%n]));}
+  g.lineCap='round';
+  for(const[a,b]of SIM.E){const h=hamSet.has(key(a,b));g.strokeStyle=h?cGold:cEdge;g.lineWidth=h?4.5:2;g.beginPath();g.moveTo(x[a],y[a]);g.lineTo(x[b],y[b]);g.stroke();}
+  SIM.flashes=SIM.flashes.filter(f=>now-f.t<1200);
+  for(const f of SIM.flashes){const al=1-(now-f.t)/1200;g.globalAlpha=al;
+    g.setLineDash([6,6]);g.strokeStyle=cBad;g.lineWidth=3;for(const[a,b]of f.r.removed){g.beginPath();g.moveTo(x[a],y[a]);g.lineTo(x[b],y[b]);g.stroke();}
+    g.setLineDash([]);g.strokeStyle=cGood;g.lineWidth=7;for(const[a,b]of f.r.added){g.beginPath();g.moveTo(x[a],y[a]);g.lineTo(x[b],y[b]);g.stroke();}
+    g.globalAlpha=1;}
+  const R=n>16?11:14;
+  for(let i=0;i<n;i++){g.beginPath();g.arc(x[i],y[i],R,0,7);g.fillStyle=PAL[SIM.lab[i]%6];g.fill();g.lineWidth=2.5;g.strokeStyle=cPanel;g.stroke();
+    g.fillStyle='#fff';g.font='600 12px system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText(String(popc(adjMasks1(i))),x[i],y[i]+.5);}
+  // strip
+  const s=$('#strip'),q=s.getContext('2d'),sr=s.getBoundingClientRect(),SW=sr.width,SH=sr.height;q.clearRect(0,0,SW,SH);
+  const hs=SIM.hist,maxC=Math.max(3,...hs.map(h=>h.c)),bw=SW/240;
+  hs.forEach((h,i)=>{const xx=SW-(hs.length-i)*bw;if(h.h){q.fillStyle=cGold;q.globalAlpha=.28;q.fillRect(xx,0,bw+.5,SH);q.globalAlpha=1;}});
+  q.strokeStyle=css('--vert');q.lineWidth=2;q.beginPath();hs.forEach((h,i)=>{const xx=SW-(hs.length-i)*bw+bw/2,yy=SH-12-(h.c-1)/(maxC-1)*(SH-30);i?q.lineTo(xx,yy):q.moveTo(xx,yy);});q.stroke();
+  q.fillStyle=css('--muted');q.font='11px system-ui';q.textAlign='left';q.fillText(`компонент (1…${maxC}); останні ${hs.length} станів`,8,14);
+}
+function adjMasks1(i){let m=0;for(const[a,b]of SIM.E){if(a===i)m|=1<<b;else if(b===i)m|=1<<a;}return m;}
+let lastStats=0;
+function simStats(now){if(now-lastStats<250)return;lastStats=now;
+  const h=SIM.ham?SIM.ham.status:'unknown';
+  $('#stats4').innerHTML=`<dt>вершин / ребер</dt><dd>${SIM.n} / ${SIM.E.length}</dd><dt>перемикань</dt><dd>${SIM.tot}</dd><dt>різних реалізацій</dt><dd>${SIM.seen.size}</dd><dt>компонент зараз</dt><dd>${SIM.comp}</dd><dt>гамільтонова зараз</dt><dd style="color:var(--${h==='yes'?'good':h==='no'?'bad':'muted'})">${h==='yes'?'так':h==='no'?'ні':'не перевіряється'}</dd><dt>частка часу гамільт.</dt><dd>${SIM.time>0&&h!=='unknown'?(100*SIM.hamTime/SIM.time).toFixed(1)+' %':'—'}</dd><dt>енергія пружин</dt><dd>${SIM.ep.toFixed(0)}</dd><dt>кінетична енергія</dt><dd>${SIM.ek.toFixed(1)}</dd>`;}
+function frame(now){
+  const dt=Math.min(.05,SIM.last?(now-SIM.last)/1000:0);SIM.last=now;
+  if(SIM.n&&$('#t4').classList.contains('active')){
+    if(SIM.run){SIM.time+=dt;if(SIM.ham&&SIM.ham.status==='yes')SIM.hamTime+=dt;
+      SIM.acc+=(SIM.T/100)*12*dt;let g=0;while(SIM.acc>=1&&g++<40){SIM.acc-=1;simSwitch(now);}}
+    physics();physics();simDraw(now);simStats(now);}
+  requestAnimationFrame(frame);
+}
+$('#go4').onclick=simLoad;$('#seq4').onkeydown=e=>{if(e.key==='Enter')simLoad();};
+$('#temp4').oninput=e=>{SIM.T=+e.target.value;$('#tempv4').textContent=SIM.T;};
+$('#len4').oninput=e=>{SIM.L=+e.target.value;$('#lenv4').textContent=SIM.L;};
+$('#run4').onclick=()=>{SIM.run=!SIM.run;$('#run4').textContent=SIM.run?'Пауза':'Продовжити';};
+$('#one4').onclick=()=>{for(let k=0;k<200;k++)if(simSwitch(performance.now()))break;};
+$('#shake4').onclick=()=>{for(let i=0;i<SIM.n;i++){SIM.vx[i]+=(Math.random()-.5)*40;SIM.vy[i]+=(Math.random()-.5)*40;}};
+(function simPointer(){const c=$('#simc');
+  const pt=e=>{const b=c.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];};
+  c.addEventListener('pointerdown',e=>{const[px,py]=pt(e);let best=-1,bd=22;for(let i=0;i<SIM.n;i++){const d=Math.hypot(SIM.x[i]-px,SIM.y[i]-py);if(d<bd){bd=d;best=i;}}if(best>=0){SIM.drag=best;c.setPointerCapture(e.pointerId);}});
+  c.addEventListener('pointermove',e=>{if(SIM.drag<0)return;const[px,py]=pt(e);SIM.x[SIM.drag]=px;SIM.y[SIM.drag]=py;});
+  c.addEventListener('pointerup',()=>{SIM.drag=-1;});})();
+
+/* ---------- init ---------- */
+run1();run2();
+{const g=P3['Граф Петерсена']();ED.V=g.V;ED.E=g.E;analyze3();}
+simResize();simLoad();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
