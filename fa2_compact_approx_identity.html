@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Апроксимативна одиниця і компактність</title>
+<style>
+:root{
+  --brand:#345a53; --gold:#ca9d48; --bg:#f5f3ec; --panel:#ffffff; --ink:#1c2a27; --muted:#5f6c68;
+  --grid:#e6e2d6; --line:#d6d0bf; --soft:#eef3f1; --brand-soft:rgba(52,90,83,.16); --gold-soft:rgba(202,157,72,.20);
+  --bad:#b5452f; --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 22px rgba(30,50,45,.07);
+  --serif:"Cambria Math","STIX Two Math","Cambria","Times New Roman",serif;
+  --sans:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--brand:#69a89b; --gold:#dcb062; --bg:#101614; --panel:#18211e; --ink:#e7ece9; --muted:#9caaa5;
+    --grid:#26312e; --line:#34423e; --soft:#1e2a27; --brand-soft:rgba(105,168,155,.20); --gold-soft:rgba(220,176,98,.20);
+    --bad:#e07a62; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 22px rgba(0,0,0,.25);}
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+header{background:var(--brand);color:#fff;padding:22px 20px 18px;position:relative;overflow:hidden}
+@media (prefers-color-scheme:dark){header{background:#21403a}}
+header::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;
+  border:28px solid rgba(202,157,72,.35)}
+header .wrap{max-width:1280px;margin:0 auto;position:relative;z-index:1}
+header .kicker{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:#f0dcb1}
+header h1{margin:4px 0 4px;font:600 26px/1.2 var(--serif)}
+header p{margin:0;color:#dfe9e6;font-size:14px;max-width:880px}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+nav.tabs .wrap{max-width:1280px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;padding:0 12px;scrollbar-width:thin}
+nav.tabs button{flex:0 0 auto;border:0;background:none;color:var(--muted);font:500 14px var(--sans);padding:13px 13px 11px;
+  border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button[aria-selected=true]{color:var(--brand);border-bottom-color:var(--gold)}
+nav.tabs button .num{display:inline-block;min-width:18px;height:18px;line-height:18px;border-radius:9px;font-size:11px;
+  background:var(--soft);color:var(--muted);margin-right:6px;text-align:center}
+nav.tabs button[aria-selected=true] .num{background:var(--gold);color:#fff}
+main{max-width:1280px;margin:0 auto;padding:18px 16px 30px}
+.panel[hidden]{display:none}
+.intro{background:var(--panel);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;margin-bottom:16px;
+  border-left:4px solid var(--gold)}
+.intro h2{margin:0 0 6px;font:600 20px/1.3 var(--serif);color:var(--brand)}
+.intro p{margin:6px 0}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 7px;
+  border-radius:5px;margin-right:6px;vertical-align:1px}
+.tag.geo{background:var(--brand-soft);color:var(--brand)} .tag.phys{background:var(--gold-soft);color:#9a7429}
+@media (prefers-color-scheme:dark){.tag.phys{color:var(--gold)}}
+.layout{display:grid;grid-template-columns:310px 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+aside.ctl{background:var(--panel);border-radius:12px;box-shadow:var(--shadow);padding:14px 14px 10px;position:sticky;top:62px}
+@media (max-width:900px){aside.ctl{position:static}}
+aside.ctl h3{margin:2px 0 10px;font:600 13px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fld{display:grid;grid-template-columns:62px 1fr 74px;gap:8px;align-items:center;margin:8px 0}
+.fld>span{font:italic 15px var(--serif)}
+.fld input[type=number]{width:100%}
+.ff{margin:8px 0 10px}
+.ff label{display:block;font:italic 15px var(--serif);margin-bottom:3px}
+.ff .msg{color:var(--bad);font-size:12.5px;min-height:0}
+input[type=number],input.formula,select{font:14px var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--line);
+  border-radius:7px;padding:6px 8px}
+input.formula{width:100%;font-family:Consolas,"Cascadia Mono","Menlo",monospace;font-size:14px}
+input.formula.bad{border-color:var(--bad);box-shadow:0 0 0 2px rgba(181,69,47,.15)}
+select{width:100%}
+input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--brand)}
+.row{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.chk{display:flex;gap:7px;align-items:center;font-size:14px;margin:6px 0;cursor:pointer}
+.chk input{accent-color:var(--brand)}
+.btn{border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:8px;padding:7px 14px;font:600 14px var(--sans);
+  cursor:pointer}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn:hover{filter:brightness(1.08)}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0}
+.viz{display:grid;gap:14px;min-width:0}
+.card{background:var(--panel);border-radius:12px;box-shadow:var(--shadow);padding:12px 14px;min-width:0}
+.card h4{margin:0 0 6px;font:600 14.5px var(--sans);color:var(--ink)}
+.card h4 small{font-weight:400;color:var(--muted)}
+canvas{display:block;width:100%;touch-action:none}
+.h420{height:420px}.h340{height:340px}.h300{height:300px}.h260{height:260px}.h220{height:220px}.h40{height:40px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:1100px){.two{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:8px}
+.stat{background:var(--soft);border-radius:8px;padding:7px 10px}
+.stat .k{font:italic 13.5px var(--serif);color:var(--muted)}
+.stat .v{font:600 16px var(--sans);font-variant-numeric:tabular-nums}
+.verdict{margin-top:10px;padding:9px 12px;border-radius:8px;font-size:14px;background:var(--soft);border-left:4px solid var(--muted)}
+.verdict.ok{border-left-color:var(--brand)} .verdict.no{border-left-color:var(--bad)} .verdict.mid{border-left-color:var(--gold)}
+.m{font-family:var(--serif);font-style:italic}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:4px;margin-right:5px}
+.theory{columns:2 420px;column-gap:16px}
+.theory .card{break-inside:avoid;margin:0 0 16px;display:inline-block;width:100%}
+.theory h3{margin:2px 0 8px;font:600 17px var(--serif);color:var(--brand)}
+.theory p{margin:6px 0}
+.theory .thm{border-left:3px solid var(--gold);padding:4px 10px;margin:8px 0;background:var(--soft);border-radius:0 6px 6px 0}
+.theory code,.kbd{font-family:Consolas,"Cascadia Mono",Menlo,monospace;font-size:13px;background:var(--soft);padding:1px 5px;border-radius:4px}
+footer{max-width:1280px;margin:0 auto;padding:6px 16px 26px;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="kicker">Функціональний аналіз ІІ · Компактні множини та компактні оператори</div>
+  <h1>Лекція 1. Оператори скінченного рангу та апроксимативна одиниця</h1>
+  <p>Інтерактивні моделі до лекції: ε-сітки, інтерполяційна апроксимативна одиниця в C[0,1], критерії Арцела–Асколі та передкомпактності в ℓᵖ, скінченновимірна апроксимація операторів і фізична симуляція. Клавіші <b>1–7</b> перемикають вкладки, <b>Enter</b> застосовує формулу, <b>Пробіл</b> запускає симуляцію.</p>
+</div></header>
+
+<nav class="tabs" role="tablist"><div class="wrap">
+  <button data-tab="nets" role="tab"><span class="num">1</span>ε-сітки</button>
+  <button data-tab="ai" role="tab"><span class="num">2</span>Апрокс. одиниця в C[0,1]</button>
+  <button data-tab="aa" role="tab"><span class="num">3</span>Арцела–Асколі</button>
+  <button data-tab="lp" role="tab"><span class="num">4</span>Критерій у ℓᵖ</button>
+  <button data-tab="op" role="tab"><span class="num">5</span>Скінченний ранг</button>
+  <button data-tab="sim" role="tab"><span class="num">6</span>Симуляція</button>
+  <button data-tab="th" role="tab"><span class="num">7</span>Довідка</button>
+</div></nav>
+
+<main>
+<!-- ============ 1. NETS ============ -->
+<section class="panel" id="tab-nets">
+  <div class="intro">
+    <h2>Скінченні ε-сітки і передкомпактність</h2>
+    <p>Множина <span class="m">A</span> передкомпактна, якщо для кожного <span class="m">ε &gt; 0</span> її можна накрити скінченною кількістю куль радіуса <span class="m">ε</span>. Тут <span class="m">A ⊂ (ℝ², ‖·‖<sub>p</sub>)</span> дискретизована, а жадібний алгоритм обирає центри з самої <span class="m">A</span>, доки кожна точка не потрапить у кулю.</p>
+    <p><span class="tag geo">Геометрія</span>Форма кулі залежить від норми: ромб при <span class="m">p = 1</span>, круг при <span class="m">p = 2</span>, квадрат при <span class="m">p = ∞</span>. Кількість куль <span class="m">N(ε)</span> зростає як <span class="m">ε<sup>−d</sup></span>, де <span class="m">d</span> — розмірність множини, тому на лог-графіку нахил ≈ 1 для кривої і ≈ 2 для області.</p>
+    <p><span class="tag phys">Фізика</span><span class="m">N(ε)</span> — кількість «комірок» розміру <span class="m">ε</span>, якими можна з точністю <span class="m">ε</span> закодувати будь-який стан системи; <span class="m">log₂N(ε)</span> біт — це ε-ентропія за Колмогоровим. У нескінченновимірному просторі одинична куля потребує нескінченно багато комірок (теорема Ріса, нижня панель).</p>
+  </div>
+  <div class="layout">
+    <aside class="ctl">
+      <h3>Множина та норма</h3>
+      <select id="nt-shape">
+        <option value="disk">Круг x² + y² ≤ 1</option>
+        <option value="square">Квадрат [−1, 1]²</option>
+        <option value="annulus">Кільце 0,6 ≤ r ≤ 1</option>
+        <option value="circle">Коло (крива)</option>
+        <option value="segment">Відрізок</option>
+        <option value="spiral">Спіраль Архімеда</option>
+        <option value="creg">Власна область F(x, y) ≤ 0</option>
+        <option value="ccur">Власна крива (x(s), y(s)), s ∈ [0, 1]</option>
+      </select>
+      <div id="nt-creg-box" hidden>
+        <div class="ff"><label>F(x, y) =</label><input class="formula" id="nt-reg" value="abs(x)^0.7 + abs(y)^0.7 - 1.1"><div class="msg" id="nt-reg-msg"></div></div>
+      </div>
+      <div id="nt-ccur-box" hidden>
+        <div class="ff"><label>x(s) =</label><input class="formula" id="nt-cx" value="(1 + 0.3*cos(10*pi*s))*cos(2*pi*s)"><div class="msg" id="nt-cx-msg"></div></div>
+        <div class="ff"><label>y(s) =</label><input class="formula" id="nt-cy" value="(1 + 0.3*cos(10*pi*s))*sin(2*pi*s)"><div class="msg" id="nt-cy-msg"></div></div>
+      </div>
+      <div class="fld"><span>p</span><input type="range" id="nt-p-r" min="1" max="8" step="0.1" value="2"><input type="number" id="nt-p" min="1" max="8" step="0.1" value="2"></div>
+      <label class="chk"><input type="checkbox" id="nt-pinf"> p = ∞ (норма max)</label>
+      <div class="fld"><span>ε</span><input type="range" id="nt-eps-r" min="0.06" max="1.2" step="0.01" value="0.3"><input type="number" id="nt-eps" min="0.06" max="1.2" step="0.01" value="0.3"></div>
+      <h3 style="margin-top:14px">Нескінченний вимір</h3>
+      <div class="fld"><span>m</span><input type="range" id="nt-m-r" min="2" max="16" step="1" value="7"><input type="number" id="nt-m" min="2" max="16" step="1" value="7"></div>
+      <p class="hint">m — кількість базисних векторів e₁, …, e<sub>m</sub> одиничної кулі простору ℓᵖ (для того самого p та ε).</p>
+    </aside>
+    <div class="viz">
+      <div class="card"><h4>ε-сітка для A <small>— центри (точки) та кулі радіуса ε у нормі ‖·‖<sub>p</sub></small></h4>
+        <canvas id="nt-cv" class="h420"></canvas>
+        <div class="stats" id="nt-stats"></div>
+      </div>
+      <div class="two">
+        <div class="card"><h4>Скільки куль потрібно? <small>log N(ε) проти log(1/ε)</small></h4><canvas id="nt-log" class="h260"></canvas><div class="hint" id="nt-log-info"></div></div>
+        <div class="card"><h4>Чому куля в ℓᵖ не передкомпактна <small>(теорема 5)</small></h4><canvas id="nt-rz" class="h260"></canvas><div class="verdict" id="nt-rz-info"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. APPROXIMATE IDENTITY ============ -->
+<section class="panel" id="tab-ai" hidden>
+  <div class="intro">
+    <h2>Кусково-лінійна інтерполяція — апроксимативна одиниця в C[0,1]</h2>
+    <p>Оператор <span class="m">L<sub>n</sub>f = Σ<sub>k</sub> f(t<sub>k</sub>) φ<sub>k</sub></span>, <span class="m">t<sub>k</sub> = k/n</span>, замінює <span class="m">f</span> ламаною через вузли. Він має ранг <span class="m">n + 1</span>, норму <span class="m">‖L<sub>n</sub>‖ = 1</span> і задовольняє оцінку <span class="m">‖L<sub>n</sub>f − f‖ ≤ ω(f, 1/n)</span>. Тому <span class="m">L<sub>n</sub>f → f</span> для кожної неперервної <span class="m">f</span>, але не рівномірно на одиничній кулі: функція з ядра <span class="m">L<sub>n</sub></span> дає <span class="m">‖I − L<sub>n</sub>‖ ≥ 1</span>.</p>
+    <p><span class="tag geo">Геометрія</span><span class="m">L<sub>n</sub></span> — проєктор (<span class="m">L<sub>n</sub>² = L<sub>n</sub></span>) на <span class="m">(n+1)</span>-вимірний простір ламаних; «шапочки» <span class="m">φ<sub>k</sub></span> утворюють розбиття одиниці, і <span class="m">L<sub>n</sub>f(t)</span> — опукла комбінація значень <span class="m">f</span> у сусідніх вузлах.</p>
+    <p><span class="tag phys">Фізика</span>Це цифровий запис сигналу: давач вимірює <span class="m">f</span> у <span class="m">n + 1</span> моменти часу, а пристрій відтворює ламану. Модуль неперервності <span class="m">ω(f, 1/n)</span> — найбільша зміна сигналу між двома вимірами, тобто гарантована похибка відтворення.</p>
+  </div>
+  <div class="layout">
+    <aside class="ctl">
+      <h3>Сигнал</h3>
+      <select id="ai-preset">
+        <option value="sin(2*pi*t) + 0.4*sin(6*pi*t)">Гладкий сигнал</option>
+        <option value="abs(t - 0.5)">Злам |t − ½|</option>
+        <option value="sqrt(t)">√t: ω(f, δ) = √δ</option>
+        <option value="t*sin(12/(t + 0.04))">Швидкі осциляції</option>
+        <option value="exp(-60*(t - 0.4)^2)">Вузький імпульс</option>
+        <option value="hat(4*n*(t - 1/(2*n)))">Функція з ядра Lₙ</option>
+        <option value="step(t - 0.5)">Розрив (f ∉ C[0,1])</option>
+      </select>
+      <div class="ff"><label>f(t) =</label><input class="formula" id="ai-f" value="sin(2*pi*t) + 0.4*sin(6*pi*t)"><div class="msg" id="ai-f-msg"></div></div>
+      <p class="hint">У формулі можна використовувати і <span class="m">n</span> (поточну кількість відрізків).</p>
+      <div class="fld"><span>n</span><input type="range" id="ai-n-r" min="1" max="80" step="1" value="6"><input type="number" id="ai-n" min="1" max="80" step="1" value="6"></div>
+      <label class="chk"><input type="checkbox" id="ai-hats" checked> <span>показати «шапочки» φₖ</span></label>
+    </aside>
+    <div class="viz">
+      <div class="card"><h4>f та L<sub>n</sub>f</h4><canvas id="ai-cv" class="h340"></canvas>
+        <div class="legend"><span><i style="background:var(--gold)"></i>f</span><span><i style="background:var(--brand)"></i>L<sub>n</sub>f</span><span><i style="background:var(--brand-soft);height:8px"></i>φ<sub>k</sub> (масштабовано)</span></div>
+        <div class="stats" id="ai-stats"></div>
+      </div>
+      <div class="two">
+        <div class="card"><h4>Похибка |L<sub>n</sub>f(t) − f(t)|</h4><canvas id="ai-err" class="h220"></canvas>
+          <div class="legend"><span><i style="background:var(--gold)"></i>‖L<sub>n</sub>f − f‖</span><span><i style="background:var(--brand)"></i>ω(f, 1/n)</span></div></div>
+        <div class="card"><h4>Збіжність при n → ∞ <small>(логарифмічна шкала)</small></h4><canvas id="ai-conv" class="h220"></canvas>
+          <div class="legend"><span><i style="background:var(--gold)"></i>‖L<sub>n</sub>f − f‖</span><span><i style="background:var(--brand)"></i>ω(f, 1/n)</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. ARZELA-ASCOLI ============ -->
+<section class="panel" id="tab-aa" hidden>
+  <div class="intro">
+    <h2>Критерій Арцела–Асколі як наслідок теореми 16</h2>
+    <p>Множина <span class="m">A ⊂ C[0,1]</span> передкомпактна тоді й лише тоді, коли вона рівномірно обмежена і рівностепенево неперервна: <span class="m">sup<sub>f∈A</sub> ω(f, δ) → 0</span> при <span class="m">δ → 0</span>. Еквівалентно (теорема 16): <span class="m">sup<sub>f∈A</sub> ‖L<sub>n</sub>f − f‖ → 0</span>. Задайте родину <span class="m">f<sub>k</sub>, k = 1, …, K</span>, і подивіться, чи «тримаються» ці супремуми при зростанні <span class="m">K</span>.</p>
+    <p><span class="tag geo">Геометрія</span>Рівностепенева неперервність означає, що графіки всіх функцій родини мають спільний «запас крутизни»: жодна не може змінитися більше ніж на <span class="m">ε</span> на проміжку довжини <span class="m">δ</span>. Тоді родину з точністю <span class="m">ε</span> описують ламані з фіксованою кількістю ланок.</p>
+    <p><span class="tag phys">Фізика</span>Ансамбль сигналів, усі частоти яких обмежені спільною межею, можна оцифрувати з однією частотою дискретизації; родина <span class="m">sin(kπt)</span> зі зростаючими частотами такого спільного кроку не має.</p>
+  </div>
+  <div class="layout">
+    <aside class="ctl">
+      <h3>Родина функцій</h3>
+      <select id="aa-preset">
+        <option value="sin(k*pi*t)/k">sin(kπt)/k — так</option>
+        <option value="sin(k*pi*t)">sin(kπt) — ні</option>
+        <option value="t^k">tᵏ — ні</option>
+        <option value="t^k/k">tᵏ/k — так</option>
+        <option value="sqrt(t + 1/k)">√(t + 1/k) — так</option>
+        <option value="atan(k*(t - 0.5))">arctg(k(t − ½)) — ні</option>
+        <option value="hat(k*(t - 0.5))">вузька шапочка — ні</option>
+      </select>
+      <div class="ff"><label>f<sub>k</sub>(t) =</label><input class="formula" id="aa-f" value="sin(k*pi*t)/k"><div class="msg" id="aa-f-msg"></div></div>
+      <div class="fld"><span>K</span><input type="range" id="aa-K-r" min="1" max="150" step="1" value="30"><input type="number" id="aa-K" min="1" max="150" step="1" value="30"></div>
+      <div class="fld"><span>n</span><input type="range" id="aa-n-r" min="1" max="60" step="1" value="10"><input type="number" id="aa-n" min="1" max="60" step="1" value="10"></div>
+      <div class="fld"><span>log δ</span><input type="range" id="aa-d-r" min="-2.8" max="0" step="0.05" value="-1.3"><input type="number" id="aa-d" min="-2.8" max="0" step="0.05" value="-1.3"></div>
+      <p class="hint">δ = 10<sup>log δ</sup>. Товстою лінією виділено функцію родини, на якій досягається sup<sub>k</sub> ω(f<sub>k</sub>, δ).</p>
+    </aside>
+    <div class="viz">
+      <div class="card"><h4>Родина f<sub>1</sub>, …, f<sub>K</sub></h4><canvas id="aa-cv" class="h340"></canvas><div class="stats" id="aa-stats"></div><div class="verdict" id="aa-verdict"></div></div>
+      <div class="two">
+        <div class="card"><h4>sup<sub>k</sub> ω(f<sub>k</sub>, δ) як функція δ</h4><canvas id="aa-om" class="h220"></canvas></div>
+        <div class="card"><h4>sup<sub>k</sub> ‖L<sub>n</sub>f<sub>k</sub> − f<sub>k</sub>‖ як функція n</h4><canvas id="aa-er" class="h220"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. l^p ============ -->
+<section class="panel" id="tab-lp" hidden>
+  <div class="intro">
+    <h2>Передкомпактність у ℓᵖ: рівномірно малі хвости</h2>
+    <p>Координатні проєктори <span class="m">P<sub>n</sub>x = (x₁, …, x<sub>n</sub>, 0, …)</span> утворюють апроксимативну одиницю, тому <span class="m">A ⊂ ℓᵖ</span> передкомпактна ⇔ <span class="m">A</span> обмежена і <span class="m">sup<sub>x∈A</sub> Σ<sub>k&gt;n</sub> |x<sub>k</sub>|ᵖ → 0</span>. Для заданого <span class="m">ε</span> номер <span class="m">n(ε)</span> показує, скільки координат досить, щоб описати всю множину з точністю <span class="m">ε</span>.</p>
+    <p><span class="tag geo">Геометрія</span>«Цеглина» <span class="m">Q = {|x<sub>k</sub>| ≤ c<sub>k</sub>}</span> у тривимірному вікні координат <span class="m">(x<sub>m</sub>, x<sub>m+1</sub>, x<sub>m+2</sub>)</span> сплющується при <span class="m">m → ∞</span>: множина «майже лежить» у скінченновимірному підпросторі. Одинична куля в будь-якому вікні виглядає однаково — вона не сплющується ніколи.</p>
+    <p><span class="tag phys">Фізика</span><span class="m">x<sub>k</sub></span> — амплітуди гармонік сигналу, <span class="m">‖x‖₂²</span> — енергія. Передкомпактність означає, що енергія у високих гармоніках рівномірно мала для всіх сигналів множини.</p>
+  </div>
+  <div class="layout">
+    <aside class="ctl">
+      <h3>Множина A ⊂ ℓᵖ</h3>
+      <select id="lp-type">
+        <option value="box">Цеглина Q = {x : |xₖ| ≤ cₖ}</option>
+        <option value="ball">Одинична куля Bℓᵖ</option>
+        <option value="fam">Послідовність векторів x⁽ʲ⁾, j = 1…J</option>
+      </select>
+      <div id="lp-box-box">
+        <select id="lp-cpreset">
+          <option value="1/k">c<sub>k</sub> = 1/k (цеглина Гільберта)</option>
+          <option value="1/sqrt(k)">c<sub>k</sub> = 1/√k</option>
+          <option value="2^(-k)">c<sub>k</sub> = 2⁻ᵏ</option>
+          <option value="1/log(k+1)">c<sub>k</sub> = 1/ln(k+1)</option>
+          <option value="1/k^0.3">c<sub>k</sub> = k^−0,3</option>
+        </select>
+        <div class="ff"><label>c<sub>k</sub> =</label><input class="formula" id="lp-c" value="1/k"><div class="msg" id="lp-c-msg"></div></div>
+      </div>
+      <div id="lp-fam-box" hidden>
+        <select id="lp-xpreset">
+          <option value="(k==j)">x⁽ʲ⁾ = eⱼ</option>
+          <option value="(k==j)/j">x⁽ʲ⁾ = eⱼ/j</option>
+          <option value="(k<=j)/j">x⁽ʲ⁾ = (e₁ + … + eⱼ)/j</option>
+          <option value="exp(-k/j)/j">x⁽ʲ⁾ₖ = e^(−k/j)/j</option>
+          <option value="sin(j*k)/k">x⁽ʲ⁾ₖ = sin(jk)/k</option>
+        </select>
+        <div class="ff"><label>x⁽ʲ⁾<sub>k</sub> =</label><input class="formula" id="lp-x" value="(k<=j)/j"><div class="msg" id="lp-x-msg"></div></div>
+        <div class="fld"><span>J</span><input type="range" id="lp-J-r" min="1" max="200" step="1" value="80"><input type="number" id="lp-J" min="1" max="200" step="1" value="80"></div>
+      </div>
+      <div class="fld"><span>p</span><input type="range" id="lp-p-r" min="1" max="6" step="0.1" value="2"><input type="number" id="lp-p" min="1" max="6" step="0.1" value="2"></div>
+      <div class="fld"><span>n</span><input type="range" id="lp-n-r" min="0" max="60" step="1" value="5"><input type="number" id="lp-n" min="0" max="60" step="1" value="5"></div>
+      <div class="fld"><span>ε</span><input type="range" id="lp-eps-r" min="0.005" max="1" step="0.005" value="0.1"><input type="number" id="lp-eps" min="0.005" max="1" step="0.005" value="0.1"></div>
+      <div class="fld"><span>m</span><input type="range" id="lp-m-r" min="1" max="40" step="1" value="1"><input type="number" id="lp-m" min="1" max="40" step="1" value="1"></div>
+      <p class="hint">m — перша з трьох координат 3D-вікна. Обертайте фігуру мишею.</p>
+    </aside>
+    <div class="viz">
+      <div class="two">
+        <div class="card"><h4>Тривимірне вікно координат <small id="lp-3d-title"></small></h4><canvas id="lp-3d" class="h340"></canvas></div>
+        <div class="card"><h4 id="lp-bars-title">Координати і хвіст</h4><canvas id="lp-bars" class="h340"></canvas>
+          <div class="legend"><span><i style="background:var(--brand)"></i>k ≤ n — залишає P<sub>n</sub></span><span><i style="background:var(--gold)"></i>k &gt; n — хвіст x − P<sub>n</sub>x</span></div></div>
+      </div>
+      <div class="card"><h4>r(n) = sup<sub>x∈A</sub> ‖x − P<sub>n</sub>x‖<sub>p</sub> <small>(логарифмічна шкала)</small></h4><canvas id="lp-tail" class="h260"></canvas>
+        <div class="stats" id="lp-stats"></div><div class="verdict" id="lp-verdict"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. OPERATORS ============ -->
+<section class="panel" id="tab-op" hidden>
+  <div class="intro">
+    <h2>Діагональний оператор і його наближення операторами скінченного рангу</h2>
+    <p>Нехай <span class="m">T x = (λ₁x₁, λ₂x₂, …)</span> в ℓ², <span class="m">T<sub>n</sub> = P<sub>n</sub>T</span> — оператор рангу ≤ <span class="m">n</span>. Тоді <span class="m">‖T − T<sub>n</sub>‖ = sup<sub>k&gt;n</sub> |λ<sub>k</sub>|</span>. Якщо <span class="m">λ<sub>k</sub> → 0</span>, то <span class="m">T<sub>n</sub> → T</span> за нормою і <span class="m">T(B)</span> передкомпактна (теорема 21); при <span class="m">λ<sub>k</sub> = 1/k</span> маємо приклад зауваження 9: границя операторів скінченного рангу, яка сама не має скінченного рангу.</p>
+    <p><span class="tag geo">Геометрія</span><span class="m">T</span> переводить одиничну кулю в еліпсоїд з півосями <span class="m">|λ<sub>k</sub>|</span>. Компактність — це сплющування еліпсоїда у далеких напрямках; <span class="m">T<sub>n</sub></span> просто «пласко притискає» його до перших <span class="m">n</span> осей. Наведіть мишу на панель: точка <span class="m">x</span> рухається по колу, видно <span class="m">Tx</span> і <span class="m">T<sub>n</sub>x</span>.</p>
+    <p><span class="tag phys">Фізика</span><span class="m">λ<sub>k</sub></span> — коефіцієнти передачі лінійного фільтра (приладу) для <span class="m">k</span>-ї гармоніки. Компактний фільтр гасить високі частоти, тож на виході досить скінченної кількості каналів; фільтр з <span class="m">|λ<sub>k</sub>| ≥ c &gt; 0</span> «пропускає все» і компактним не є.</p>
+  </div>
+  <div class="layout">
+    <aside class="ctl">
+      <h3>Оператор T = diag(λ<sub>k</sub>)</h3>
+      <select id="op-preset">
+        <option value="1/k">λ<sub>k</sub> = 1/k (зауваження 9)</option>
+        <option value="1/sqrt(k)">λ<sub>k</sub> = 1/√k</option>
+        <option value="exp(-k/4)">λ<sub>k</sub> = e^(−k/4)</option>
+        <option value="(-1)^k/k">λ<sub>k</sub> = (−1)ᵏ/k</option>
+        <option value="1/log(k+1)">λ<sub>k</sub> = 1/ln(k+1)</option>
+        <option value="1 + 1/k">λ<sub>k</sub> = 1 + 1/k</option>
+        <option value="sin(k)">λ<sub>k</sub> = sin k</option>
+      </select>
+      <div class="ff"><label>λ<sub>k</sub> =</label><input class="formula" id="op-l" value="1/k"><div class="msg" id="op-l-msg"></div></div>
+      <div class="fld"><span>n</span><input type="range" id="op-n-r" min="0" max="60" step="1" value="3"><input type="number" id="op-n" min="0" max="60" step="1" value="3"></div>
+      <div class="fld"><span>m</span><input type="range" id="op-m-r" min="1" max="40" step="1" value="1"><input type="number" id="op-m" min="1" max="40" step="1" value="1"></div>
+      <div class="fld"><span>ε</span><input type="range" id="op-eps-r" min="0.005" max="1" step="0.005" value="0.05"><input type="number" id="op-eps" min="0.005" max="1" step="0.005" value="0.05"></div>
+      <p class="hint">m — номер першої координати у двовимірному вікні (x<sub>m</sub>, x<sub>m+1</sub>).</p>
+    </aside>
+    <div class="viz">
+      <div class="two">
+        <div class="card"><h4>Образ кулі <small id="op-ell-title"></small></h4><canvas id="op-ell" class="h340"></canvas>
+          <div class="legend"><span><i style="background:var(--muted)"></i>B (одинична куля)</span><span><i style="background:var(--brand)"></i>T(B)</span><span><i style="background:var(--gold)"></i>T<sub>n</sub>(B)</span></div></div>
+        <div class="card"><h4>Сингулярні числа |λ<sub>k</sub>|</h4><canvas id="op-bars" class="h340"></canvas>
+          <div class="legend"><span><i style="background:var(--brand)"></i>збережено в T<sub>n</sub></span><span><i style="background:var(--gold)"></i>відкинуто</span><span><i style="background:var(--ink)"></i>‖T − T<sub>n</sub>‖</span></div></div>
+      </div>
+      <div class="card"><h4>‖T − T<sub>n</sub>‖ як функція рангу n</h4><canvas id="op-norm" class="h260"></canvas>
+        <div class="stats" id="op-stats"></div><div class="verdict" id="op-verdict"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. SIMULATION ============ -->
+<section class="panel" id="tab-sim" hidden>
+  <div class="intro">
+    <h2>Фізична симуляція: тепловий оператор компактний, хвильовий — ні</h2>
+    <p>Стрижень (або струна) на <span class="m">[0, 1]</span> із закріпленими кінцями. Розклад за модами <span class="m">sin(kπx)</span> перетворює еволюцію на діагональний оператор <span class="m">S<sub>t</sub></span> з множниками <span class="m">λ<sub>k</sub>(t)</span>. Для рівняння теплопровідності <span class="m">u<sub>t</sub> = κu<sub>xx</sub></span> маємо <span class="m">λ<sub>k</sub>(t) = e<sup>−k²π²κt</sup> → 0</span>: при <span class="m">t &gt; 0</span> оператор <span class="m">S<sub>t</sub></span> компактний і майже скінченного рангу. Для хвильового рівняння <span class="m">u<sub>tt</sub> = c²u<sub>xx</sub></span> множники <span class="m">cos(kπct)</span> не прямують до нуля — енергія у високих модах не зникає.</p>
+    <p><span class="tag geo">Геометрія</span>Пунктирна крива — проєкція <span class="m">P<sub>n</sub>u</span> на перші <span class="m">n</span> мод (апроксимативна одиниця, зумовлена базисом). Графік <span class="m">n<sub>ε</sub>(t)</span> показує, скільки мод потрібно для відносної точності <span class="m">ε</span> в <span class="m">L²</span>: для тепла це число швидко падає, для хвилі — ні.</p>
+    <p><span class="tag phys">Фізика</span>Дифузія згладжує будь-який початковий профіль: усі стани з обмеженою енергією через час <span class="m">t</span> лежать у передкомпактній множині <span class="m">S<sub>t</sub>(B)</span>. Хвиля переносить інформацію без втрат — <span class="m">S<sub>t</sub>(B)</span> залишається «такою ж великою», як <span class="m">B</span>.</p>
+  </div>
+  <div class="layout">
+    <aside class="ctl">
+      <h3>Модель</h3>
+      <select id="sm-mode">
+        <option value="heat">Теплопровідність uₜ = κuₓₓ</option>
+        <option value="wave">Коливання струни uₜₜ = c²uₓₓ</option>
+      </select>
+      <select id="sm-preset" style="margin-top:8px">
+        <option value="step(x-0.3)*step(0.7-x)">Прямокутний імпульс</option>
+        <option value="hat(4*(x-0.5))">Трикутник (защипнута струна)</option>
+        <option value="4*x*(1-x)">Парабола</option>
+        <option value="sin(pi*x) + 0.4*sin(9*pi*x)">Дві моди</option>
+        <option value="0.6*noise(60*x)*step(x-0.1)*step(0.9-x)">Шум</option>
+        <option value="hat(10*(x-0.25)) - 0.7*hat(14*(x-0.7))">Два піки</option>
+      </select>
+      <div class="ff"><label>u(x, 0) =</label><input class="formula" id="sm-u" value="step(x-0.3)*step(0.7-x)"><div class="msg" id="sm-u-msg"></div></div>
+      <div class="fld" id="sm-kappa-fld"><span>κ</span><input type="range" id="sm-kappa-r" min="0.002" max="0.05" step="0.001" value="0.01"><input type="number" id="sm-kappa" min="0.002" max="0.05" step="0.001" value="0.01"></div>
+      <div class="fld" id="sm-c-fld" hidden><span>c</span><input type="range" id="sm-c-r" min="0.1" max="2" step="0.05" value="0.5"><input type="number" id="sm-c" min="0.1" max="2" step="0.05" value="0.5"></div>
+      <div class="fld"><span>швидк.</span><input type="range" id="sm-speed-r" min="0.1" max="5" step="0.1" value="1"><input type="number" id="sm-speed" min="0.1" max="5" step="0.1" value="1"></div>
+      <div class="fld"><span>n</span><input type="range" id="sm-n-r" min="0" max="60" step="1" value="5"><input type="number" id="sm-n" min="0" max="60" step="1" value="5"></div>
+      <div class="fld"><span>ε</span><input type="range" id="sm-eps-r" min="0.005" max="0.5" step="0.005" value="0.05"><input type="number" id="sm-eps" min="0.005" max="0.5" step="0.005" value="0.05"></div>
+      <div class="row"><button class="btn" id="sm-play">▶ Пуск</button><button class="btn ghost" id="sm-reset">⟲ t = 0</button></div>
+      <p class="hint">Розрахунок за 200 модами Фур'є; час t — в умовних одиницях.</p>
+    </aside>
+    <div class="viz">
+      <div class="card"><h4 id="sm-title">Профіль u(x, t)</h4><canvas id="sm-cv" class="h300"></canvas><canvas id="sm-rod" class="h40" style="margin-top:6px;border-radius:6px"></canvas>
+        <div class="legend"><span><i style="background:var(--brand)"></i>u(x, t)</span><span><i style="background:var(--gold)"></i>P<sub>n</sub>u — перші n мод</span><span><i style="background:var(--muted)"></i>u(x, 0)</span></div>
+        <div class="stats" id="sm-stats"></div></div>
+      <div class="two">
+        <div class="card"><h4>Спектр: |b<sub>k</sub>(t)| і множник |λ<sub>k</sub>(t)|</h4><canvas id="sm-spec" class="h260"></canvas></div>
+        <div class="card"><h4>Скільки мод потрібно: n<sub>ε</sub>(t)</h4><canvas id="sm-hist" class="h260"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. THEORY ============ -->
+<section class="panel" id="tab-th" hidden>
+  <div class="theory">
+    <div class="card"><h3>1. Передкомпактні множини</h3>
+      <p>Множина <span class="m">N</span> називається ε-сіткою для <span class="m">A</span>, якщо <span class="m">A ⊂ N + εB<sub>X</sub></span>; множина <span class="m">A</span> передкомпактна (цілком обмежена), якщо для кожного <span class="m">ε &gt; 0</span> вона має скінченну ε-сітку. За критерієм Хаусдорфа в банаховому просторі множина компактна тоді й лише тоді, коли вона замкнена і передкомпактна.</p>
+      <p>Передкомпактні множини обмежені; передкомпактність зберігається при переході до підмножин і замикання, при об'єднанні, сумі, множенні на скаляр і при дії неперервного лінійного оператора (твердження 2).</p>
+      <div class="thm"><b>Лема 3.</b> Якщо для кожного <span class="m">ε &gt; 0</span> існує передкомпактна <span class="m">A<sub>ε</sub></span> з <span class="m">A ⊂ A<sub>ε</sub> + εB<sub>X</sub></span>, то <span class="m">A</span> передкомпактна. Це головний технічний інструмент лекції: наближати можна не скінченними, а передкомпактними множинами.</div>
+    </div>
+    <div class="card"><h3>2. Теорема Ріса</h3>
+      <div class="thm"><b>Лема Ріса.</b> Для замкненого підпростору <span class="m">E ≠ X</span> і <span class="m">ε ∈ (0, 1)</span> знайдеться <span class="m">x ∈ S<sub>X</sub></span> з <span class="m">dist(x, E) &gt; 1 − ε</span>.</div>
+      <div class="thm"><b>Теорема 5.</b> Одинична куля <span class="m">B<sub>X</sub></span> передкомпактна ⇔ <span class="m">dim X &lt; ∞</span>.</div>
+      <p>У ℓᵖ це видно безпосередньо: <span class="m">‖e<sub>i</sub> − e<sub>j</sub>‖<sub>p</sub> = 2<sup>1/p</sup></span>, тож куля радіуса <span class="m">ε &lt; 2<sup>1/p</sup>/2</span> містить щонайбільше один базисний вектор, а їх нескінченно багато (вкладка 1).</p>
+    </div>
+    <div class="card"><h3>3. Оператори скінченного рангу</h3>
+      <p><span class="m">T ∈ F(X, Y)</span>, якщо <span class="m">T</span> неперервний і <span class="m">dim T(X) &lt; ∞</span>. Еквівалентно, <span class="m">Tx = Σ<sub>k=1</sub><sup>n</sup> f<sub>k</sub>(x) y<sub>k</sub></span> з <span class="m">f<sub>k</sub> ∈ X*</span>. Простір <span class="m">F(X, Y)</span> лінійний і є операторним ідеалом (<span class="m">VTU ∈ F</span>); спряжений <span class="m">T*g = Σ g(y<sub>k</sub>) f<sub>k</sub></span> теж скінченного рангу; <span class="m">T(A)</span> передкомпактна для кожної обмеженої <span class="m">A</span>.</p>
+      <p>Простір <span class="m">F(X, Y)</span>, взагалі кажучи, не замкнений: діагональний оператор <span class="m">diag(1/k)</span> у ℓ² є границею за нормою операторів <span class="m">T<sub>n</sub></span> рангу <span class="m">n</span>, але сам має нескінченний ранг (зауваження 9, вкладка 5).</p>
+    </div>
+    <div class="card"><h3>4. Поточкова збіжність на передкомпактних множинах</h3>
+      <div class="thm"><b>Теорема 10.</b> Якщо <span class="m">sup<sub>n</sub>‖T<sub>n</sub>‖ &lt; ∞</span> і <span class="m">T<sub>n</sub>x → Tx</span> для всіх <span class="m">x</span>, то збіжність рівномірна на кожній передкомпактній множині.</div>
+      <p>Доведення — «ε/3»: досить контролювати скінченну ε-сітку. Для банахового <span class="m">X</span> обмеженість норм випливає з теореми Банаха–Штейнгауза. Без неї твердження хибне (вправа 2, простір <span class="m">c<sub>00</sub></span>).</p>
+    </div>
+    <div class="card"><h3>5. Апроксимативна одиниця</h3>
+      <p>Послідовність <span class="m">(T<sub>n</sub>) ⊂ F(X)</span> з <span class="m">T<sub>n</sub>x → x</span> для всіх <span class="m">x</span>. Тоді <span class="m">sup‖T<sub>n</sub>‖ &lt; ∞</span>, <span class="m">X</span> сепарабельний, а при <span class="m">dim X = ∞</span> маємо <span class="m">‖I − T<sub>n</sub>‖ ≥ 1</span>: збіжність до <span class="m">I</span> лише поточкова. У ℓ<sup>∞</sup> апроксимативної одиниці немає; Енфло (1973) побудував сепарабельний банахів простір без неї.</p>
+      <p>Приклади: часткові суми за базисом Шаудера, координатні проєктори <span class="m">P<sub>n</sub></span> у <span class="m">c₀</span> і ℓᵖ, кусково-лінійна інтерполяція <span class="m">L<sub>n</sub></span> у <span class="m">C[0,1]</span> з оцінкою <span class="m">‖L<sub>n</sub>f − f‖ ≤ ω(f, 1/n)</span>.</p>
+    </div>
+    <div class="card"><h3>6. Критерій передкомпактності</h3>
+      <div class="thm"><b>Теорема 16.</b> Нехай <span class="m">(T<sub>n</sub>)</span> — апроксимативна одиниця в банаховому <span class="m">X</span>. Множина <span class="m">A</span> передкомпактна ⇔ <span class="m">A</span> обмежена і <span class="m">sup<sub>x∈A</sub>‖T<sub>n</sub>x − x‖ → 0</span>.</div>
+      <p>Обидві умови суттєві: куля обмежена, але не має рівномірної збіжності; пряма <span class="m">{λe₁}</span> має рівномірну збіжність, але необмежена.</p>
+      <p><b>Наслідки.</b> У ℓᵖ (1 ≤ p &lt; ∞): обмеженість і <span class="m">sup<sub>x∈A</sub>Σ<sub>k&gt;n</sub>|x<sub>k</sub>|ᵖ → 0</span>; у <span class="m">c₀</span>: <span class="m">sup<sub>x∈A</sub> sup<sub>k&gt;n</sub>|x<sub>k</sub>| → 0</span>; у <span class="m">C[0,1]</span>: теорема Арцела–Асколі (рівномірна обмеженість і рівностепенева неперервність). Цеглина Гільберта <span class="m">{|x<sub>k</sub>| ≤ 1/k}</span> компактна в ℓ².</p>
+    </div>
+    <div class="card"><h3>7. До компактних операторів</h3>
+      <div class="thm"><b>Теорема 21.</b> (a) Якщо <span class="m">‖S<sub>n</sub> − S‖ → 0</span>, <span class="m">S<sub>n</sub> ∈ F</span>, то <span class="m">S(B<sub>X</sub>)</span> передкомпактна. (b) Якщо <span class="m">S(B<sub>X</sub>)</span> передкомпактна і <span class="m">Y</span> має апроксимативну одиницю <span class="m">(T<sub>n</sub>)</span>, то <span class="m">‖T<sub>n</sub>S − S‖ → 0</span>.</div>
+      <p>Оператори з передкомпактним <span class="m">S(B<sub>X</sub>)</span> називаються компактними. У просторах з апроксимативною одиницею це в точності замикання <span class="m">F(X, Y)</span> за нормою. Тепловий оператор <span class="m">e<sup>tΔ</sup></span> — компактний, хвильовий — ні (вкладка 6).</p>
+    </div>
+    <div class="card"><h3>Синтаксис формул</h3>
+      <p>Операції <code>+ − * / ^</code>, дужки, неявне множення (<code>2pi t</code>), порівняння <code>== != &lt; &gt; &lt;= &gt;=</code> (дають 1 або 0, напр. <code>(k==j)/j</code>).</p>
+      <p>Функції: <code>sin cos tan asin acos atan sinh cosh tanh exp ln log lg sqrt cbrt abs sign floor ceil round frac</code>, а також <code>step(x)</code> — функція Хевісайда, <code>hat(x) = max(0, 1 − |x|)</code>, <code>noise(x)</code> — кусково-сталий шум, <code>min(a,b) max(a,b) pow(a,b) mod(a,b)</code>. Сталі <code>pi</code> (або <code>π</code>) і <code>e</code>.</p>
+      <p>Змінні: <code>t</code>, <code>n</code> (вкладка 2), <code>t, k</code> (3), <code>k</code> або <code>j, k</code> (4), <code>k</code> (5), <code>x</code> (6), <code>x, y</code> або <code>s</code> (1).</p>
+    </div>
+  </div>
+</section>
+</main>
+<footer>ФА ІІ · Розділ «Компактні множини та компактні оператори» · Лекція 1 · Автономний файл — працює без інтернету.</footer>
+
+<script>
+"use strict";
+/* ================= utilities ================= */
+const $=id=>document.getElementById(id);
+let current='nets';
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const FONT='"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif';
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','+':'₊'};
+const sup=s=>String(s).split('').map(c=>SUP[c]||c).join('');
+const sub=s=>String(s).split('').map(c=>SUB[c]||c).join('');
+function fmt(v,d=4){
+  if(v===Infinity) return '∞'; if(!isFinite(v)) return '—';
+  const a=Math.abs(v); if(a===0) return '0';
+  if(a>=1e5||a<1e-3){const e=Math.floor(Math.log10(a));const m=v/Math.pow(10,e);return (m.toFixed(2)+'·10'+sup(e)).replace('-','−');}
+  return Number(v.toPrecision(d)).toString().replace('.',',').replace('-','−');
+}
+function niceStep(r,n){ if(!(r>0)) return 1; const raw=r/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p; return (m<1.5?1:m<3?2:m<7?5:10)*p; }
+const fmtTick=v=>Number(v.toPrecision(6)).toString().replace('-','−');
+function rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255];}
+function mix(a,b,t,al=1){const A=rgb(a),B=rgb(b);return 'rgba('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+','+al+')';}
+function setup(cv){
+  const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;
+  const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const ctx=cv.getContext('2d'); ctx.setTransform(d,0,0,d,0,0); ctx.clearRect(0,0,r.width,r.height);
+  return {ctx,w:r.width,h:r.height};
+}
+function stats(el,items){ $(el).innerHTML=items.map(([k,v])=>'<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>').join(''); }
+function verdict(el,cls,html){ const v=$(el); v.className='verdict '+cls; v.innerHTML=html; }
+
+/* 2D plot with optional log axes */
+function axes(cv,o){
+  const S=setup(cv),ctx=S.ctx,w=S.w,h=S.h;
+  const pad=Object.assign({l:54,r:12,t:12,b:30},o.pad||{});
+  const L=v=>Math.log10(Math.max(v,1e-300));
+  const tx=o.logx?L:(v=>v), ty=o.logy?L:(v=>v);
+  const x0=tx(o.xmin),x1=tx(o.xmax),y0=ty(o.ymin),y1=ty(o.ymax);
+  const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+  const cl=v=>Math.max(-1e5,Math.min(1e5,v));
+  const X=v=>cl(pad.l+(tx(v)-x0)/((x1-x0)||1)*pw), Y=v=>cl(pad.t+(y1-ty(v))/((y1-y0)||1)*ph);
+  ctx.font='11px '+FONT; ctx.lineWidth=1;
+  const ticks=(a,b,log,nt)=>{
+    if(log){let r=[];for(let e=Math.ceil(a-1e-9);e<=b+1e-9;e++)r.push(e);if(r.length>7){const s=Math.ceil(r.length/6);r=r.filter(e=>e%s===0);}return r;}
+    const st=niceStep(b-a,nt);const r=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+st*1e-6;v+=st)r.push(Math.abs(v)<st*1e-9?0:v);return r;};
+  ctx.strokeStyle=css('--grid'); ctx.fillStyle=css('--muted');
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(const t of ticks(x0,x1,o.logx,o.ntx||6)){const v=o.logx?Math.pow(10,t):t,px=X(v);
+    ctx.beginPath();ctx.moveTo(px+.5,pad.t);ctx.lineTo(px+.5,pad.t+ph);ctx.stroke();
+    ctx.fillText(o.logx?'10'+sup(t):(o.xfmt?o.xfmt(v):fmtTick(v)),px,pad.t+ph+5);}
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(const t of ticks(y0,y1,o.logy,o.nty||5)){const v=o.logy?Math.pow(10,t):t,py=Y(v);
+    ctx.beginPath();ctx.moveTo(pad.l,py+.5);ctx.lineTo(pad.l+pw,py+.5);ctx.stroke();
+    ctx.fillText(o.logy?'10'+sup(t):fmtTick(v),pad.l-6,py);}
+  ctx.strokeStyle=css('--line'); ctx.strokeRect(pad.l+.5,pad.t+.5,pw,ph);
+  ctx.fillStyle=css('--muted'); ctx.font='italic 12px '+FONT;
+  if(o.xlabel){ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(o.xlabel,pad.l+pw-2,pad.t+ph-3);}
+  if(o.ylabel){ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(o.ylabel,pad.l+5,pad.t+4);}
+  const P={ctx,w,h,X,Y,pad,pw,ph,
+    clip(){ctx.save();ctx.beginPath();ctx.rect(pad.l,pad.t,pw,ph);ctx.clip();},
+    curve(xs,ys,color,lw=2,dash){ctx.save();P.clip();ctx.beginPath();let pen=false;
+      for(let i=0;i<xs.length;i++){const y=ys[i];if(!isFinite(y)||(o.logy&&y<=0)){pen=false;continue;}
+        const px=X(xs[i]),py=Y(y); if(pen)ctx.lineTo(px,py);else ctx.moveTo(px,py); pen=true;}
+      ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.setLineDash(dash||[]);ctx.lineJoin='round';ctx.stroke();ctx.restore();ctx.restore();},
+    hline(y,color,lw=1.5,dash,label){if(!isFinite(y)||(o.logy&&y<=0))return;ctx.save();P.clip();ctx.beginPath();const py=Y(y);
+      ctx.moveTo(pad.l,py);ctx.lineTo(pad.l+pw,py);ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.setLineDash(dash||[]);ctx.stroke();
+      if(label){ctx.fillStyle=color;ctx.font='12px '+FONT;ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(label,pad.l+pw-4,py-2);}ctx.restore();ctx.restore();},
+    vline(x,color,lw=1.5,dash,label){ctx.save();P.clip();ctx.beginPath();const px=X(x);ctx.moveTo(px,pad.t);ctx.lineTo(px,pad.t+ph);
+      ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.setLineDash(dash||[]);ctx.stroke();
+      if(label){ctx.fillStyle=color;ctx.font='12px '+FONT;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(label,px+4,pad.t+4);}ctx.restore();ctx.restore();},
+    dot(x,y,r,color){if(!isFinite(y)||(o.logy&&y<=0))return;ctx.beginPath();ctx.arc(X(x),Y(y),r,0,7);ctx.fillStyle=color;ctx.fill();}
+  };
+  return P;
+}
+
+/* ================= safe formula parser ================= */
+const FN1={sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,
+  exp:Math.exp,ln:Math.log,log:Math.log,lg:Math.log10,log10:Math.log10,sqrt:Math.sqrt,cbrt:Math.cbrt,abs:Math.abs,sign:Math.sign,
+  floor:Math.floor,ceil:Math.ceil,round:Math.round,frac:x=>x-Math.floor(x),step:x=>x>=0?1:0,hat:x=>Math.max(0,1-Math.abs(x)),
+  noise:x=>{const v=Math.sin(Math.floor(x)*12.9898+78.233)*43758.5453;return 2*(v-Math.floor(v))-1;}};
+const FN2={min:Math.min,max:Math.max,pow:Math.pow,atan2:Math.atan2,mod:(a,b)=>a-b*Math.floor(a/b)};
+const CONSTS={pi:Math.PI,PI:Math.PI,e:Math.E};
+function compile(src,vars){
+  const s=String(src).replace(/π/g,'pi').replace(/[·×]/g,'*').replace(/\*\*/g,'^').replace(/[−–]/g,'-');
+  const toks=[];let i=0;
+  while(i<s.length){const c=s[i];if(/\s/.test(c)){i++;continue;}const rest=s.slice(i);let m;
+    if((m=/^(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?/.exec(rest))){toks.push({t:'n',v:parseFloat(m[0])});i+=m[0].length;continue;}
+    if((m=/^[A-Za-z_][A-Za-z_0-9]*/.exec(rest))){toks.push({t:'i',v:m[0]});i+=m[0].length;continue;}
+    if((m=/^(==|!=|<=|>=)/.exec(rest))){toks.push({t:'o',v:m[0]});i+=2;continue;}
+    if('+-*/^(),<>'.includes(c)){toks.push({t:'o',v:c});i++;continue;}
+    throw new Error('Недопустимий символ «'+c+'»');}
+  if(!toks.length) throw new Error('Порожній вираз');
+  let p=0;
+  const is=v=>p<toks.length&&toks[p].t==='o'&&toks[p].v===v;
+  const expect=v=>{if(!is(v))throw new Error('Очікується «'+v+'»');p++;};
+  const CMP=['==','!=','<','>','<=','>='];
+  function cmp(){let a=add();while(p<toks.length&&toks[p].t==='o'&&CMP.includes(toks[p].v)){const op=toks[p++].v,b=add(),A=a;
+    a= op==='=='?(e=>Math.abs(A(e)-b(e))<1e-9?1:0): op==='!='?(e=>Math.abs(A(e)-b(e))<1e-9?0:1):
+       op==='<'?(e=>A(e)<b(e)?1:0): op==='>'?(e=>A(e)>b(e)?1:0): op==='<='?(e=>A(e)<=b(e)+1e-12?1:0):(e=>A(e)>=b(e)-1e-12?1:0);}return a;}
+  function add(){let a=mul();while(is('+')||is('-')){const op=toks[p++].v,b=mul(),A=a;a=op==='+'?(e=>A(e)+b(e)):(e=>A(e)-b(e));}return a;}
+  function mul(){let a=unary();for(;;){
+      if(is('*')||is('/')){const op=toks[p++].v,b=unary(),A=a;a=op==='*'?(e=>A(e)*b(e)):(e=>A(e)/b(e));}
+      else if(p<toks.length&&(toks[p].t==='n'||toks[p].t==='i'||is('('))){const b=pow(),A=a;a=e=>A(e)*b(e);}
+      else break;}return a;}
+  function unary(){if(is('-')){p++;const a=unary();return e=>-a(e);}if(is('+')){p++;return unary();}return pow();}
+  function pow(){const a=atom();if(is('^')){p++;const b=unary();return e=>Math.pow(a(e),b(e));}return a;}
+  function atom(){
+    if(p>=toks.length) throw new Error('Неочікуваний кінець виразу');
+    const tk=toks[p];
+    if(tk.t==='n'){p++;const v=tk.v;return ()=>v;}
+    if(tk.t==='i'){p++;const name=tk.v;
+      if((FN1[name]||FN2[name])){
+        if(!is('(')) throw new Error('Після «'+name+'» потрібні дужки');
+        p++;const args=[];if(!is(')')){args.push(cmp());while(is(',')){p++;args.push(cmp());}}expect(')');
+        if(FN1[name]){if(args.length!==1)throw new Error('«'+name+'» має один аргумент');const f=FN1[name],a=args[0];return e=>f(a(e));}
+        if(args.length!==2)throw new Error('«'+name+'» має два аргументи');const f=FN2[name],a=args[0],b=args[1];return e=>f(a(e),b(e));}
+      if(vars.includes(name)) return e=>e[name];
+      if(name in CONSTS){const v=CONSTS[name];return ()=>v;}
+      throw new Error('Невідомий ідентифікатор «'+name+'»'+(vars.length?' (змінні: '+vars.join(', ')+')':''));}
+    if(is('(')){p++;const a=cmp();expect(')');return a;}
+    throw new Error('Неочікуваний символ «'+tk.v+'»');}
+  const root=cmp();
+  if(p<toks.length) throw new Error('Зайвий фрагмент: «'+toks[p].v+'»');
+  const env={};
+  return (...a)=>{for(let k=0;k<vars.length;k++)env[vars[k]]=a[k];return root(env);};
+}
+
+/* ================= bindings ================= */
+function bindRange(id,cb,int){
+  const r=$(id+'-r'),n=$(id);
+  const set=(v,src)=>{v=parseFloat(String(v).replace(',','.'));if(!isFinite(v))return;
+    const lo=parseFloat(n.min),hi=parseFloat(n.max);if(isFinite(lo))v=Math.max(lo,v);if(isFinite(hi))v=Math.min(hi,v);
+    if(int)v=Math.round(v); if(src!==r)r.value=v; if(src!==n)n.value=v; cb(v);};
+  r.addEventListener('input',()=>set(r.value,r));
+  n.addEventListener('change',()=>set(n.value,n));
+  n.addEventListener('keydown',e=>{if(e.key==='Enter')set(n.value,n);});
+  return {get:()=>parseFloat(n.value),set:v=>set(v,null)};
+}
+function bindFormula(id,vars,cb){
+  const inp=$(id),msg=$(id+'-msg');let timer;
+  const apply=()=>{try{const f=compile(inp.value,vars);const test=f(...vars.map(()=>0.37));
+      if(typeof test!=='number')throw new Error('Вираз не є числом');
+      inp.classList.remove('bad');msg.textContent='';cb(f);}
+    catch(e){inp.classList.add('bad');msg.textContent=e.message;}};
+  inp.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(apply,450);});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(timer);apply();}});
+  return {apply,set(v){inp.value=v;apply();}};
+}
+const safe1=(f,...a)=>{let v;try{v=f(...a);}catch(e){v=NaN;}return isFinite(v)?v:NaN;};
+
+/* modulus of continuity of samples v on uniform grid, window w steps (sliding max/min) */
+function omega(v,w){
+  const N=v.length; if(w<=0) return 0;
+  if(w>=N-1){let mx=-Infinity,mn=Infinity;for(let i=0;i<N;i++){if(v[i]>mx)mx=v[i];if(v[i]<mn)mn=v[i];}return mx-mn;}
+  const qx=new Int32Array(N),qn=new Int32Array(N);let hx=0,tx=0,hn=0,tn=0,best=0;
+  for(let i=0;i<N;i++){
+    while(tx>hx&&v[qx[tx-1]]<=v[i])tx--;qx[tx++]=i;
+    while(tn>hn&&v[qn[tn-1]]>=v[i])tn--;qn[tn++]=i;
+    while(qx[hx]<i-w)hx++;while(qn[hn]<i-w)hn++;
+    if(i>=w){const d=v[qx[hx]]-v[qn[hn]];if(d>best)best=d;}}
+  return best;
+}
+/* sup-norm error of piecewise linear interpolation with n pieces; vals on grid of M+1 points, fn evaluates f */
+function lnErr(vals,M,n,fn){
+  const y=new Float64Array(n+1);for(let k=0;k<=n;k++){const v=fn(k/n);y[k]=isFinite(v)?v:0;}
+  let e=0;for(let i=0;i<=M;i++){const t=i/M;const j=Math.min(n-1,Math.floor(t*n));const s=t*n-j;
+    const L=y[j]*(1-s)+y[j+1]*s;const d=Math.abs(L-vals[i]);if(d>e)e=d;}
+  return e;
+}
+
+/* ================= TAB 1: nets ================= */
+const Nets={shape:'disk',p:2,pinf:false,eps:0.3,m:7,rf:null,cx:null,cy:null,logCache:null,
+  init(){
+    $('nt-shape').addEventListener('change',e=>{this.shape=e.target.value;$('nt-creg-box').hidden=this.shape!=='creg';$('nt-ccur-box').hidden=this.shape!=='ccur';this.logCache=null;this.render();});
+    bindFormula('nt-reg',['x','y'],f=>{this.rf=f;this.logCache=null;this.render();}).apply();
+    bindFormula('nt-cx',['s'],f=>{this.cx=f;this.logCache=null;this.render();}).apply();
+    bindFormula('nt-cy',['s'],f=>{this.cy=f;this.logCache=null;this.render();}).apply();
+    bindRange('nt-p',v=>{this.p=v;this.logCache=null;this.render();});
+    $('nt-pinf').addEventListener('change',e=>{this.pinf=e.target.checked;this.logCache=null;this.render();});
+    bindRange('nt-eps',v=>{this.eps=v;this.render();});
+    bindRange('nt-m',v=>{this.m=v;this.render();},true);
+  },
+  P(){return this.pinf?Infinity:this.p;},
+  points(h){
+    const xs=[],ys=[];
+    const reg=fn=>{for(let x=-1.5+h/2;x<1.5;x+=h)for(let y=-1.5+h/2;y<1.5;y+=h){let ok=false;try{ok=fn(x,y);}catch(e){}if(ok){xs.push(x);ys.push(y);}}return {xs,ys,kind:'region',h};};
+    const cur=(fx,fy)=>{const N=3000;for(let i=0;i<=N;i++){const s=i/N,x=safe1(fx,s),y=safe1(fy,s);if(isFinite(x)&&isFinite(y)){xs.push(x);ys.push(y);}}return {xs,ys,kind:'curve'};};
+    switch(this.shape){
+      case 'disk':return reg((x,y)=>x*x+y*y<=1);
+      case 'square':return reg((x,y)=>Math.abs(x)<=1&&Math.abs(y)<=1);
+      case 'annulus':return reg((x,y)=>{const r=x*x+y*y;return r<=1&&r>=0.36;});
+      case 'circle':return cur(s=>Math.cos(2*Math.PI*s),s=>Math.sin(2*Math.PI*s));
+      case 'segment':return cur(s=>-1.2+2.4*s,s=>-0.6+1.2*s);
+      case 'spiral':return cur(s=>1.3*s*Math.cos(8*Math.PI*s),s=>1.3*s*Math.sin(8*Math.PI*s));
+      case 'creg':return this.rf?reg((x,y)=>this.rf(x,y)<=0):{xs,ys,kind:'region',h};
+      case 'ccur':return (this.cx&&this.cy)?cur(this.cx,this.cy):{xs,ys,kind:'curve'};
+    }
+  },
+  net(P,eps,p){
+    const n=P.xs.length,cov=new Uint8Array(n),B=new Map(),key=(a,b)=>a*100003+b;
+    for(let i=0;i<n;i++){const a=Math.floor(P.xs[i]/eps),b=Math.floor(P.ys[i]/eps),k=key(a,b);let arr=B.get(k);if(!arr)B.set(k,arr=[]);arr.push(i);}
+    const ep=Math.pow(eps,p)*(1+1e-12),C=[];
+    for(let i=0;i<n;i++){if(cov[i])continue;C.push(i);const cx=P.xs[i],cy=P.ys[i],a=Math.floor(cx/eps),b=Math.floor(cy/eps);
+      for(let da=-1;da<=1;da++)for(let db=-1;db<=1;db++){const arr=B.get(key(a+da,b+db));if(!arr)continue;
+        for(const j of arr){if(cov[j])continue;const ax=Math.abs(P.xs[j]-cx),ay=Math.abs(P.ys[j]-cy);
+          const ok=p===Infinity?(ax<=eps&&ay<=eps):p===1?(ax+ay<=eps*(1+1e-12)):(Math.pow(ax,p)+Math.pow(ay,p)<=ep);if(ok)cov[j]=1;}}}
+    return C;
+  },
+  ball(ctx,x,y,r,p){
+    ctx.beginPath();
+    if(p===Infinity){ctx.rect(x-r,y-r,2*r,2*r);return;}
+    const N=72;for(let i=0;i<=N;i++){const th=2*Math.PI*i/N,c=Math.cos(th),s=Math.sin(th);
+      const px=x+r*Math.sign(c)*Math.pow(Math.abs(c),2/p),py=y+r*Math.sign(s)*Math.pow(Math.abs(s),2/p);i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    ctx.closePath();
+  },
+  render(){
+    if(current!=='nets')return;
+    const eps=this.eps,p=this.P();
+    const h=Math.min(0.04,Math.max(0.012,eps/4));
+    const P=this.points(h),C=this.net(P,eps,p);
+    const {ctx,w,h:H}=setup($('nt-cv'));const s=Math.min(w,H)/3.25,ox=w/2,oy=H/2,X=x=>ox+x*s,Y=y=>oy-y*s;
+    ctx.strokeStyle=css('--grid');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(w,oy);ctx.moveTo(ox,0);ctx.lineTo(ox,H);ctx.stroke();
+    ctx.fillStyle=css('--muted');ctx.font='11px '+FONT;ctx.textAlign='center';ctx.textBaseline='top';
+    for(const v of[-1,1]){ctx.fillText(fmtTick(v),X(v),oy+4);ctx.beginPath();ctx.moveTo(X(v),oy-3);ctx.lineTo(X(v),oy+3);ctx.stroke();ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(fmtTick(v),ox-5,Y(v));ctx.textAlign='center';ctx.textBaseline='top';}
+    const brand=css('--brand'),gold=css('--gold'),ink=css('--ink');
+    if(P.kind==='region'){ctx.fillStyle=mix(brand,brand,0,0.38);const hs=P.h*s+0.6;for(let i=0;i<P.xs.length;i++)ctx.fillRect(X(P.xs[i])-hs/2,Y(P.ys[i])-hs/2,hs,hs);}
+    else{ctx.strokeStyle=brand;ctx.lineWidth=2.5;ctx.beginPath();for(let i=0;i<P.xs.length;i++){const px=X(P.xs[i]),py=Y(P.ys[i]);i&&Math.hypot(P.xs[i]-P.xs[i-1],P.ys[i]-P.ys[i-1])<0.2?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();}
+    ctx.lineWidth=1.2;
+    for(const i of C){this.ball(ctx,X(P.xs[i]),Y(P.ys[i]),eps*s,p);ctx.fillStyle=mix(gold,gold,0,0.13);ctx.fill();ctx.strokeStyle=mix(gold,gold,0,0.85);ctx.stroke();}
+    for(const i of C){ctx.beginPath();ctx.arc(X(P.xs[i]),Y(P.ys[i]),2.6,0,7);ctx.fillStyle=ink;ctx.fill();}
+    const pn=p===Infinity?'∞':fmt(p,3);
+    stats('nt-stats',[['кількість куль N(ε)',C.length],['ε',fmt(eps)],['норма','‖·‖<sub>'+pn+'</sub>'],['log₂ N(ε), біт',fmt(Math.log2(Math.max(1,C.length)),3)]]);
+    this.renderLog();this.renderRiesz();
+  },
+  renderLog(){
+    const p=this.P();
+    if(!this.logCache){const E=[1,0.7,0.5,0.35,0.25,0.18,0.13,0.09],P=this.points(0.022);this.logCache=E.map(e=>[e,this.net(P,e,p).length]);}
+    const D=this.logCache.filter(d=>d[1]>0);if(!D.length)return;
+    const Nmax=Math.max(...D.map(d=>d[1]));
+    const A=axes($('nt-log'),{xmin:0.8,xmax:14,ymin:0.8,ymax:Math.max(10,Nmax*1.5),logx:true,logy:true,xlabel:'1/ε',ylabel:'N(ε)'});
+    const xs=D.map(d=>1/d[0]),ys=D.map(d=>d[1]);
+    A.curve(xs,ys,css('--brand'),2);xs.forEach((x,i)=>A.dot(x,ys[i],3.5,css('--gold')));
+    A.vline(1/this.eps,css('--muted'),1,[4,4],'поточне ε');
+    const F=D.slice(3);let sx=0,sy=0,sxx=0,sxy=0;for(const[e,n]of F){const x=Math.log(1/e),y=Math.log(n);sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;}
+    const m=F.length,sl=(m*sxy-sx*sy)/(m*sxx-sx*sx);
+    $('nt-log-info').innerHTML='Нахил на малих ε ≈ <b>'+fmt(sl,3)+'</b> — емпірична (box-counting) розмірність множини. Для обмеженої множини в ℝ² N(ε) скінченне при кожному ε (факт F2).';
+  },
+  renderRiesz(){
+    const p=this.P(),m=this.m,eps=this.eps,d=p===Infinity?1:Math.pow(2,1/p);
+    const {ctx,w,h}=setup($('nt-rz'));const R=Math.min(w,h)*0.34,ox=w/2,oy=h/2+4;
+    const pts=[];for(let i=0;i<m;i++){const a=-Math.PI/2+2*Math.PI*i/m;pts.push([ox+R*Math.cos(a),oy+R*Math.sin(a)]);}
+    const chord=m===2?2*R:2*R*Math.sin(Math.PI/m),sc=chord/d;
+    ctx.strokeStyle=css('--grid');ctx.lineWidth=1;
+    for(let i=0;i<m;i++)for(let j=i+1;j<m;j++){ctx.beginPath();ctx.moveTo(...pts[i]);ctx.lineTo(...pts[j]);ctx.stroke();}
+    const gold=css('--gold');
+    for(const q of pts){ctx.beginPath();ctx.arc(q[0],q[1],Math.min(eps*sc,R*3),0,7);ctx.fillStyle=mix(gold,gold,0,0.16);ctx.fill();ctx.strokeStyle=mix(gold,gold,0,0.8);ctx.stroke();}
+    ctx.font='12px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';
+    pts.forEach((q,i)=>{ctx.beginPath();ctx.arc(q[0],q[1],3.5,0,7);ctx.fillStyle=css('--brand');ctx.fill();
+      const dx=q[0]-ox,dy=q[1]-oy,L=Math.hypot(dx,dy)||1;ctx.fillStyle=css('--ink');ctx.fillText('e'+sub(i+1),q[0]+dx/L*16,q[1]+dy/L*16);});
+    ctx.fillStyle=css('--muted');ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('схема: ‖eᵢ − eⱼ‖ₚ = '+fmt(d,4)+' для всіх i ≠ j',8,6);
+    if(eps<d/2) verdict('nt-rz-info','no','ε = '+fmt(eps)+' &lt; ‖eᵢ − eⱼ‖/2 = '+fmt(d/2,4)+': кожна ε-куля містить не більше одного eᵢ, тож для e₁, …, e<sub>'+m+'</sub> потрібно щонайменше <b>'+m+'</b> куль. Оскільки m довільне, B<sub>ℓᵖ</sub> не має скінченної ε-сітки — вона не передкомпактна.');
+    else verdict('nt-rz-info','mid','При ε ≥ '+fmt(d/2,4)+' одна куля може накрити кілька eᵢ (а при ε ≥ 1 — усю B<sub>ℓᵖ</sub> з центром 0). Перешкода з\'являється при ε &lt; '+fmt(d/2,4)+' — зменште ε.');
+  }
+};
+
+/* ================= TAB 2: approximate identity ================= */
+const AI={f:null,n:6,hats:true,M:2000,
+  init(){
+    const F=bindFormula('ai-f',['t','n'],f=>{this.f=f;this.render();});
+    $('ai-preset').addEventListener('change',e=>F.set(e.target.value));
+    bindRange('ai-n',v=>{this.n=v;this.render();},true);
+    $('ai-hats').addEventListener('change',e=>{this.hats=e.target.checked;this.render();});
+    F.apply();
+  },
+  fv(t){const n=this.n;let v=safe1(this.f,t,n);if(!isFinite(v))v=safe1(this.f,Math.min(1,t+1e-9),n);if(!isFinite(v))v=safe1(this.f,Math.max(0,t-1e-9),n);return isFinite(v)?v:0;},
+  render(){
+    if(current!=='ai'||!this.f)return;
+    const n=this.n,M=this.M,ts=new Float64Array(M+1),fs=new Float64Array(M+1),Ls=new Float64Array(M+1),es=new Float64Array(M+1);
+    const y=[];for(let k=0;k<=n;k++)y.push(this.fv(k/n));
+    let fmax=0,Lmax=0,err=0,lo=Infinity,hi=-Infinity;
+    for(let i=0;i<=M;i++){const t=i/M;ts[i]=t;fs[i]=this.fv(t);const j=Math.min(n-1,Math.floor(t*n)),s=t*n-j;Ls[i]=y[j]*(1-s)+y[j+1]*s;es[i]=Math.abs(Ls[i]-fs[i]);
+      fmax=Math.max(fmax,Math.abs(fs[i]));Lmax=Math.max(Lmax,Math.abs(Ls[i]));err=Math.max(err,es[i]);lo=Math.min(lo,fs[i],Ls[i]);hi=Math.max(hi,fs[i],Ls[i]);}
+    const om=omega(fs,Math.floor(M/n));
+    if(hi-lo<1e-9){hi+=1;lo-=1;}const pad=(hi-lo)*0.1;lo-=pad;hi+=pad;
+    const brand=css('--brand'),gold=css('--gold');
+    const A=axes($('ai-cv'),{xmin:0,xmax:1,ymin:lo,ymax:hi,xlabel:'t'});
+    if(this.hats&&n<=40){const base=lo,amp=(hi-lo)*0.22;A.clip();
+      for(let k=0;k<=n;k++){A.ctx.beginPath();const a=Math.max(0,(k-1)/n),b=Math.min(1,(k+1)/n);
+        A.ctx.moveTo(A.X(a),A.Y(base+(a===k/n?amp:0)));A.ctx.lineTo(A.X(k/n),A.Y(base+amp));A.ctx.lineTo(A.X(b),A.Y(base+(b===k/n?amp:0)));
+        A.ctx.lineTo(A.X(b),A.Y(base));A.ctx.lineTo(A.X(a),A.Y(base));A.ctx.closePath();A.ctx.fillStyle=mix(brand,brand,0,k%2?0.10:0.17);A.ctx.fill();}
+      A.ctx.restore();}
+    A.curve(ts,fs,gold,2.6);A.curve(ts,Ls,brand,2);
+    for(let k=0;k<=n;k++)A.dot(k/n,y[k],n>40?2:3.5,brand);
+    const B=axes($('ai-err'),{xmin:0,xmax:1,ymin:0,ymax:Math.max(om,err,1e-6)*1.25,xlabel:'t'});
+    B.curve(ts,es,gold,1.8);B.hline(err,gold,1.5,[],'‖Lₙf − f‖');B.hline(om,brand,1.5,[6,4],'ω(f, 1/n)');
+    const Ns=[],Es=[],Os=[];for(let N=1;N<=80;N++){Ns.push(N);Es.push(lnErr(fs,M,N,t=>this.fv(t)));Os.push(omega(fs,Math.floor(M/N)));}
+    const posmin=Math.min(...Es.concat(Os).filter(v=>v>0),1);const ymax=Math.max(...Es,...Os,1e-6);
+    const C=axes($('ai-conv'),{xmin:1,xmax:80,ymin:Math.max(posmin*0.5,ymax*1e-6),ymax:ymax*2,logy:true,xlabel:'n'});
+    C.curve(Ns,Os,brand,2,[6,4]);C.curve(Ns,Es,gold,2.2);C.vline(n,css('--muted'),1,[3,3]);C.dot(n,err,4,gold);
+    stats('ai-stats',[['‖f‖∞',fmt(fmax)],['‖Lₙf‖∞ ≤ ‖f‖∞',fmt(Lmax)],['‖Lₙf − f‖∞',fmt(err)],['ω(f, 1/n)',fmt(om)],
+      ['оцінка (2)',err<=om*(1+1e-6)+1e-12?'виконується ✓':'порушена (f розривна?)'],['ранг Lₙ = dim',(n+1)]]);
+  }
+};
+
+/* ================= TAB 3: Arzela-Ascoli ================= */
+const AA={f:null,K:30,n:10,ld:-1.3,M:800,vals:[],om:[],er:[],ds:[],
+  init(){
+    const F=bindFormula('aa-f',['t','k'],f=>{this.f=f;this.compute();this.render();});
+    $('aa-preset').addEventListener('change',e=>F.set(e.target.value));
+    bindRange('aa-K',v=>{this.K=v;this.compute();this.render();},true);
+    bindRange('aa-n',v=>{this.n=v;this.render();},true);
+    bindRange('aa-d',v=>{this.ld=v;this.render();});
+    F.apply();
+  },
+  fv(t,k){let v=safe1(this.f,t,k);if(!isFinite(v))v=safe1(this.f,Math.min(1,t+1e-9),k);if(!isFinite(v))v=safe1(this.f,Math.max(0,t-1e-9),k);return isFinite(v)?v:0;},
+  compute(){
+    if(!this.f)return;const M=this.M,K=this.K;this.vals=[];
+    for(let k=1;k<=K;k++){const a=new Float64Array(M+1);for(let i=0;i<=M;i++)a[i]=this.fv(i/M,k);this.vals.push(a);}
+    this.ds=[];this.om=[];for(let i=0;i<=40;i++){const d=Math.pow(10,-2.8+2.8*i/40);this.ds.push(d);let s=0;for(const a of this.vals)s=Math.max(s,omega(a,Math.max(1,Math.round(d*M))));this.om.push(s);}
+    this.er=[];for(let N=1;N<=60;N++){let s=0;this.vals.forEach((a,idx)=>{s=Math.max(s,lnErr(a,M,N,t=>this.fv(t,idx+1)));});this.er.push(s);}
+  },
+  render(){
+    if(current!=='aa'||!this.vals.length)return;
+    const M=this.M,K=this.vals.length,d=Math.pow(10,this.ld),w=Math.max(1,Math.round(d*M));
+    let lo=Infinity,hi=-Infinity,sup=0,worst=0,best=-1,norm=0;
+    this.vals.forEach((a,i)=>{for(const v of a){if(v<lo)lo=v;if(v>hi)hi=v;norm=Math.max(norm,Math.abs(v));}const o=omega(a,w);if(o>best){best=o;worst=i;}});
+    if(hi-lo<1e-9){hi+=1;lo-=1;}const pad=(hi-lo)*0.08;
+    const ts=Array.from({length:M+1},(_,i)=>i/M),brand=css('--brand'),gold=css('--gold');
+    const A=axes($('aa-cv'),{xmin:0,xmax:1,ymin:lo-pad,ymax:hi+pad,xlabel:'t'});
+    this.vals.forEach((a,i)=>{if(i!==worst)A.curve(ts,a,mix(brand,gold,K>1?i/(K-1):0,0.55),1.1);});
+    A.curve(ts,this.vals[worst],css('--ink'),2.6);
+    // delta bracket
+    const ctx=A.ctx,yb=A.pad.t+A.ph-10;ctx.strokeStyle=css('--bad');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(A.X(0.04),yb);ctx.lineTo(A.X(0.04+d),yb);ctx.stroke();
+    ctx.fillStyle=css('--bad');ctx.font='12px '+FONT;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('δ = '+fmt(d,3),A.X(0.04),yb-3);
+    const B=axes($('aa-om'),{xmin:this.ds[0],xmax:1,ymin:0,ymax:Math.max(...this.om,1e-6)*1.15,logx:true,xlabel:'δ'});
+    B.curve(this.ds,this.om,brand,2.2);B.vline(d,css('--bad'),1.2,[4,3]);B.dot(d,best,4,css('--bad'));
+    const Ns=Array.from({length:60},(_,i)=>i+1);
+    const C=axes($('aa-er'),{xmin:1,xmax:60,ymin:0,ymax:Math.max(...this.er,1e-6)*1.15,xlabel:'n'});
+    C.curve(Ns,this.er,gold,2.2);C.vline(this.n,css('--muted'),1,[3,3]);C.dot(this.n,this.er[this.n-1],4,gold);
+    stats('aa-stats',[['sup ‖fₖ‖∞',fmt(norm)],['sup ω(fₖ, δ)',fmt(best)],['досягається при k =',worst+1],['sup ‖Lₙfₖ − fₖ‖',fmt(this.er[this.n-1])]]);
+    const small=this.om[0],ref=Math.max(...this.om);
+    if(small<0.05*ref||small<1e-3) verdict('aa-verdict','ok','При найменшому δ = '+fmt(this.ds[0],3)+' маємо sup<sub>k</sub> ω(f<sub>k</sub>, δ) = '+fmt(small)+': супремум прямує до 0, родина виглядає рівностепенево неперервною. Збільшуйте K — якщо картина не змінюється, множина передкомпактна.');
+    else verdict('aa-verdict','no','Навіть при δ = '+fmt(this.ds[0],3)+' маємо sup<sub>k</sub> ω(f<sub>k</sub>, δ) = '+fmt(small)+' — супремум не прямує до 0 (принаймні в межах сітки). Родина не рівностепенево неперервна, тож вона не передкомпактна; відповідно, sup ‖L<sub>n</sub>f<sub>k</sub> − f<sub>k</sub>‖ не спадає до 0.');
+  }
+};
+
+/* ================= TAB 4: l^p ================= */
+const LP={type:'box',p:2,n:5,eps:0.1,m:1,J:80,cf:null,xf:null,yaw:0.75,pitch:0.42,R:[],arg:[],bars:null,diverge:false,coord:null,
+  init(){
+    $('lp-type').addEventListener('change',e=>{this.type=e.target.value;$('lp-box-box').hidden=this.type!=='box';$('lp-fam-box').hidden=this.type!=='fam';this.compute();this.render();});
+    const C=bindFormula('lp-c',['k'],f=>{this.cf=f;this.compute();this.render();});
+    $('lp-cpreset').addEventListener('change',e=>C.set(e.target.value));
+    const X=bindFormula('lp-x',['j','k'],f=>{this.xf=f;this.compute();this.render();});
+    $('lp-xpreset').addEventListener('change',e=>X.set(e.target.value));
+    bindRange('lp-J',v=>{this.J=v;this.compute();this.render();},true);
+    bindRange('lp-p',v=>{this.p=v;this.compute();this.render();});
+    bindRange('lp-n',v=>{this.n=v;this.render();},true);
+    bindRange('lp-eps',v=>{this.eps=v;this.render();});
+    bindRange('lp-m',v=>{this.m=v;this.render3d();},true);
+    const cv=$('lp-3d');let drag=null;
+    cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId);});
+    cv.addEventListener('pointermove',e=>{if(!drag)return;this.yaw+=(e.clientX-drag[0])*0.01;this.pitch=Math.max(-1.4,Math.min(1.4,this.pitch+(e.clientY-drag[1])*0.01));drag=[e.clientX,e.clientY];this.render3d();});
+    cv.addEventListener('pointerup',()=>drag=null);
+    C.apply();X.apply();
+  },
+  compute(){
+    const p=this.p,NR=200;this.R=new Float64Array(NR+1);this.arg=new Int32Array(NR+1);this.diverge=false;
+    if(this.type==='box'){if(!this.cf)return;const K=20000,a=new Float64Array(K+1);
+      for(let k=1;k<=K;k++){const c=safe1(this.cf,k);a[k]=isFinite(c)?Math.pow(Math.abs(c),p):0;}
+      const suf=new Float64Array(K+2);for(let k=K;k>=1;k--)suf[k]=suf[k+1]+a[k];
+      for(let n=0;n<=NR;n++)this.R[n]=Math.pow(suf[n+1],1/p);
+      let half=0;for(let k=K/2+1;k<=K;k++)half+=a[k];this.diverge=half>0.02*Math.max(suf[1],1e-300);
+      this.coord=k=>{const c=safe1(this.cf,k);return isFinite(c)?Math.abs(c):0;};
+    } else if(this.type==='ball'){for(let n=0;n<=NR;n++)this.R[n]=1;
+    } else {if(!this.xf)return;const K=3000,J=this.J;
+      for(let j=1;j<=J;j++){let tot=0;const pre=new Float64Array(NR+1);let run=0,half=0;
+        for(let k=1;k<=K;k++){const v=safe1(this.xf,j,k);const a=isFinite(v)?Math.pow(Math.abs(v),p):0;tot+=a;if(k<=NR){run+=a;pre[k]=run;}if(k>K/2)half+=a;}
+        if(half>0.02*Math.max(tot,1e-300)&&tot>0)this.diverge=true;
+        for(let n=0;n<=NR;n++){const r=Math.pow(Math.max(0,tot-(n?pre[n]:0)),1/p);if(r>this.R[n]){this.R[n]=r;this.arg[n]=j;}}}
+    }
+  },
+  nEps(){for(let n=0;n<this.R.length;n++)if(this.R[n]<=this.eps)return n;return -1;},
+  render(){
+    if(current!=='lp')return;
+    this.render3d();this.renderBars();this.renderTail();
+  },
+  renderBars(){
+    const n=this.n,KB=40,brand=css('--brand'),gold=css('--gold');let vals=[],title='';
+    if(this.type==='box'){for(let k=1;k<=KB;k++)vals.push(this.coord?this.coord(k):0);title='Півосі цеглини c<sub>k</sub>, k = 1…'+KB;}
+    else if(this.type==='ball'){for(let k=1;k<=KB;k++)vals.push(k===n+1?1:0);title='Вектор e<sub>'+(n+1)+'</sub> ∈ B: увесь — хвіст';}
+    else{const j=this.arg[n]||1;for(let k=1;k<=KB;k++){const v=safe1(this.xf,j,k);vals.push(isFinite(v)?Math.abs(v):0);}title='Найгірший вектор x⁽'+sup(j)+'⁾ для n = '+n;}
+    $('lp-bars-title').innerHTML=title;
+    const ymax=Math.max(...vals,1e-9)*1.12;
+    const A=axes($('lp-bars'),{xmin:0.3,xmax:KB+0.7,ymin:0,ymax,xlabel:'k',ntx:8});
+    const bw=Math.max(2,A.pw/KB*0.7);
+    vals.forEach((v,i)=>{const k=i+1;A.ctx.fillStyle=k<=n?brand:gold;const x=A.X(k)-bw/2,y=A.Y(v);A.ctx.fillRect(x,y,bw,A.Y(0)-y);});
+    A.vline(n+0.5,css('--ink'),1.2,[4,3],'n = '+n);
+  },
+  renderTail(){
+    const NR=200,ns=Array.from({length:NR+1},(_,i)=>i),R=Array.from(this.R);
+    const pos=R.filter(v=>v>0),ymax=Math.max(...R,1e-9)*2,ymin=Math.max(Math.min(...pos,ymax/10)*0.5,ymax*1e-9,1e-12);
+    const A=axes($('lp-tail'),{xmin:0,xmax:NR,ymin:Math.min(ymin,this.eps*0.5),ymax:Math.max(ymax,this.eps*2),logy:true,xlabel:'n'});
+    A.curve(ns,R,css('--gold'),2.4);A.hline(this.eps,css('--brand'),1.5,[6,4],'ε = '+fmt(this.eps));
+    const ne=this.nEps();if(ne>=0){A.vline(ne,css('--brand'),1.2,[2,3],'n(ε) = '+ne);A.dot(ne,R[ne]||1e-300,4,css('--brand'));}
+    A.vline(this.n,css('--muted'),1,[3,3]);A.dot(this.n,R[this.n],4,css('--gold'));
+    const bounded=this.type==='ball'||!this.diverge;
+    stats('lp-stats',[['sup ‖x‖ₚ',this.diverge?'≈ ∞ ?':fmt(R[0])],['r(n) = sup ‖x − Pₙx‖',fmt(R[this.n])],['n(ε)',ne>=0?ne:'> 200'],['вимір ℓᵖ, p',fmt(this.p,3)]]);
+    if(this.type==='ball') verdict('lp-verdict','no','Для кулі r(n) = 1 при всіх n (свідок — e<sub>n+1</sub>): умова (ii) теореми 16 не виконується, і B<sub>ℓᵖ</sub> не передкомпактна — у згоді з теоремою Ріса та ‖I − P<sub>n</sub>‖ = 1.');
+    else if(this.diverge) verdict('lp-verdict','no','Числова ознака: ряд Σ|x<sub>k</sub>|ᵖ на хвості 10⁴…2·10⁴ ще дає помітний внесок — він розбігається або збігається дуже повільно. Якщо він розбігається, множина необмежена в ℓᵖ і не є передкомпактною (порушено умову (i)).');
+    else if(this.type==='fam'&&ne>=0&&ne>=0.8*this.J&&this.J>=10) verdict('lp-verdict','no','Скінченна множина {x⁽¹⁾, …, x⁽'+sup(this.J)+'⁾} формально передкомпактна, але n(ε) = '+ne+' росте разом з J: хвіст зникає лише тоді, коли P<sub>n</sub> «захоплює» всі вектори. Для нескінченної послідовності (J → ∞) sup<sub>j</sub> ‖x⁽ʲ⁾ − P<sub>n</sub>x⁽ʲ⁾‖ не прямує до 0 — вона не передкомпактна. Змініть J і порівняйте.');
+    else if(R[NR]<=0.6*R[20]||R[NR]<1e-6) verdict('lp-verdict','ok','A обмежена і r(n) → 0: хвости рівномірно малі. За наслідком 18 множина передкомпактна; для точності ε достатньо перших n(ε) = '+(ne>=0?ne:'> 200')+' координат, тобто A ⊂ P<sub>n</sub>(A) + εB.'+(this.type==='fam'?' Перевірте стійкість висновку, збільшуючи J: n(ε) не повинно рости разом з J.':''));
+    else if(R[NR]>=0.9*R[20]) verdict('lp-verdict','no','A обмежена, але r(n) не спадає: sup<sub>x∈A</sub> ‖x − P<sub>n</sub>x‖ ≈ '+fmt(R[NR])+' навіть при n = 200. Умова (ii) теореми 16 порушена — множина не передкомпактна в ℓᵖ (спробуйте інше p).');
+    else verdict('lp-verdict','mid','A обмежена, але r(n) спадає дуже повільно; числових даних замало для висновку — перевірте аналітично, чи r(n) → 0.');
+  },
+  render3d(){
+    if(current!=='lp')return;
+    const {ctx,w,h}=setup($('lp-3d'));const m=this.m,ox=w/2,oy=h/2+8;
+    const cy=Math.cos(this.yaw),sy=Math.sin(this.yaw),cp=Math.cos(this.pitch),sp=Math.sin(this.pitch);
+    let scale=1,ref=1;
+    if(this.type==='box'&&this.coord){ref=0;for(let k=1;k<=40;k++)ref=Math.max(ref,this.coord(k));}
+    else if(this.type==='fam'&&this.xf){ref=0;for(let j=1;j<=this.J;j++)for(let k=1;k<=42;k++){const v=safe1(this.xf,j,k);if(isFinite(v))ref=Math.max(ref,Math.abs(v));}}
+    if(!(ref>0))ref=1;scale=Math.min(w,h)*0.30/ref;
+    const pr=(x,y,z)=>{const x1=x*cy-y*sy,y1=x*sy+y*cy;const z2=y1*sp+z*cp;return [ox+x1*scale,oy-z2*scale];};
+    $('lp-3d-title').innerHTML='(x'+sub(m)+', x'+sub(m+1)+', x'+sub(m+2)+')';
+    // axes
+    ctx.strokeStyle=css('--muted');ctx.lineWidth=1;ctx.font='italic 12px '+FONT;ctx.fillStyle=css('--muted');
+    const L=ref*1.25,ax=[[L,0,0,'x'+sub(m)],[0,L,0,'x'+sub(m+1)],[0,0,L,'x'+sub(m+2)]];
+    for(const a of ax){const o=pr(0,0,0),q=pr(-a[0],-a[1],-a[2]),e=pr(a[0],a[1],a[2]);ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(...q);ctx.lineTo(...e);ctx.stroke();ctx.setLineDash([]);ctx.textAlign='center';ctx.fillText(a[3],e[0],e[1]-8);}
+    const brand=css('--brand'),gold=css('--gold');
+    if(this.type==='box'&&this.coord){
+      const a=this.coord(m),b=this.coord(m+1),c=this.coord(m+2);
+      const V=[];for(const sx of[-1,1])for(const sy2 of[-1,1])for(const sz of[-1,1])V.push(pr(sx*a,sy2*b,sz*c));
+      const E=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+      const F=[[0,1,3,2],[4,5,7,6],[0,1,5,4],[2,3,7,6],[0,2,6,4],[1,3,7,5]];
+      ctx.fillStyle=mix(brand,brand,0,0.10);for(const f of F){ctx.beginPath();f.forEach((i,t)=>t?ctx.lineTo(...V[i]):ctx.moveTo(...V[i]));ctx.closePath();ctx.fill();}
+      ctx.strokeStyle=brand;ctx.lineWidth=2;for(const e of E){ctx.beginPath();ctx.moveTo(...V[e[0]]);ctx.lineTo(...V[e[1]]);ctx.stroke();}
+      ctx.fillStyle=css('--ink');ctx.font='12px '+FONT;ctx.textAlign='left';ctx.textBaseline='top';
+      ctx.fillText('півосі: '+[a,b,c].map(v=>fmt(v,3)).join(', '),8,6);
+    } else if(this.type==='ball'){
+      const p=this.p,nrm=(x,y,z)=>Math.pow(Math.pow(Math.abs(x),p)+Math.pow(Math.abs(y),p)+Math.pow(Math.abs(z),p),1/p);
+      const pt=(u,v)=>{const x=Math.cos(u)*Math.cos(v),y=Math.sin(u)*Math.cos(v),z=Math.sin(v),r=nrm(x,y,z);return pr(x/r,y/r,z/r);};
+      ctx.strokeStyle=mix(brand,brand,0,0.8);ctx.lineWidth=1.1;
+      for(let i=0;i<12;i++){const u=i*Math.PI/6;ctx.beginPath();for(let j=0;j<=40;j++){const q=pt(u,-Math.PI/2+Math.PI*j/40);j?ctx.lineTo(...q):ctx.moveTo(...q);}ctx.stroke();}
+      for(let j=1;j<8;j++){const v=-Math.PI/2+Math.PI*j/8;ctx.beginPath();for(let i=0;i<=60;i++){const q=pt(2*Math.PI*i/60,v);i?ctx.lineTo(...q):ctx.moveTo(...q);}ctx.stroke();}
+      ctx.fillStyle=css('--ink');ctx.font='12px '+FONT;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('у кожному вікні — та сама одинична куля',8,6);
+    } else if(this.xf){
+      for(let j=1;j<=this.J;j++){const g=k=>{const v=safe1(this.xf,j,k);return isFinite(v)?v:0;};const q=pr(g(m),g(m+1),g(m+2));
+        ctx.beginPath();ctx.arc(q[0],q[1],3,0,7);ctx.fillStyle=mix(brand,gold,this.J>1?(j-1)/(this.J-1):0,0.85);ctx.fill();}
+      const q=pr(0,0,0);ctx.beginPath();ctx.arc(q[0],q[1],2,0,7);ctx.fillStyle=css('--ink');ctx.fill();
+      ctx.fillStyle=css('--ink');ctx.font='12px '+FONT;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('точки: проєкції x⁽ʲ⁾, j = 1…'+this.J,8,6);
+    }
+  }
+};
+
+/* ================= TAB 5: diagonal operator ================= */
+const OP={lf:null,n:3,m:1,eps:0.05,phi:0.7,S:null,lam:null,
+  init(){
+    const F=bindFormula('op-l',['k'],f=>{this.lf=f;this.compute();this.render();});
+    $('op-preset').addEventListener('change',e=>F.set(e.target.value));
+    bindRange('op-n',v=>{this.n=v;this.render();},true);
+    bindRange('op-m',v=>{this.m=v;this.render();},true);
+    bindRange('op-eps',v=>{this.eps=v;this.render();});
+    const cv=$('op-ell');const mv=e=>{const r=cv.getBoundingClientRect();this.phi=Math.atan2(-(e.clientY-r.top-r.height/2),e.clientX-r.left-r.width/2);this.renderEll();};
+    cv.addEventListener('pointermove',mv);cv.addEventListener('pointerdown',mv);
+    F.apply();
+  },
+  compute(){
+    if(!this.lf)return;const K=20000;this.lam=new Float64Array(K+1);
+    for(let k=1;k<=K;k++){const v=safe1(this.lf,k);this.lam[k]=isFinite(v)?v:0;}
+    this.S=new Float64Array(K+2);for(let k=K;k>=1;k--)this.S[k-1]=Math.max(this.S[k]||0,Math.abs(this.lam[k]));
+  },
+  winMax(a,b){let s=0;for(let k=a;k<b;k++)s=Math.max(s,Math.abs(this.lam[k]));return s;},
+  render(){
+    if(current!=='op'||!this.lam)return;
+    this.renderEll();
+    const n=this.n,KB=40,brand=css('--brand'),gold=css('--gold');
+    const vals=[];for(let k=1;k<=KB;k++)vals.push(Math.abs(this.lam[k]));
+    const ymax=Math.max(...vals,1e-9)*1.12;
+    const A=axes($('op-bars'),{xmin:0.3,xmax:KB+0.7,ymin:0,ymax,xlabel:'k',ntx:8});
+    const bw=Math.max(2,A.pw/KB*0.7);
+    vals.forEach((v,i)=>{const k=i+1;A.ctx.fillStyle=k<=n?brand:gold;const x=A.X(k)-bw/2,y=A.Y(v);A.ctx.fillRect(x,y,bw,A.Y(0)-y);});
+    A.vline(n+0.5,css('--muted'),1,[4,3]);A.hline(this.S[n],css('--ink'),1.5,[6,4],'‖T − Tₙ‖ = '+fmt(this.S[n]));
+    const NR=200,ns=Array.from({length:NR+1},(_,i)=>i),R=ns.map(i=>this.S[i]);
+    const pos=R.filter(v=>v>0),hi=Math.max(...R,1e-12)*2,lo=Math.max(Math.min(...pos,hi/10)*0.5,hi*1e-12);
+    const B=axes($('op-norm'),{xmin:0,xmax:NR,ymin:Math.min(lo,this.eps/2),ymax:Math.max(hi,this.eps*2),logy:true,xlabel:'n (ранг)'});
+    B.curve(ns,R,gold,2.4);B.hline(this.eps,brand,1.5,[6,4],'ε');
+    let ne=-1;for(let i=0;i<=NR;i++)if(R[i]<=this.eps){ne=i;break;}
+    if(ne>=0){B.vline(ne,brand,1.2,[2,3],'n(ε) = '+ne);}
+    B.vline(n,css('--muted'),1,[3,3]);B.dot(n,R[n],4,gold);
+    const w1=this.winMax(100,200),w2=this.winMax(1000,2000),w3=this.winMax(10000,20000);
+    stats('op-stats',[['‖T‖ = sup |λₖ|',fmt(this.S[0])],['‖T − Tₙ‖',fmt(this.S[n])],['мін. ранг для ε',ne>=0?ne:'> 200'],['max |λₖ|, 100 ≤ k < 200',fmt(w1)],['max |λₖ|, 1000 ≤ k < 2000',fmt(w2)],['max |λₖ|, 10⁴ ≤ k < 2·10⁴',fmt(w3)]]);
+    if(w3<=0.5*w1||w3<1e-9) verdict('op-verdict','ok','|λ<sub>k</sub>| спадає до 0: ‖T − T<sub>n</sub>‖ → 0, T — границя операторів скінченного рангу, отже T(B) передкомпактна (теорема 21a): T компактний. '+(Math.min(...vals.slice(0,40).map(Math.abs))>0?'Водночас усі λ<sub>k</sub> ≠ 0, тож T має нескінченний ранг — F(ℓ²) не замкнений (зауваження 9).':''));
+    else if(w3>=0.9*w1) verdict('op-verdict','no','|λ<sub>k</sub>| не прямує до 0: ‖T − T<sub>n</sub>‖ ≥ c &gt; 0 для всіх n. Множина T(B) містить вектори λ<sub>k</sub>e<sub>k</sub> з попарними відстанями ≥ c√2 і не є передкомпактною: T не компактний, і жодні оператори скінченного рангу не наближають його за нормою.');
+    else verdict('op-verdict','mid','|λ<sub>k</sub>| спадає повільно; числових даних замало для висновку. Компактність рівносильна λ<sub>k</sub> → 0 — перевірте це аналітично.');
+  },
+  renderEll(){
+    if(current!=='op'||!this.lam)return;
+    const {ctx,w,h}=setup($('op-ell'));const m=this.m,n=this.n,a=this.lam[m],b=this.lam[m+1];
+    $('op-ell-title').innerHTML='у вікні (x'+sub(m)+', x'+sub(m+1)+')';
+    const R=Math.min(w,h)*0.40/Math.max(1,Math.abs(a),Math.abs(b)),ox=w/2,oy=h/2;
+    ctx.strokeStyle=css('--grid');ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(w,oy);ctx.moveTo(ox,0);ctx.lineTo(ox,h);ctx.stroke();
+    ctx.fillStyle=css('--muted');ctx.font='italic 12px '+FONT;ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('x'+sub(m),w-6,oy+4);ctx.textAlign='left';ctx.fillText('x'+sub(m+1),ox+6,6);
+    ctx.setLineDash([5,4]);ctx.strokeStyle=css('--muted');ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(ox,oy,R,0,7);ctx.stroke();ctx.setLineDash([]);
+    const brand=css('--brand'),gold=css('--gold');
+    ctx.beginPath();ctx.ellipse(ox,oy,Math.max(Math.abs(a)*R,0.5),Math.max(Math.abs(b)*R,0.5),0,0,7);ctx.fillStyle=mix(brand,brand,0,0.15);ctx.fill();ctx.strokeStyle=brand;ctx.lineWidth=2;ctx.stroke();
+    const ka=m<=n?a:0,kb=m+1<=n?b:0;
+    ctx.strokeStyle=gold;ctx.lineWidth=3;
+    if(ka&&kb){ctx.beginPath();ctx.ellipse(ox,oy,Math.abs(ka)*R,Math.abs(kb)*R,0,0,7);ctx.stroke();}
+    else if(ka){ctx.beginPath();ctx.moveTo(ox-Math.abs(ka)*R,oy);ctx.lineTo(ox+Math.abs(ka)*R,oy);ctx.stroke();}
+    else if(kb){ctx.beginPath();ctx.moveTo(ox,oy-Math.abs(kb)*R);ctx.lineTo(ox,oy+Math.abs(kb)*R);ctx.stroke();}
+    else{ctx.beginPath();ctx.arc(ox,oy,4,0,7);ctx.fillStyle=gold;ctx.fill();}
+    const c=Math.cos(this.phi),s=Math.sin(this.phi);
+    const arrow=(x,y,col,lab)=>{const px=ox+x*R,py=oy-y*R;ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(px,py);ctx.stroke();ctx.beginPath();ctx.arc(px,py,4.5,0,7);ctx.fill();ctx.font='13px '+FONT;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(lab,px+6,py-3);};
+    arrow(c,s,css('--muted'),'x');arrow(a*c,b*s,brand,'Tx');arrow(ka*c,kb*s,gold,'');ctx.fillStyle=gold;ctx.font='13px '+FONT;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('Tₙx',ox+ka*c*R+6,oy-kb*s*R+5);
+    ctx.fillStyle=css('--ink');ctx.font='12px '+FONT;ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText('півосі |λ'+sub(m)+'| = '+fmt(Math.abs(a),3)+', |λ'+sub(m+1)+'| = '+fmt(Math.abs(b),3),8,6);
+    ctx.fillText('‖Tx − Tₙx‖ = '+fmt(Math.hypot((a-ka)*c,(b-kb)*s),3)+' (у цьому вікні)',8,24);
+  }
+};
+
+/* ================= TAB 6: simulation ================= */
+const Sim={mode:'heat',K:200,G:1000,NX:300,uf:null,b:null,t:0,playing:false,kappa:0.01,c:0.5,speed:1,n:5,eps:0.05,hist:[],last:0,raf:0,sinT:null,umax:1,umin:0,u0:null,b2:1,
+  init(){
+    const F=bindFormula('sm-u',['x'],f=>{this.uf=f;this.coeffs();this.reset();});
+    $('sm-preset').addEventListener('change',e=>F.set(e.target.value));
+    $('sm-mode').addEventListener('change',e=>{this.mode=e.target.value;$('sm-kappa-fld').hidden=this.mode!=='heat';$('sm-c-fld').hidden=this.mode!=='wave';this.reset();});
+    bindRange('sm-kappa',v=>{this.kappa=v;this.hist=[];this.render();});
+    bindRange('sm-c',v=>{this.c=v;this.hist=[];this.render();});
+    bindRange('sm-speed',v=>{this.speed=v;});
+    bindRange('sm-n',v=>{this.n=v;this.render();},true);
+    bindRange('sm-eps',v=>{this.eps=v;this.hist=[];this.render();});
+    $('sm-play').addEventListener('click',()=>this.toggle());
+    $('sm-reset').addEventListener('click',()=>this.reset());
+    const NX=this.NX,K=this.K;this.sinT=new Float64Array(K*(NX+1));
+    for(let k=1;k<=K;k++)for(let i=0;i<=NX;i++)this.sinT[(k-1)*(NX+1)+i]=Math.sin(k*Math.PI*i/NX);
+    F.apply();
+  },
+  coeffs(){
+    const G=this.G,K=this.K,u=new Float64Array(G+1);let mx=0,mn=0;
+    for(let i=0;i<=G;i++){const v=safe1(this.uf,i/G);u[i]=isFinite(v)?v:0;mx=Math.max(mx,u[i]);mn=Math.min(mn,u[i]);}
+    this.u0=u;this.umax=mx;this.umin=mn;this.b=new Float64Array(K+1);let b2=0;
+    for(let k=1;k<=K;k++){let s=0;const w=k*Math.PI/G;for(let i=1;i<G;i++)s+=u[i]*Math.sin(w*i);this.b[k]=2*s/G;b2+=this.b[k]*this.b[k];}
+    this.b2=b2||1;
+  },
+  lam(k){return this.mode==='heat'?Math.exp(-k*k*Math.PI*Math.PI*this.kappa*this.t):Math.cos(k*Math.PI*this.c*this.t);},
+  reset(){this.t=0;this.hist=[];this.render();},
+  toggle(){this.playing?this.pause():this.play();},
+  play(){if(this.playing)return;this.playing=true;$('sm-play').textContent='⏸ Пауза';this.last=performance.now();const loop=ts=>{if(!this.playing)return;const dt=Math.min(0.1,(ts-this.last)/1000);this.last=ts;this.t+=dt*this.speed;this.render();this.raf=requestAnimationFrame(loop);};this.raf=requestAnimationFrame(loop);},
+  pause(){this.playing=false;cancelAnimationFrame(this.raf);$('sm-play').textContent='▶ Пуск';},
+  render(){
+    if(current!=='sim'||!this.b)return;
+    const K=this.K,NX=this.NX,n=this.n,bt=new Float64Array(K+1);
+    for(let k=1;k<=K;k++)bt[k]=this.b[k]*this.lam(k);
+    const xs=new Float64Array(NX+1),u=new Float64Array(NX+1),pn=new Float64Array(NX+1);
+    for(let i=0;i<=NX;i++){xs[i]=i/NX;let s=0,q=0;for(let k=1;k<=K;k++){const v=bt[k]*this.sinT[(k-1)*(NX+1)+i];s+=v;if(k===n)q=s;}if(n>=K)q=s;u[i]=s;pn[i]=n===0?0:q;}
+    const suf=new Float64Array(K+2);for(let k=K;k>=1;k--)suf[k]=suf[k+1]+bt[k]*bt[k];
+    let ne=K;for(let m=0;m<=K;m++){if(Math.sqrt(suf[m+1])<=this.eps*Math.sqrt(this.b2)){ne=m;break;}}
+    let opn=0;for(let k=n+1;k<=K;k++)opn=Math.max(opn,Math.abs(this.lam(k)));
+    if(this.playing||!this.hist.length||this.hist[this.hist.length-1][0]!==this.t){this.hist.push([this.t,ne]);if(this.hist.length>4000)this.hist.splice(0,this.hist.length-4000);}
+    const A0=Math.max(Math.abs(this.umax),Math.abs(this.umin),1e-6);
+    let lo,hi;if(this.mode==='wave'){lo=-A0*1.25;hi=A0*1.25;}else{lo=Math.min(0,this.umin)-0.15*A0;hi=Math.max(0,this.umax)+0.15*A0;}
+    const brand=css('--brand'),gold=css('--gold');
+    const P=axes($('sm-cv'),{xmin:0,xmax:1,ymin:lo,ymax:hi,xlabel:'x'});
+    const xg=Array.from({length:this.G+1},(_,i)=>i/this.G);
+    P.curve(xg,this.u0,css('--muted'),1.2,[3,3]);
+    P.ctx.save();P.clip();P.ctx.beginPath();P.ctx.moveTo(P.X(0),P.Y(0));for(let i=0;i<=NX;i++)P.ctx.lineTo(P.X(xs[i]),P.Y(u[i]));P.ctx.lineTo(P.X(1),P.Y(0));P.ctx.closePath();P.ctx.fillStyle=mix(brand,brand,0,0.12);P.ctx.fill();P.ctx.restore();P.ctx.restore();
+    P.curve(xs,u,brand,2.6);P.curve(xs,pn,gold,2,[7,4]);
+    for(const x of[0,1]){P.ctx.fillStyle=css('--ink');P.ctx.fillRect(P.X(x)-3,P.Y(0)-9,6,18);}
+    $('sm-title').innerHTML=(this.mode==='heat'?'Температура стрижня u(x, t)':'Відхилення струни u(x, t)')+' <small>t = '+this.t.toFixed(2)+'</small>';
+    // rod strip
+    const R=setup($('sm-rod'));const cw=R.w/NX;
+    for(let i=0;i<=NX;i++){const v=Math.max(-1,Math.min(1,u[i]/A0));R.ctx.fillStyle=v>=0?mix('#f4efe2',this.mode==='heat'?'#c8572e':gold,v,1):mix('#f4efe2','#2f5f8f',-v,1);R.ctx.fillRect(i*cw,0,cw+1,R.h);}
+    R.ctx.fillStyle='rgba(0,0,0,.55)';R.ctx.font='11px '+FONT;R.ctx.textBaseline='middle';R.ctx.fillText(this.mode==='heat'?'теплова карта стрижня':'карта відхилень струни',8,R.h/2);
+    // spectrum
+    const KB=60,vals=[];for(let k=1;k<=KB;k++)vals.push(Math.abs(bt[k]));
+    const bmax=Math.max(1,...Array.from(this.b).map(Math.abs));
+    const S=axes($('sm-spec'),{xmin:0.3,xmax:KB+0.7,ymin:1e-8,ymax:bmax*2,logy:true,xlabel:'k',ntx:6});
+    const bw=Math.max(2,S.pw/KB*0.72);
+    vals.forEach((v,i)=>{if(v<1e-8)return;const k=i+1;S.ctx.fillStyle=k<=n?brand:gold;const x=S.X(k)-bw/2,y=S.Y(v);S.ctx.fillRect(x,y,bw,S.Y(1e-8)-y);});
+    const ks=Array.from({length:KB},(_,i)=>i+1);S.curve(ks,ks.map(k=>Math.abs(this.lam(k))),css('--ink'),1.6,[4,3]);
+    S.vline(n+0.5,css('--muted'),1,[3,3],'n');
+    // history
+    const T=this.hist,tm=Math.max(5,this.t*1.05),nm=Math.max(10,...T.map(h=>h[1]))*1.1;
+    const H=axes($('sm-hist'),{xmin:0,xmax:tm,ymin:0,ymax:nm,xlabel:'t'});
+    H.curve(T.map(h=>h[0]),T.map(h=>h[1]),brand,2.2);H.dot(this.t,ne,4,gold);
+    const l2=Math.sqrt(suf[1]/2),tail=Math.sqrt(suf[n+1]/2);
+    stats('sm-stats',[['t',this.t.toFixed(2)],['‖u(t)‖ в L²',fmt(l2)],['‖u − Pₙu‖ в L²',fmt(tail)],['‖Sₜ − PₙSₜ‖ = sup<sub>k&gt;n</sub> |λₖ(t)|',fmt(opn)],['n<sub>ε</sub>(t) — мод для точності ε',ne>=K?'≥ '+K:ne]]);
+  }
+};
+
+/* ================= tabs, keyboard, resize ================= */
+const MODS={nets:Nets,ai:AI,aa:AA,lp:LP,op:OP,sim:Sim,th:null};
+const ORDER=['nets','ai','aa','lp','op','sim','th'];
+function show(tab){
+  if(!ORDER.includes(tab))tab='nets';
+  current=tab;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab?'true':'false'));
+  ORDER.forEach(t=>{$('tab-'+t).hidden=t!==tab;});
+  if(tab!=='sim')Sim.pause();
+  if(MODS[tab])requestAnimationFrame(()=>MODS[tab].render());
+  try{history.replaceState(null,'','#'+tab);}catch(e){}
+}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+document.addEventListener('keydown',e=>{
+  const tg=e.target.tagName;if(tg==='INPUT'||tg==='SELECT'||tg==='TEXTAREA'||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(/^[1-7]$/.test(e.key)){show(ORDER[+e.key-1]);e.preventDefault();}
+  else if(e.key===' '&&current==='sim'){Sim.toggle();e.preventDefault();}
+});
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(MODS[current])MODS[current].render();},120);});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(MODS[current])MODS[current].render();});}catch(e){}
+[Nets,AI,AA,LP,OP,Sim].forEach(m=>m.init());
+show((location.hash||'#nets').slice(1));
+</script>
+</body>
+</html>
