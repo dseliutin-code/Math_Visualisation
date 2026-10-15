@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Формула Тейлора: кілька змінних</title>
+<style>
+:root{
+  --g:#345a53; --g2:#24413c; --g3:#5e8a80; --g4:#e3ece9;
+  --gold:#ca9d48; --gold2:#a87d2f; --gold3:#f5ead3;
+  --bg:#f4f1ea; --card:#ffffff; --ink:#1e2b29; --muted:#667673;
+  --red:#b8433a; --violet:#7b4fa8; --line:#e2ddd1;
+  --math:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,var(--g2),var(--g) 60%,#3f6b63);color:#fff;padding:18px 22px 14px;border-bottom:4px solid var(--gold)}
+header h1{margin:0;font-size:22px;font-weight:650;letter-spacing:.2px}
+header p{margin:4px 0 0;opacity:.85;font-size:14px}
+header .dep{float:right;font-size:12px;opacity:.75;text-align:right;margin-top:4px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:12px 22px 0;max-width:1500px;margin:0 auto}
+nav button{border:1px solid var(--line);background:#fff;color:var(--g2);padding:8px 14px;border-radius:999px;font-size:14px;cursor:pointer;transition:.15s}
+nav button:hover{border-color:var(--gold)}
+nav button.active{background:var(--g);color:#fff;border-color:var(--g);box-shadow:0 2px 8px rgba(52,90,83,.3)}
+main{max-width:1500px;margin:0 auto;padding:14px 22px 30px}
+.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px;align-items:start}
+.card{background:var(--card);border-radius:14px;box-shadow:0 1px 3px rgba(30,43,41,.08),0 6px 20px rgba(30,43,41,.05);padding:14px 16px;border:1px solid #ebe6da}
+.card h3{margin:0 0 8px;font-size:15px;color:var(--g2);font-weight:650}
+.card h3 .sub{font-weight:400;color:var(--muted);font-size:13px}
+.side{position:sticky;top:10px}
+.side label{display:block;font-size:12.5px;color:var(--muted);margin:9px 0 3px}
+input[type=text],select{width:100%;padding:7px 9px;border:1px solid #d6d0c2;border-radius:8px;font-size:14px;background:#fffdf8;color:var(--ink)}
+input[type=text]:focus,select:focus{outline:2px solid rgba(202,157,72,.45);border-color:var(--gold)}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.seg{display:flex;border:1px solid #d6d0c2;border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;background:#fffdf8;padding:7px 0;cursor:pointer;font-size:14px;color:var(--g2);border-right:1px solid #e6e0d3}
+.seg button:last-child{border-right:0}
+.seg button.active{background:var(--gold);color:#fff;font-weight:600}
+.btn{border:0;background:var(--g);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px}
+.btn:hover{background:var(--g2)}
+.btn.gold{background:var(--gold)} .btn.gold:hover{background:var(--gold2)}
+.btn.ghost{background:transparent;color:var(--g);border:1px solid var(--g3)}
+.btn.ghost:hover{background:var(--g4)}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+input[type=range]{width:100%;accent-color:var(--g)}
+.checks{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+.checks label{margin:0;font-size:13.5px;color:var(--ink);display:flex;gap:6px;align-items:center;cursor:pointer}
+.err{color:var(--red);font-size:12.5px;min-height:0;margin-top:3px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:10px}
+.hint summary{cursor:pointer;color:var(--g)}
+.hint code{background:var(--g4);padding:0 4px;border-radius:4px}
+.cv{width:100%;display:block;border-radius:10px;touch-action:none}
+.cv.h3d{height:470px;cursor:grab}
+.cv.h3d:active{cursor:grabbing}
+.cv.sq{aspect-ratio:1/1;height:auto}
+.cv.h260{height:260px} .cv.h300{height:300px} .cv.h330{height:330px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.grid2.top{margin-top:0}
+.stack{display:flex;flex-direction:column;gap:16px}
+.res{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px;align-items:baseline}
+.res .k{color:var(--muted)}
+.res .v{font-family:var(--math);font-size:16px}
+.res .v.big{font-size:18px;color:var(--g2);font-weight:600}
+.res .sep{grid-column:1/-1;border-top:1px dashed var(--line);margin:4px 0}
+.mathf{font-family:var(--math);font-size:16.5px}
+.poly{font-family:var(--math);font-size:16px;background:var(--gold3);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.7;word-break:break-word}
+.caption{font-size:13px;color:var(--muted);margin-top:8px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.legend i.d{background:repeating-linear-gradient(90deg,var(--gold) 0 5px,transparent 5px 8px)!important}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;background:var(--g4);color:var(--g2)}
+.pill.warn{background:#f6dcd8;color:var(--red)}
+.pill.ok{background:#dcefe5;color:#24624a}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:8px}
+table.t th,table.t td{padding:4px 8px;border-bottom:1px solid #eee7da;text-align:right}
+table.t th{color:var(--muted);font-weight:500}
+table.t td:first-child,table.t th:first-child{text-align:left}
+.bar{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--g),var(--g3))}
+.bars .r{display:grid;grid-template-columns:70px 1fr 64px;gap:8px;align-items:center;font-size:13px;margin:5px 0}
+.bars .r .nm{font-family:var(--math);font-size:15px}
+.prose{font-size:15px;line-height:1.65}
+.prose p{margin:0 0 10px}
+.prose h2{font-size:18px;color:var(--g2);margin:22px 0 8px;border-bottom:2px solid var(--gold3);padding-bottom:4px}
+.prose h2:first-child{margin-top:0}
+.prose math[display=block]{margin:10px 0 12px;font-size:17px}
+.prose .thm{border-left:4px solid var(--gold);background:#fcf8ef;padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0}
+.theory{max-width:900px;margin:0 auto}
+.varrow{display:grid;grid-template-columns:52px 1fr 1fr;gap:6px;align-items:center;margin-top:5px}
+.varrow .nm{font-family:var(--math);font-size:16px;text-align:center;background:var(--g4);border-radius:6px;padding:4px 0}
+.tabpane{display:none}
+.tabpane.show{display:block}
+.note{background:var(--g4);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:0 0 22px}
+@media (max-width:1000px){
+  .layout{grid-template-columns:1fr}
+  .side{position:static}
+  .grid2{grid-template-columns:1fr}
+  .cv.h3d{height:380px}
+  header .dep{float:none;text-align:left}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="dep">Кафедра фундаментальної математики<br>ХНУ імені В. Н. Каразіна</div>
+  <h1>Формула Тейлора для функцій кількох змінних</h1>
+  <p>Залишковий член у формі Лагранжа та Пеано, його оцінка в наближених обчисленнях — інтерактивна візуалізація до лекції</p>
+</header>
+<nav id="tabs">
+  <button data-tab="geom" class="active">Геометрія наближення</button>
+  <button data-tab="seg">Вздовж відрізка · порядок похибки</button>
+  <button data-tab="err">Теорія похибок вимірювань</button>
+  <button data-tab="sim">Симуляція: малі коливання</button>
+  <button data-tab="theory">Теоретична довідка</button>
+</nav>
+<main>
+
+<!-- ============ TAYLOR (tabs geom + seg) ============ -->
+<div class="layout" id="taylorLayout">
+  <aside class="card side">
+    <h3>Вхідні дані</h3>
+    <label>Готовий приклад</label>
+    <select id="preset"></select>
+    <label>f(x, y) =</label>
+    <input type="text" id="fExpr" class="mono" spellcheck="false">
+    <div id="fErr" class="err"></div>
+    <div class="row2">
+      <div><label>точка a: x₀</label><input type="text" id="x0"></div>
+      <div><label>y₀</label><input type="text" id="y0"></div>
+    </div>
+    <div class="row2">
+      <div><label>приріст h: h₁</label><input type="text" id="h1"></div>
+      <div><label>h₂</label><input type="text" id="h2"></div>
+    </div>
+    <label>Порядок многочлена Тейлора m</label>
+    <div class="seg" id="mSeg">
+      <button data-m="0">0</button><button data-m="1">1</button><button data-m="2" class="active">2</button><button data-m="3">3</button>
+    </div>
+    <label>Півсторона області перегляду r = <b id="rVal"></b></label>
+    <input type="range" id="rRange" min="-2" max="1" step="0.005" value="-0.3">
+    <label>Допуск ε для карти похибки</label>
+    <input type="text" id="eps" value="0,001">
+    <div class="checks">
+      <label><input type="checkbox" id="showF" checked> поверхня z = f(x, y)</label>
+      <label><input type="checkbox" id="showT" checked> поверхня z = T<sub>m</sub>(x − x₀, y − y₀)</label>
+      <label><input type="checkbox" id="showSeg" checked> відрізок [a, a + h] і похибка</label>
+    </div>
+    <details class="hint">
+      <summary>Синтаксис формул</summary>
+      Операції <code>+ − * / ^</code>, дужки, неявне множення (<code>2x</code>, <code>xy</code>, <code>x(y+1)</code>).
+      Функції: <code>sin cos tan(tg) exp ln(log) sqrt atan(arctg) asin acos sinh cosh tanh abs</code>.
+      Константи <code>pi</code>, <code>e</code>. Числа можна вводити з комою: <code>0,04</code>; у числових полях допустимі вирази: <code>pi/6</code>.
+      Похідні обчислюються символьно, тому значення многочлена Тейлора точні.
+    </details>
+  </aside>
+
+  <div>
+    <!-- GEOMETRY -->
+    <section id="tab-geom" class="tabpane show">
+      <div class="card">
+        <h3>Поверхня і многочлен Тейлора <span class="sub">— перетягуйте мишею для обертання, коліщатко — масштаб</span></h3>
+        <canvas id="cv3d" class="cv h3d"></canvas>
+        <div class="legend">
+          <span><i style="background:#4f8478"></i>графік f</span>
+          <span><i style="background:var(--gold)"></i>графік T<sub>m</sub> (m = 1 — дотична площина, m = 2 — дотичний параболоїд)</span>
+          <span><i style="background:#1d3531"></i>переріз f над відрізком [a, a+h]</span>
+          <span><i style="background:var(--red)"></i>похибка R<sub>m</sub>(h)</span>
+          <span><i style="background:var(--violet)"></i>проміжна точка c = a + θh</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px;font-size:13px;color:var(--muted)">
+          Розтяг по осі z <input type="range" id="zScale" min="0.3" max="2.5" step="0.05" value="1" style="max-width:200px">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Результати обчислення</h3>
+          <div id="resBox"></div>
+        </div>
+        <div class="card">
+          <h3>Карта похибки |f − T<sub>m</sub>| в області перегляду</h3>
+          <canvas id="cvErr" class="cv sq"></canvas>
+          <div class="caption">Кольорові смуги — порядки величини похибки (крок ½ декади). Біла лінія обмежує множину, де фактична похибка менша за ε.
+          Золотий пунктирний ромб — область |h₁| + |h₂| ≤ ρ, у якій точність ε <b>гарантована</b> теоремою 2 (M оцінено за сіткою на квадраті перегляду).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEGMENT -->
+    <section id="tab-seg" class="tabpane">
+      <div class="grid2 top">
+        <div class="card">
+          <h3>Зведення до однієї змінної: φ(t) = f(a + th)</h3>
+          <canvas id="cvPhi" class="cv h300"></canvas>
+          <div class="legend">
+            <span><i style="background:var(--g)"></i>φ(t)</span>
+            <span><i style="background:var(--gold)"></i>многочлен Тейлора φ порядку m у точці t = 0</span>
+            <span><i style="background:#c9c2b0"></i>інші порядки</span>
+          </div>
+          <div class="caption" id="phiCap"></div>
+        </div>
+        <div class="card">
+          <h3>Де ховається θ: залишок у формі Лагранжа</h3>
+          <canvas id="cvPsi" class="cv h300"></canvas>
+          <div class="caption" id="psiCap"></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Порядок малості залишку <span class="sub">— h замінено на sh, s → 0, логарифмічні шкали</span></h3>
+          <div class="seg" id="logMode" style="max-width:420px;margin-bottom:8px">
+            <button data-mode="R" class="active">|R<sub>m</sub>(sh)| (Лагранж)</button>
+            <button data-mode="P">|R<sub>m</sub>(sh)| / |sh|<sup>m</sup> (Пеано)</button>
+          </div>
+          <canvas id="cvLog" class="cv h330"></canvas>
+          <div class="caption" id="logCap"></div>
+        </div>
+        <div class="card">
+          <h3>Що буде, якщо зменшувати приріст удвічі</h3>
+          <div id="halfBox"></div>
+          <div class="note">У лекції: якщо приріст зменшити вдвічі, похибка лінійного наближення зменшиться приблизно в 4 рази, квадратичного — у 8 разів. Загалом відношення сусідніх похибок прямує до 2<sup>m+1</sup>, бо R<sub>m</sub>(sh) ≈ s<sup>m+1</sup>·d<sup>m+1</sup>f(a; h)/(m+1)!.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ ERRORS ============ -->
+<section id="tab-err" class="tabpane">
+  <div class="layout">
+    <aside class="card side">
+      <h3>Опосередковане вимірювання</h3>
+      <label>Фізична задача</label>
+      <select id="ePreset"></select>
+      <div id="eNote" class="caption"></div>
+      <label>u = f(x₁, …, xₙ) =</label>
+      <input type="text" id="eExpr" class="mono" spellcheck="false">
+      <div id="eErr" class="err"></div>
+      <div class="varrow" style="margin-top:10px;font-size:12px;color:var(--muted)"><span></span><span>наближене значення aᵢ</span><span>абс. похибка Δᵢ</span></div>
+      <div id="eRows"></div>
+      <div class="hint">Змінні визначаються автоматично з формули. Справжні значення аргументів — aᵢ + hᵢ, де |hᵢ| ≤ Δᵢ.</div>
+    </aside>
+    <div class="stack">
+      <div class="grid2 top">
+        <div class="card"><h3>Гранична похибка за формулою Тейлора (m = 1)</h3><div id="eRes"></div></div>
+        <div class="card"><h3>Внесок кожного вимірювання в лінійну оцінку</h3><div id="eBars" class="bars"></div>
+          <div class="caption">Довжина смуги — доданок |∂f/∂xᵢ(a)|·Δᵢ. Щоб покращити результат, точніше вимірюйте величину з найдовшою смугою.</div></div>
+      </div>
+      <div class="card">
+        <h3>Експеримент Монте-Карло <span class="sub">— випадкові справжні значення в паралелепіпеді |xᵢ − aᵢ| ≤ Δᵢ</span></h3>
+        <canvas id="cvHist" class="cv h260"></canvas>
+        <div class="legend">
+          <span><i style="background:var(--g3)"></i>розподіл обчислених значень u</span>
+          <span><i class="d"></i>межі u(a) ± Δ<sub>лін</sub></span>
+          <span><i style="background:var(--red)"></i>гарантовані межі u(a) ± (Δ<sub>лін</sub> + M₂(ΣΔᵢ)²/2)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIMULATION ============ -->
+<section id="tab-sim" class="tabpane">
+  <div class="layout">
+    <aside class="card side">
+      <h3>Рух частинки в потенціалі U(x, y)</h3>
+      <label>Фізична система</label>
+      <select id="sPreset"></select>
+      <label>U(x, y) =</label>
+      <input type="text" id="sExpr" class="mono" spellcheck="false">
+      <div id="sErr" class="err"></div>
+      <label>Точка рівноваги a (центр розкладу)</label>
+      <div class="row2"><input type="text" id="sAx"><input type="text" id="sAy"></div>
+      <div class="btns"><button class="btn ghost" id="sFindMin">Знайти мінімум поблизу</button></div>
+      <label>Початкове положення (x, y) і швидкість (vₓ, v<sub>y</sub>)</label>
+      <div class="row4"><input type="text" id="sX0"><input type="text" id="sY0"><input type="text" id="sVx"><input type="text" id="sVy"></div>
+      <div class="hint" style="margin-top:4px">Підказка: клацніть на карті, щоб задати початкове положення.</div>
+      <label>Розмір області перегляду: <b id="sViewVal"></b></label>
+      <input type="range" id="sView" min="-0.7" max="1" step="0.01" value="0.3">
+      <label>Швидкість симуляції: <b id="sSpeedVal"></b></label>
+      <input type="range" id="sSpeed" min="0.2" max="8" step="0.1" value="2">
+      <div class="checks"><label><input type="checkbox" id="sShowH" checked> показувати гармонічну модель (T₂)</label></div>
+      <div class="btns">
+        <button class="btn" id="sPlay">▶ Пуск</button>
+        <button class="btn gold" id="sReset">↺ Скинути</button>
+      </div>
+      <div id="sStatic" style="margin-top:12px"></div>
+    </aside>
+    <div class="stack">
+      <div class="grid2 top">
+        <div class="card">
+          <h3>Траєкторії на карті рівнів потенціалу</h3>
+          <canvas id="cvSim" class="cv sq" style="cursor:crosshair"></canvas>
+          <div class="legend">
+            <span><i style="background:#1d3531"></i>справжній рух, U</span>
+            <span><i class="d"></i>рух у потенціалі T₂ (гармонічне наближення)</span>
+            <span><i style="background:#9fb3ae"></i>власні напрямки матриці Гессе</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Координати в часі</h3>
+          <canvas id="cvSimT" class="cv h330"></canvas>
+          <div id="sLive" class="res" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="card prose">
+        <p><b>Фізичний зміст.</b> Частинка одиничної маси рухається за законом Ньютона <span class="mathf">r̈ = −∇U(r)</span>. Біля точки рівноваги <span class="mathf">a</span> (де <span class="mathf">∇U(a) = 0</span>) формула Тейлора з <span class="mathf">m = 2</span> дає <span class="mathf">U(a + h) = U(a) + ½⟨H<sub>U</sub>(a)h, h⟩ + R₂(h)</span>. Якщо відкинути залишок, отримаємо потенціал гармонічного осцилятора: рівняння руху стають лінійними, <span class="mathf">ḧ = −H<sub>U</sub>(a)h</span>, а власні вектори матриці Гессе задають <i>нормальні моди</i> з частотами <span class="mathf">ωᵢ = √λᵢ</span>. Лінії рівня T₂ — еліпси, осі яких спрямовані вздовж власних векторів.</p>
+        <p>Наскільки вірна така «лінеаризація», визначає саме залишковий член: за теоремою 2 <span class="mathf">|R₂(h)| ≤ M₃(|h₁| + |h₂|)³/6</span>, тобто відносна похибка потенціалу має порядок амплітуди. Задайте малу початкову амплітуду — дві траєкторії майже збігаються (фігури Ліссажу); збільште її — і ангармонічні члени розведуть траєкторії, а в потенціалі Енона–Гейлеса рух стане хаотичним або частинка покине яму.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THEORY ============ -->
+<section id="tab-theory" class="tabpane">
+<div class="card prose theory">
+<h2>Основна ідея</h2>
+<p>Функцію кількох змінних розглядають уздовж відрізка, що сполучає точки <i>a</i> та <i>a + h</i>, і тим самим зводять задачу до одновимірної формули Тейлора. Якщо <i>f</i> ∈ <i>C<sup>p</sup></i>(<i>U</i>) і відрізок [<i>a</i>, <i>a + h</i>] лежить в <i>U</i>, то функція <i>φ</i>(<i>t</i>) = <i>f</i>(<i>a + th</i>) має <i>p</i> неперервних похідних і її похідні є диференціалами функції <i>f</i> (лема 1):</p>
+<math display="block"><msup><mi>φ</mi><mrow><mo stretchy="false">(</mo><mi>k</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>d</mi><mi>k</mi></msup><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>t</mi><mi>h</mi><mo>;</mo><mi>h</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mrow><mo>(</mo><msub><mi>h</mi><mn>1</mn></msub><mfrac><mo>∂</mo><mrow><mo>∂</mo><msub><mi>x</mi><mn>1</mn></msub></mrow></mfrac><mo>+</mo><mo>⋯</mo><mo>+</mo><msub><mi>h</mi><mi>n</mi></msub><mfrac><mo>∂</mo><mrow><mo>∂</mo><msub><mi>x</mi><mi>n</mi></msub></mrow></mfrac><mo>)</mo></mrow><mi>k</mi></msup><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>t</mi><mi>h</mi><mo stretchy="false">)</mo><mo>.</mo></math>
+<p>Геометрично <i>φ</i> — це переріз графіка <i>f</i> вертикальною площиною, що проходить через відрізок; саме його показує вкладка «Вздовж відрізка».</p>
+
+<h2>Формула Тейлора–Лагранжа</h2>
+<div class="thm"><b>Теорема 1.</b> Якщо <i>f</i> ∈ <i>C</i><sup><i>m</i>+1</sup>(<i>U</i>) і [<i>a</i>, <i>a + h</i>] ⊂ <i>U</i>, то існує <i>θ</i> ∈ (0, 1) таке, що
+<math display="block"><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>h</mi><mo stretchy="false">)</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mi>m</mi></munderover><mfrac><mn>1</mn><mrow><mi>k</mi><mo>!</mo></mrow></mfrac><msup><mi>d</mi><mi>k</mi></msup><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>;</mo><mi>h</mi><mo stretchy="false">)</mo><mo>+</mo><mfrac><mn>1</mn><mrow><mo stretchy="false">(</mo><mi>m</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mo>!</mo></mrow></mfrac><msup><mi>d</mi><mrow><mi>m</mi><mo>+</mo><mn>1</mn></mrow></msup><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>θ</mi><mi>h</mi><mo>;</mo><mi>h</mi><mo stretchy="false">)</mo><mo>.</mo></math></div>
+<p>Сума — це многочлен Тейлора <i>T<sub>m</sub></i>(<i>h</i>), а останній доданок — залишковий член <i>R<sub>m</sub></i>(<i>h</i>) у формі Лагранжа. Він має вигляд наступного члена многочлена, але похідні обчислено в проміжній точці <i>c = a + θh</i>. Знайти <i>θ</i>, як правило, неможливо, проте для оцінок досить знати, що <i>c</i> лежить на відрізку. При <i>m</i> = 1 графік <i>T</i><sub>1</sub> — дотична площина, при <i>m</i> = 2 — дотичний параболоїд, форму якого задає матриця Гессе. У мультиіндексному записі формула повністю повторює одновимірну:</p>
+<math display="block"><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>h</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mo stretchy="false">|</mo><mi>α</mi><mo stretchy="false">|</mo><mo>≤</mo><mi>m</mi></mrow></munder><mfrac><mrow><msup><mo>∂</mo><mi>α</mi></msup><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><mrow><mi>α</mi><mo>!</mo></mrow></mfrac><msup><mi>h</mi><mi>α</mi></msup><mo>+</mo><munder><mo>∑</mo><mrow><mo stretchy="false">|</mo><mi>α</mi><mo stretchy="false">|</mo><mo>=</mo><mi>m</mi><mo>+</mo><mn>1</mn></mrow></munder><mfrac><mrow><msup><mo>∂</mo><mi>α</mi></msup><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>θ</mi><mi>h</mi><mo stretchy="false">)</mo></mrow><mrow><mi>α</mi><mo>!</mo></mrow></mfrac><msup><mi>h</mi><mi>α</mi></msup><mo>.</mo></math>
+
+<h2>Оцінка залишкового члена</h2>
+<div class="thm"><b>Теорема 2.</b> Якщо, крім того, всі частинні похідні порядку <i>m</i> + 1 обмежені за модулем числом <i>M</i> на відрізку [<i>a</i>, <i>a + h</i>], то
+<math display="block"><mo stretchy="false">|</mo><msub><mi>R</mi><mi>m</mi></msub><mo stretchy="false">(</mo><mi>h</mi><mo stretchy="false">)</mo><mo stretchy="false">|</mo><mo>≤</mo><mfrac><mi>M</mi><mrow><mo stretchy="false">(</mo><mi>m</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mo>!</mo></mrow></mfrac><msubsup><mrow><mo stretchy="false">‖</mo><mi>h</mi><mo stretchy="false">‖</mo></mrow><mn>1</mn><mrow><mi>m</mi><mo>+</mo><mn>1</mn></mrow></msubsup><mo>≤</mo><mfrac><mrow><mi>M</mi><msup><mi>n</mi><mrow><mo stretchy="false">(</mo><mi>m</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mo>/</mo><mn>2</mn></mrow></msup></mrow><mrow><mo stretchy="false">(</mo><mi>m</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mo>!</mo></mrow></mfrac><msup><mrow><mo stretchy="false">|</mo><mi>h</mi><mo stretchy="false">|</mo></mrow><mrow><mi>m</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>.</mo></math></div>
+<p>Отже, похибка має порядок |<i>h</i>|<sup><i>m</i>+1</sup>. На практиці <i>M</i> шукають на зручнішій опуклій множині, що містить відрізок, — найчастіше на паралелепіпеді з вершинами <i>a</i> та <i>a + h</i>. Якщо оцінювати кожну похідну окремо (почленна оцінка), результат буває значно точнішим, ніж із єдиною константою <i>M</i>; у додатку обчислюються обидві оцінки.</p>
+
+<h2>Залишковий член у формі Пеано і єдиність розкладу</h2>
+<div class="thm"><b>Теорема 3.</b> Якщо <i>f</i> ∈ <i>C<sup>m</sup></i>(<i>U</i>), то <i>f</i>(<i>a + h</i>) = <i>T<sub>m</sub></i>(<i>h</i>) + <i>o</i>(|<i>h</i>|<sup><i>m</i></sup>) при <i>h</i> → 0.<br>
+<b>Теорема 4.</b> Якщо многочлен <i>P</i> степеня не вище <i>m</i> задовольняє <i>f</i>(<i>a + h</i>) = <i>P</i>(<i>h</i>) + <i>o</i>(|<i>h</i>|<sup><i>m</i></sup>), то <i>P</i> = <i>T<sub>m</sub></i>.</div>
+<p>Форма Пеано якісна: вона описує поведінку залишку при <i>h</i> → 0, але нічого не каже про його величину для конкретного <i>h</i>, тому для оцінки похибки обчислень непридатна. Форма Лагранжа кількісна, проте вимагає на одну похідну більше. Теорема єдиності дозволяє будувати розклади, перемножуючи відомі одновимірні, наприклад <i>e<sup>x</sup></i> ln(1 + <i>y</i>) = <i>y</i> + <i>xy</i> − <i>y</i>²/2 + <i>x</i>²<i>y</i>/2 − <i>xy</i>²/2 + <i>y</i>³/3 + <i>o</i>(<i>ρ</i>³).</p>
+
+<h2>Застосування</h2>
+<p><b>Теорія похибок.</b> Якщо <i>u = f</i>(<i>x</i><sub>1</sub>, …, <i>x<sub>n</sub></i>) обчислюють за наближеними значеннями <i>a<sub>i</sub></i> з абсолютними похибками Δ<sub><i>i</i></sub>, а другі похідні обмежені числом <i>M</i><sub>2</sub> на паралелепіпеді |<i>x<sub>i</sub></i> − <i>a<sub>i</sub></i>| ≤ Δ<sub><i>i</i></sub>, то</p>
+<math display="block"><mo stretchy="false">|</mo><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>h</mi><mo stretchy="false">)</mo><mo>−</mo><mi>f</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo><mo stretchy="false">|</mo><mo>≤</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo>|</mo><mfrac><mrow><mo>∂</mo><mi>f</mi></mrow><mrow><mo>∂</mo><msub><mi>x</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo><mo>|</mo></mrow><msub><mi>Δ</mi><mi>i</mi></msub><mo>+</mo><mfrac><msub><mi>M</mi><mn>2</mn></msub><mn>2</mn></mfrac><msup><mrow><mo stretchy="false">(</mo><msub><mi>Δ</mi><mn>1</mn></msub><mo>+</mo><mo>⋯</mo><mo>+</mo><msub><mi>Δ</mi><mi>n</mi></msub><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mo>.</mo></math>
+<p>Перший доданок — класична гранична абсолютна похибка; другий точно показує, чим при цьому нехтують. <b>Малі коливання.</b> Розклад потенціальної енергії біля мінімуму до другого порядку перетворює будь-яку механічну систему на набір гармонічних осциляторів; залишок <i>R</i><sub>2</sub> відповідає за ангармонізм.</p>
+
+<h2>Що показує кожна вкладка</h2>
+<p>«Геометрія наближення» порівнює графіки <i>f</i> і <i>T<sub>m</sub></i>, обчислює <i>f</i>(<i>a + h</i>), фактичну похибку, обидві оцінки теореми 2, значення <i>θ</i> і будує карту похибки з гарантованою областю точності. «Вздовж відрізка» ілюструє лему 1, знаходження <i>θ</i> як перетину графіка <i>φ</i><sup>(<i>m</i>+1)</sup>(<i>t</i>)/(<i>m</i> + 1)! з рівнем <i>R<sub>m</sub></i>, а також перевіряє порядок малості залишку в логарифмічних шкалах. «Теорія похибок» застосовує формулу Тейлора до фізичних вимірювань, «Симуляція» — до малих коливань.</p>
+</div>
+</section>
+</main>
+<footer>Інтерактивна візуалізація до лекції з математичного аналізу · працює автономно, без підключення до мережі</footer>
+
+<script>
+"use strict";
+// ENGINE-START
+const FN={sin:Math.sin,cos:Math.cos,tan:Math.tan,exp:Math.exp,ln:Math.log,sqrt:Math.sqrt,atan:Math.atan,asin:Math.asin,acos:Math.acos,sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,abs:Math.abs};
+const JSF={sin:'sin',cos:'cos',tan:'tan',exp:'exp',ln:'log',sqrt:'sqrt',atan:'atan',asin:'asin',acos:'acos',sinh:'sinh',cosh:'cosh',tanh:'tanh',abs:'abs'};
+const ALIAS={log:'ln',tg:'tan',arctg:'atan',arctan:'atan',arcsin:'asin',arccos:'acos'};
+const N=v=>({t:'n',v}), V=n=>({t:'v',n});
+const isN=(a,v)=>a.t==='n'&&(v===undefined||a.v===v);
+function add(a,b){ if(isN(a)&&isN(b))return N(a.v+b.v); if(isN(a,0))return b; if(isN(b,0))return a; return {t:'+',a,b}; }
+function sub(a,b){ if(isN(a)&&isN(b))return N(a.v-b.v); if(isN(b,0))return a; if(isN(a,0))return neg(b); return {t:'-',a,b}; }
+function mul(a,b){ if(isN(a)&&isN(b))return N(a.v*b.v); if(isN(a,0)||isN(b,0))return N(0); if(isN(a,1))return b; if(isN(b,1))return a;
+  if(isN(a,-1))return neg(b); if(isN(b,-1))return neg(a); if(isN(b))return {t:'*',a:b,b:a}; return {t:'*',a,b}; }
+function div(a,b){ if(isN(a)&&isN(b)&&b.v!==0)return N(a.v/b.v); if(isN(a,0))return N(0); if(isN(b,1))return a; return {t:'/',a,b}; }
+function pow(a,b){ if(isN(a)&&isN(b)){const r=Math.pow(a.v,b.v); if(isFinite(r))return N(r);} if(isN(b,0))return N(1); if(isN(b,1))return a; return {t:'^',a,b}; }
+function neg(a){ if(isN(a))return N(-a.v); if(a.t==='neg')return a.a; return {t:'neg',a}; }
+function fn(f,a){ if(isN(a)){const r=FN[f](a.v); if(isFinite(r))return N(r);} return {t:'f',f,a}; }
+function dep(e,v){ switch(e.t){case 'n':return false;case 'v':return e.n===v;case 'neg':case 'f':return dep(e.a,v);default:return dep(e.a,v)||dep(e.b,v);} }
+
+function tokenize(s){
+  s=s.replace(/\*\*/g,'^').replace(/[·×]/g,'*').replace(/[−–]/g,'-').replace(/π/g,' pi ');
+  const t=[]; let i=0;
+  while(i<s.length){
+    const c=s[i];
+    if(/\s/.test(c)){i++;continue;}
+    if(/[0-9.]/.test(c)){ let j=i; while(j<s.length&&/[0-9.]/.test(s[j]))j++; const str=s.slice(i,j);
+      if((str.match(/\./g)||[]).length>1) throw new Error('Некоректне число «'+str+'»');
+      t.push({k:'num',v:parseFloat(str)}); i=j; continue; }
+    if(/[A-Za-z_\u0370-\u03ff]/.test(c)){ let j=i; while(j<s.length&&/[A-Za-z_0-9\u0370-\u03ff]/.test(s[j]))j++; t.push({k:'id',v:s.slice(i,j)}); i=j; continue; }
+    if('+-*/^()'.includes(c)){t.push({k:c});i++;continue;}
+    throw new Error('Невідомий символ «'+c+'»');
+  }
+  return t;
+}
+function parseExpr(src,allowed){
+  const tk=tokenize(src); let p=0; const vars=[];
+  if(!tk.length) throw new Error('Порожній вираз');
+  const peek=()=>tk[p], next=()=>tk[p++];
+  const expect=k=>{const t=next(); if(!t||t.k!==k) throw new Error('Очікувалась дужка «'+k+'»');};
+  function expr(){ let a=term(); while(peek()&&(peek().k==='+'||peek().k==='-')){ const o=next().k; const b=term(); a=o==='+'?add(a,b):sub(a,b);} return a; }
+  function term(){ let a=unary(); for(;;){ const t=peek(); if(!t)break;
+      if(t.k==='*'||t.k==='/'){ next(); const b=unary(); a=t.k==='*'?mul(a,b):div(a,b); }
+      else if(t.k==='num'||t.k==='id'||t.k==='('){ const b=power(); a=mul(a,b); }
+      else break; }
+    return a; }
+  function unary(){ const t=peek(); if(t&&t.k==='-'){next();return neg(unary());} if(t&&t.k==='+'){next();return unary();} return power(); }
+  function power(){ const b=primary(); if(peek()&&peek().k==='^'){ next(); return pow(b,unary()); } return b; }
+  function primary(){
+    const t=next(); if(!t) throw new Error('Неочікуваний кінець виразу');
+    if(t.k==='num'){ if(isNaN(t.v)) throw new Error('Некоректне число'); return N(t.v); }
+    if(t.k==='('){ const e=expr(); expect(')'); return e; }
+    if(t.k==='id'){
+      const id=t.v, f=ALIAS[id]||id;
+      if(FN[f]){ let arg; if(peek()&&peek().k==='('){ next(); arg=expr(); expect(')'); } else { if(!peek()) throw new Error('Немає аргументу функції '+id); arg=power(); } return fn(f,arg); }
+      if(id==='pi') return N(Math.PI);
+      if(id==='e') return N(Math.E);
+      if(allowed){
+        if(allowed.includes(id)) return V(id);
+        if([...id].every(ch=>allowed.includes(ch))){ let r=V(id[0]); for(let q=1;q<id.length;q++) r={t:'*',a:r,b:V(id[q])}; return r; }
+        throw new Error(allowed.length?'Невідома змінна «'+id+'» (дозволено: '+allowed.join(', ')+')':'Очікувалось число');
+      }
+      if(!vars.includes(id)) vars.push(id);
+      return V(id);
+    }
+    throw new Error('Неочікуваний символ «'+t.k+'»');
+  }
+  const ast=expr();
+  if(p<tk.length) throw new Error('Зайвий символ «'+(tk[p].v!==undefined?tk[p].v:tk[p].k)+'»');
+  return {ast,vars};
+}
+function D(e,v){
+  switch(e.t){
+    case 'n': return N(0);
+    case 'v': return N(e.n===v?1:0);
+    case '+': return add(D(e.a,v),D(e.b,v));
+    case '-': return sub(D(e.a,v),D(e.b,v));
+    case 'neg': return neg(D(e.a,v));
+    case '*': return add(mul(D(e.a,v),e.b),mul(e.a,D(e.b,v)));
+    case '/': { const da=D(e.a,v), db=D(e.b,v); if(isN(db,0)) return div(da,e.b);
+      return div(sub(mul(da,e.b),mul(e.a,db)),pow(e.b,N(2))); }
+    case '^': { const ad=dep(e.a,v), bd=dep(e.b,v);
+      if(!ad&&!bd) return N(0);
+      if(!bd) return mul(mul(e.b,pow(e.a,sub(e.b,N(1)))),D(e.a,v));
+      if(!ad) return mul(mul(e,fn('ln',e.a)),D(e.b,v));
+      return mul(e,add(mul(D(e.b,v),fn('ln',e.a)),div(mul(e.b,D(e.a,v)),e.a))); }
+    case 'f': { const a=e.a, da=D(a,v); if(isN(da,0)) return N(0); let g;
+      switch(e.f){
+        case 'sin': g=fn('cos',a); break;
+        case 'cos': g=neg(fn('sin',a)); break;
+        case 'tan': g=div(N(1),pow(fn('cos',a),N(2))); break;
+        case 'exp': g=e; break;
+        case 'ln': g=div(N(1),a); break;
+        case 'sqrt': g=div(N(1),mul(N(2),e)); break;
+        case 'atan': g=div(N(1),add(N(1),pow(a,N(2)))); break;
+        case 'asin': g=div(N(1),fn('sqrt',sub(N(1),pow(a,N(2))))); break;
+        case 'acos': g=neg(div(N(1),fn('sqrt',sub(N(1),pow(a,N(2)))))); break;
+        case 'sinh': g=fn('cosh',a); break;
+        case 'cosh': g=fn('sinh',a); break;
+        case 'tanh': g=div(N(1),pow(fn('cosh',a),N(2))); break;
+        case 'abs': g=div(a,e); break;
+      }
+      return mul(g,da); }
+  }
+  throw new Error('internal');
+}
+function js(e){
+  switch(e.t){
+    case 'n': return '('+e.v+')';
+    case 'v': return 'V_'+e.n;
+    case '+': return '('+js(e.a)+'+'+js(e.b)+')';
+    case '-': return '('+js(e.a)+'-'+js(e.b)+')';
+    case '*': return '('+js(e.a)+'*'+js(e.b)+')';
+    case '/': return '('+js(e.a)+'/'+js(e.b)+')';
+    case '^': return 'Math.pow('+js(e.a)+','+js(e.b)+')';
+    case 'neg': return '(-'+js(e.a)+')';
+    case 'f': return 'Math.'+JSF[e.f]+'('+js(e.a)+')';
+  }
+}
+function compile(e,vars){
+  const body=js(e);
+  if(body.length>4e6) throw new Error('Вираз надто складний для символьного диференціювання');
+  return new Function(...vars.map(v=>'V_'+v),'"use strict";return '+body+';');
+}
+function buildDerivs(ast,maxOrd){ // A[i][j] = d^{i+j} f / dx^i dy^j
+  const A=[]; let rowX=ast;
+  for(let i=0;i<=maxOrd;i++){ A[i]=[]; let cur=rowX;
+    for(let j=0;i+j<=maxOrd;j++){ A[i][j]=cur; if(i+j<maxOrd) cur=D(cur,'y'); }
+    if(i<maxOrd) rowX=D(rowX,'x'); }
+  return A;
+}
+function evalNum(s){
+  s=String(s).trim().replace(/,/g,'.'); if(s==='') return NaN;
+  try{ const {ast}=parseExpr(s,[]); return isN(ast)?ast.v:NaN; }catch(e){ return NaN; }
+}
+const fact=[1,1,2,6,24,120,720];
+const binom=(k,j)=>fact[k]/(fact[j]*fact[k-j]);
+// ENGINE-END
+
+/* ================== helpers ================== */
+const $=id=>document.getElementById(id);
+function fmt(v,p=6,html=true){
+  if(v===undefined||v===null||Number.isNaN(v)) return '—';
+  if(!isFinite(v)) return v>0?'∞':'−∞';
+  if(v===0) return '0';
+  const a=Math.abs(v); let s;
+  if(a>=1e-4&&a<1e7){ s=v.toPrecision(p); if(s.indexOf('e')>=0) s=String(+s); if(s.indexOf('.')>=0) s=s.replace(/0+$/,'').replace(/\.$/,''); }
+  else { let [mn,ex]=v.toExponential(Math.max(0,p-2)).split('e'); if(mn.indexOf('.')>=0) mn=mn.replace(/0+$/,'').replace(/\.$/,'');
+    s=html?mn+'·10<sup>'+(+ex)+'</sup>':mn+'e'+(+ex); }
+  return s.replace(/\./g,',').replace(/-/g,'−');
+}
+const fmtP=(v,p=3)=>fmt(v,p,false);
+function numStr(v,p){ const a=Math.abs(v); if(!isFinite(v)) return ''; if(a<1e-10) return '0'; let s=a<1e-4?v.toFixed(12):String(+v.toPrecision(p)); if(s.indexOf('e')>=0) s=v.toFixed(12); if(s.indexOf('.')>=0) s=s.replace(/0+$/,'').replace(/\.$/,''); return s.replace('.',','); }
+function setupCanvas(cv){
+  const dpr=window.devicePixelRatio||1; const r=cv.getBoundingClientRect();
+  const w=Math.max(20,r.width), h=Math.max(20,r.height);
+  const W=Math.round(w*dpr), H=Math.round(h*dpr);
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,w,h,dpr};
+}
+function lerpC(stops,t){ t=Math.max(0,Math.min(1,isFinite(t)?t:0)); const n=stops.length-1; const i=Math.min(n-1,Math.floor(t*n)); const u=t*n-i; const a=stops[i],b=stops[i+1];
+  return [a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u]; }
+const rgb=(c,al)=>al===undefined?`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`:`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${al})`;
+function msg(ctx,w,h,text){ ctx.fillStyle='#8a8577'; ctx.font='14px system-ui,sans-serif'; ctx.textAlign='center'; ctx.fillText(text,w/2,h/2); ctx.textAlign='left'; }
+function haloText(ctx,t,x,y,col,font){ ctx.font=font||'600 13px system-ui,sans-serif'; ctx.lineWidth=3.5; ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.strokeText(t,x,y); ctx.fillStyle=col; ctx.fillText(t,x,y); }
+function niceTicks(a,b,n=6){ const span=b-a; if(!(span>0)||!isFinite(span)) return [a]; const s0=span/n; const mag=Math.pow(10,Math.floor(Math.log10(s0))); const r=s0/mag;
+  const st=(r<1.5?1:r<3?2:r<7?5:10)*mag; const out=[]; for(let v=Math.ceil(a/st)*st; v<=b+st*1e-9; v+=st) out.push(Math.abs(v)<st*1e-9?0:v); return out; }
+function axes(ctx,w,h,o){
+  const L=o.padL??56, R=o.padR??14, T=o.padT??14, B=o.padB??32; const pw=w-L-R, ph=h-T-B;
+  const tx=v=>o.logX?Math.log10(v):v, ty=v=>o.logY?Math.log10(v):v;
+  const ax0=tx(o.x0),ax1=tx(o.x1),ay0=ty(o.y0),ay1=ty(o.y1);
+  const X=v=>L+(tx(v)-ax0)/(ax1-ax0)*pw, Y=v=>T+ph-(ty(v)-ay0)/(ay1-ay0)*ph;
+  ctx.fillStyle='#fffdf8'; ctx.fillRect(L,T,pw,ph);
+  ctx.font='11.5px system-ui,sans-serif'; ctx.lineWidth=1;
+  const xt=o.logX?(()=>{const r=[];for(let k=Math.ceil(ax0);k<=Math.floor(ax1);k++)r.push(Math.pow(10,k));return r;})():niceTicks(o.x0,o.x1,o.nx||7);
+  const yt=o.logY?(()=>{const r=[];const st=Math.max(1,Math.ceil((ay1-ay0)/7));for(let k=Math.ceil(ay0);k<=Math.floor(ay1);k+=st)r.push(Math.pow(10,k));return r;})():niceTicks(o.y0,o.y1,o.ny||6);
+  ctx.strokeStyle='#ece6d8'; ctx.fillStyle='#6f7b78';
+  for(const v of xt){ const x=X(v); ctx.beginPath(); ctx.moveTo(x,T); ctx.lineTo(x,T+ph); ctx.stroke(); ctx.textAlign='center'; ctx.fillText(o.logX?'10^'+Math.round(Math.log10(v)):fmtP(v,4),x,T+ph+15); }
+  for(const v of yt){ const y=Y(v); ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(L+pw,y); ctx.stroke(); ctx.textAlign='right'; ctx.fillText(o.logY?'10^'+Math.round(Math.log10(v)):fmtP(v,4),L-5,y+4); }
+  ctx.textAlign='left';
+  ctx.strokeStyle='#bdb5a3'; ctx.strokeRect(L+.5,T+.5,pw-1,ph-1);
+  if(o.xl){ ctx.fillStyle='#4b5a57'; ctx.textAlign='right'; ctx.fillText(o.xl,L+pw-2,T+ph+28); ctx.textAlign='left'; }
+  if(o.yl){ ctx.fillStyle='#4b5a57'; ctx.fillText(o.yl,L+4,T+12); }
+  return {X,Y,L,T,pw,ph,clip(){ctx.save();ctx.beginPath();ctx.rect(L,T,pw,ph);ctx.clip();},unclip(){ctx.restore();}};
+}
+function polyline(ctx,pts,X,Y){ ctx.beginPath(); let pen=false;
+  for(const [a,b] of pts){ if(!isFinite(a)||!isFinite(b)){pen=false;continue;} const px=X(a),py=Y(b); if(!isFinite(py)||Math.abs(py)>1e5){pen=false;continue;}
+    if(!pen){ctx.moveTo(px,py);pen=true;} else ctx.lineTo(px,py); }
+  ctx.stroke(); }
+function contour(vals,G,level,cb){
+  const W=G+1;
+  for(let j=0;j<G;j++) for(let i=0;i<G;i++){
+    const a=vals[j*W+i]-level, b=vals[j*W+i+1]-level, c=vals[(j+1)*W+i+1]-level, d=vals[(j+1)*W+i]-level;
+    if(!(isFinite(a)&&isFinite(b)&&isFinite(c)&&isFinite(d))) continue;
+    const P=[];
+    if((a<0)!==(b<0)) P.push([i+a/(a-b),j]);
+    if((b<0)!==(c<0)) P.push([i+1,j+b/(b-c)]);
+    if((c<0)!==(d<0)) P.push([i+1-c/(c-d),j+1]);
+    if((d<0)!==(a<0)) P.push([i,j+1-d/(d-a)]);
+    if(P.length===2) cb(P[0],P[1]); else if(P.length===4){cb(P[0],P[1]);cb(P[2],P[3]);}
+  }
+}
+function debounce(f,ms){ let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>f(...a),ms);}; }
+
+/* ================== tabs ================== */
+let activeTab='geom';
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{
+  activeTab=b.dataset.tab;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
+  $('taylorLayout').style.display=(activeTab==='geom'||activeTab==='seg')?'':'none';
+  ['geom','seg','err','sim','theory'].forEach(t=>$('tab-'+t).classList.toggle('show',t===activeTab));
+  requestAnimationFrame(renderActive);
+}));
+function renderActive(){
+  if(activeTab==='geom'){ render3D(); renderErr(); }
+  else if(activeTab==='seg'){ renderPhi(); renderPsi(); renderLog(); }
+  else if(activeTab==='err'){ renderHist(); }
+  else if(activeTab==='sim'){ SIM.bgKey=''; SIM.dirty=true; }
+}
+window.addEventListener('resize',debounce(renderActive,120));
+
+/* ================== TAYLOR STATE ================== */
+const PRESETS=[
+  {name:'Приклад 2 лекції: xʸ, обчислення 1,04^2,02',f:'x^y',x0:'1',y0:'2',h1:'0,04',h2:'0,02',m:2,r:0.3},
+  {name:'Приклад 3 лекції: eˣ·sin y у квадраті |x|,|y| ≤ 0,1',f:'exp(x)*sin(y)',x0:'0',y0:'0',h1:'0,1',h2:'0,1',m:2,r:1,eps:'0,0015'},
+  {name:'Приклад 1 лекції: eˣ·ln(1+y), розклад до 3-го порядку',f:'exp(x)*ln(1+y)',x0:'0',y0:'0',h1:'0,2',h2:'0,3',m:3,r:0.8},
+  {name:'Питання 4: √(3,02² + 3,97²) за допомогою T₁',f:'sqrt(x^2+y^2)',x0:'3',y0:'4',h1:'0,02',h2:'-0,03',m:1,r:1.5},
+  {name:'Гаусів горб e^(−x²−y²)',f:'exp(-x^2-y^2)',x0:'0,5',y0:'0',h1:'0,5',h2:'0,5',m:2,r:1.6},
+  {name:'Сідло: sin x · cos y',f:'sin(x)*cos(y)',x0:'0,4',y0:'0,3',h1:'0,7',h2:'0,5',m:2,r:1.6},
+  {name:'Власна функція…',f:'',custom:true}
+];
+const TS={ok:false,m:2,exprKey:null};
+const sel=$('preset');
+PRESETS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p.name;sel.appendChild(o);});
+function loadPreset(i){
+  const p=PRESETS[i]; if(p.custom){ $('fExpr').focus(); return; }
+  $('fExpr').value=p.f; $('x0').value=p.x0; $('y0').value=p.y0; $('h1').value=p.h1; $('h2').value=p.h2;
+  setM(p.m); $('rRange').value=Math.log10(p.r).toFixed(3); $('eps').value=p.eps||'0,001';
+  updateTaylor();
+}
+sel.addEventListener('change',()=>loadPreset(+sel.value));
+function setM(m){ TS.m=m; document.querySelectorAll('#mSeg button').forEach(b=>b.classList.toggle('active',+b.dataset.m===m)); }
+document.querySelectorAll('#mSeg button').forEach(b=>b.addEventListener('click',()=>{setM(+b.dataset.m);updateTaylor();}));
+['fExpr','x0','y0','h1','h2','eps'].forEach(id=>$(id).addEventListener('input',debounce(()=>{ if(id==='fExpr') sel.value=PRESETS.length-1; updateTaylor(); },250)));
+$('rRange').addEventListener('input',updateTaylor);
+['showF','showT','showSeg'].forEach(id=>$(id).addEventListener('change',renderActive));
+$('zScale').addEventListener('input',()=>{V3.zscale=+$('zScale').value;render3D();});
+let LOGMODE='R';
+document.querySelectorAll('#logMode button').forEach(b=>b.addEventListener('click',()=>{LOGMODE=b.dataset.mode;document.querySelectorAll('#logMode button').forEach(x=>x.classList.toggle('active',x===b));renderLog();}));
+
+function updateTaylor(){
+  const src=$('fExpr').value;
+  TS.err='';
+  try{
+    if(src!==TS.exprKey){
+      const {ast}=parseExpr(src,['x','y']);
+      const A=buildDerivs(ast,4);
+      TS.F=A.map(row=>row.map(e=>compile(e,['x','y'])));
+      TS.exprKey=src;
+    }
+    $('fErr').textContent='';
+  }catch(e){ TS.ok=false; TS.exprKey=null; TS.err=e.message; $('fErr').textContent=e.message; renderAllTaylor(); return; }
+  const vals={x0:evalNum($('x0').value),y0:evalNum($('y0').value),h1:evalNum($('h1').value),h2:evalNum($('h2').value)};
+  for(const k in vals) if(!isFinite(vals[k])){ TS.ok=false; TS.err='Некоректне числове значення ('+k+')'; $('fErr').textContent=TS.err; renderAllTaylor(); return; }
+  Object.assign(TS,vals);
+  TS.r=Math.pow(10,+$('rRange').value); $('rVal').textContent=fmtP(TS.r,3);
+  TS.eps=Math.abs(evalNum($('eps').value)); if(!(TS.eps>0)) TS.eps=1e-3;
+  computeTaylor();
+  renderAllTaylor();
+}
+function dk(k,px,py,u,v){ let s=0; for(let j=0;j<=k;j++) s+=binom(k,j)*TS.F[k-j][j](px,py)*u**(k-j)*v**j; return s; }
+function computeTaylor(){
+  const {F,x0,y0,h1,h2,m}=TS;
+  const c=[]; for(let i=0;i<=4;i++){ c[i]=[]; for(let j=0;i+j<=4;j++) c[i][j]=F[i][j](x0,y0)/(fact[i]*fact[j]); }
+  TS.c=c;
+  let bad=false; for(let k=0;k<=m;k++) for(let j=0;j<=k;j++) if(!isFinite(c[k-j][j])) bad=true;
+  if(bad){ TS.ok=false; TS.err='Функція або її похідні до порядку m не визначені в точці a'; $('fErr').textContent=TS.err; return; }
+  TS.T=(u,v,mm)=>{ if(mm===undefined) mm=TS.m; let s=0; for(let k=0;k<=mm;k++) for(let j=0;j<=k;j++){ s+=c[k-j][j]*u**(k-j)*v**j; } return s; };
+  TS.fah=F[0][0](x0+h1,y0+h2); TS.Th=TS.T(h1,h2); TS.R=TS.fah-TS.Th;
+  // M over box with vertices a, a+h
+  const k=m+1, G=30; const Mj=new Array(k+1).fill(0); let nan=false;
+  for(let p=0;p<=G;p++) for(let q=0;q<=G;q++){ const px=x0+h1*p/G, py=y0+h2*q/G;
+    for(let j=0;j<=k;j++){ const d=Math.abs(F[k-j][j](px,py)); if(!isFinite(d)) nan=true; else if(d>Mj[j]) Mj[j]=d; } }
+  TS.Mj=Mj; TS.M=Math.max(...Mj); TS.Mnan=nan;
+  const n1=Math.abs(h1)+Math.abs(h2), hn=Math.hypot(h1,h2);
+  TS.bound=TS.M/fact[k]*n1**k;
+  TS.boundEu=TS.M*Math.pow(2,k/2)/fact[k]*hn**k;
+  let bt=0; for(let j=0;j<=k;j++) bt+=Mj[j]/(fact[k-j]*fact[j])*Math.abs(h1)**(k-j)*Math.abs(h2)**j; TS.boundTerm=bt;
+  // theta
+  const psi=t=>dk(k,x0+t*h1,y0+t*h2,h1,h2)/fact[k]-TS.R;
+  const S=800; let prev=psi(1e-6), maxAbs=0; const roots=[];
+  const vals=[]; for(let i=0;i<=S;i++){ const t=1e-6+(1-2e-6)*i/S; const v=psi(t); vals.push([t,v]); if(isFinite(v)) maxAbs=Math.max(maxAbs,Math.abs(v+TS.R)); }
+  const tol=1e-11*Math.max(maxAbs,Math.abs(TS.R),1e-300);
+  let allZero=vals.every(([t,v])=>Math.abs(v)<=tol);
+  if(!allZero){
+    for(let i=0;i<S;i++){ let [ta,va]=vals[i], [tb,vb]=vals[i+1]; if(!isFinite(va)||!isFinite(vb)) continue;
+      if(va===0){ roots.push(ta); continue; }
+      if((va<0)!==(vb<0)){ for(let it=0;it<60;it++){ const tm=(ta+tb)/2, vm=psi(tm); if((vm<0)===(va<0)){ta=tm;va=vm;} else {tb=tm;vb=vm;} } roots.push((ta+tb)/2); }
+      if(roots.length>=6) break; }
+  }
+  TS.thetaAll=allZero; TS.thetas=roots;
+  TS.ok=true;
+}
+function renderAllTaylor(){ if(activeTab==='geom'){render3D();renderErr();} else if(activeTab==='seg'){renderPhi();renderPsi();renderLog();} renderRes(); renderHalf(); }
+
+function monoHTML(i,j){ let s=''; if(i) s+='h₁'+(i>1?'<sup>'+i+'</sup>':''); if(j) s+='h₂'+(j>1?'<sup>'+j+'</sup>':''); return s; }
+function polyHTML(){
+  const {c,m}=TS; let out=''; let first=true;
+  for(let k=0;k<=m;k++) for(let j=0;j<=k;j++){ const i=k-j; const v=c[i][j]; if(Math.abs(v)<1e-13) continue;
+    const mono=monoHTML(i,j); const av=Math.abs(v);
+    let coef=(mono&&Math.abs(av-1)<1e-13)?'':fmt(av,6);
+    const sign=v<0?(first?'−':' − '):(first?'':' + ');
+    out+=sign+coef+(coef&&mono?'·':'')+mono; first=false; }
+  if(first) out='0';
+  return out;
+}
+function renderRes(){
+  const box=$('resBox');
+  if(!TS.ok){ box.innerHTML='<div class="err">'+(TS.err||'Введіть дані')+'</div>'; return; }
+  const {m,x0,y0,h1,h2,R}=TS; const k=m+1;
+  let th;
+  if(TS.thetaAll) th='будь-яке θ ∈ (0, 1) (похідні порядку '+k+' вздовж відрізка тотожно дають R<sub>m</sub>)';
+  else if(TS.thetas.length) th=TS.thetas.map(t=>fmt(t,5)).join('; ')+(TS.thetas.length>1?' <span class="pill">кілька коренів</span>':'');
+  else th='не знайдено чисельно';
+  const t0=TS.thetas[0];
+  const cpt=(!TS.thetaAll&&t0!==undefined)?'('+fmt(x0+t0*h1,6)+'; '+fmt(y0+t0*h2,6)+')':'—';
+  const absR=Math.abs(R);
+  const okB=TS.boundTerm>=absR*(1-1e-9);
+  const ratio=absR>0?TS.bound/absR:Infinity;
+  box.innerHTML=`<div class="res">
+    <span class="k">точка a + h</span><span class="v">(${fmt(x0+h1,8)}; ${fmt(y0+h2,8)})</span>
+    <span class="k">f(a + h)</span><span class="v big">${fmt(TS.fah,10)}</span>
+    <span class="k">T<sub>${m}</sub>(h)</span><span class="v big" style="color:var(--gold2)">${fmt(TS.Th,10)}</span>
+    <span class="k">R<sub>${m}</sub>(h) = f − T<sub>${m}</sub></span><span class="v" style="color:var(--red)">${fmt(R,5)}</span>
+    <span class="sep"></span>
+    <span class="k">M — max |похідних порядку ${k}|</span><span class="v">${fmt(TS.M,5)}${TS.Mnan?' <span class="pill warn">є точки поза областю визначення</span>':''}</span>
+    <span class="k">теорема 2: M‖h‖₁<sup>${k}</sup>/${k}!</span><span class="v">${fmt(TS.bound,4)}</span>
+    <span class="k">через |h|: M·2<sup>${k}/2</sup>|h|<sup>${k}</sup>/${k}!</span><span class="v">${fmt(TS.boundEu,4)}</span>
+    <span class="k">почленна оцінка Σ M<sub>α</sub>|h<sup>α</sup>|/α!</span><span class="v">${fmt(TS.boundTerm,4)} ${okB?'<span class="pill ok">≥ |R| ✓</span>':'<span class="pill warn">M оцінено грубо</span>'}</span>
+    <span class="k">запас оцінки</span><span class="v">${isFinite(ratio)?'у '+fmt(ratio,3)+' раза більша за |R|':'R = 0'}</span>
+    <span class="sep"></span>
+    <span class="k">θ (форма Лагранжа)</span><span class="v">${th}</span>
+    <span class="k">c = a + θh</span><span class="v">${cpt}</span>
+  </div>
+  <div class="poly">T<sub>${m}</sub> = ${polyHTML()}</div>
+  <div class="caption">тут h₁ = x − ${fmt(x0,6)}, h₂ = y − ${fmt(y0,6)}. M обчислено за сіткою 31×31 на прямокутнику з вершинами a та a + h, як у прикладі 2 лекції.</div>`;
+}
+
+/* ================== 3D ================== */
+const V3={yaw:-0.75,pitch:0.62,zoom:1,zscale:1};
+const SURF=[[33,62,57],[52,90,83],[95,145,131],[190,196,150],[238,224,186]];
+(function(){
+  const cv=$('cv3d'); let drag=null;
+  cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId);});
+  cv.addEventListener('pointermove',e=>{ if(!drag) return; V3.yaw-=(e.clientX-drag.x)*0.008; V3.pitch=Math.max(0.03,Math.min(1.55,V3.pitch+(e.clientY-drag.y)*0.008)); drag={x:e.clientX,y:e.clientY}; scheduleR3(); });
+  cv.addEventListener('pointerup',()=>drag=null); cv.addEventListener('pointercancel',()=>drag=null);
+  cv.addEventListener('wheel',e=>{e.preventDefault(); V3.zoom=Math.max(0.4,Math.min(3.5,V3.zoom*Math.exp(-e.deltaY*0.0012))); scheduleR3();},{passive:false});
+})();
+let r3p=false; function scheduleR3(){ if(r3p) return; r3p=true; requestAnimationFrame(()=>{r3p=false;render3D();}); }
+function render3D(){
+  const cv=$('cv3d'); if(!cv.offsetParent) return; const {ctx,w,h}=setupCanvas(cv);
+  const bg=ctx.createLinearGradient(0,0,0,h); bg.addColorStop(0,'#fdfcf8'); bg.addColorStop(1,'#ebe5d6'); ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+  if(!TS.ok){ msg(ctx,w,h,TS.err||'Немає даних'); return; }
+  const {x0,y0,r,h1,h2,m}=TS; const f=TS.F[0][0]; const Ng=40;
+  const fv=[],tv=[]; const fin=[];
+  for(let i=0;i<=Ng;i++){ fv[i]=[];tv[i]=[]; for(let j=0;j<=Ng;j++){ const u=-r+2*r*i/Ng, v=-r+2*r*j/Ng; const z=f(x0+u,y0+v); fv[i][j]=z; tv[i][j]=TS.T(u,v); if(isFinite(z)) fin.push(z);} }
+  if(!fin.length){ msg(ctx,w,h,'Функція не визначена в області перегляду'); return; }
+  fin.sort((a,b)=>a-b); const q=p=>fin[Math.min(fin.length-1,Math.floor(p*(fin.length-1)))];
+  let zmin=fin[0], zmax=fin[fin.length-1];
+  const rob=q(0.98)-q(0.02); if(rob>0&&zmax-zmin>25*rob){ zmin=q(0.01); zmax=q(0.99); }
+  let span=zmax-zmin; if(!(span>1e-12*(1+Math.abs(zmax)))){ const d=Math.max(1e-6,Math.abs(zmax)*0.1)||1; zmin-=d; zmax+=d; span=zmax-zmin; }
+  const zc=(zmin+zmax)/2, zs=1.25/span*V3.zscale, lo=zmin-0.55*span, hi=zmax+0.55*span, zf=zmin-0.12*span;
+  const cy=Math.cos(V3.yaw), sy=Math.sin(V3.yaw), cp=Math.cos(V3.pitch), sp=Math.sin(V3.pitch);
+  const S=Math.min(w*0.34,h*0.38)*V3.zoom, ox=w/2, oy=h/2+h*0.02;
+  const P=(x,y,z)=>{ const X=(x-x0)/r, Y=(y-y0)/r, Z=(z-zc)*zs; const x1=X*cy-Y*sy, y1=X*sy+Y*cy; return [ox+x1*S, oy-(Z*cp+y1*sp)*S, y1*cp-Z*sp]; };
+  // floor
+  ctx.lineWidth=1;
+  const fc=[[x0-r,y0-r],[x0+r,y0-r],[x0+r,y0+r],[x0-r,y0+r]].map(p=>P(p[0],p[1],zf));
+  ctx.fillStyle='rgba(52,90,83,.06)'; ctx.beginPath(); fc.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(52,90,83,.18)';
+  for(let k=0;k<=8;k++){ const t=-r+2*r*k/8; let a=P(x0+t,y0-r,zf), b=P(x0+t,y0+r,zf); ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+    a=P(x0-r,y0+t,zf); b=P(x0+r,y0+t,zf); ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke(); }
+  ctx.strokeStyle='rgba(52,90,83,.55)'; ctx.beginPath(); fc.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke();
+  // z axis
+  const za=P(x0-r,y0+r,zf), zb=P(x0-r,y0+r,zmax);
+  ctx.strokeStyle='rgba(52,90,83,.5)'; ctx.beginPath(); ctx.moveTo(za[0],za[1]); ctx.lineTo(zb[0],zb[1]); ctx.stroke();
+  ctx.font='11px system-ui,sans-serif'; ctx.fillStyle='#5b6b68';
+  for(const zt of niceTicks(zmin,zmax,4)){ const p=P(x0-r,y0+r,zt); ctx.beginPath(); ctx.moveTo(p[0]-3,p[1]); ctx.lineTo(p[0]+3,p[1]); ctx.stroke(); ctx.fillText(fmtP(zt,3),p[0]+5,p[1]+4); }
+  haloText(ctx,'z',zb[0]-4,zb[1]-8,'#24413c');
+  // tick labels
+  const pxA=P(x0-r,y0-r,zf), pxB=P(x0+r,y0-r,zf), pyB=P(x0+r,y0+r,zf);
+  ctx.fillStyle='#5b6b68'; ctx.font='11px system-ui,sans-serif';
+  ctx.fillText(fmtP(x0-r,3),pxA[0]-10,pxA[1]+14); ctx.fillText(fmtP(x0+r,3),pxB[0]-10,pxB[1]+14);
+  ctx.fillText(fmtP(y0+r,3),pyB[0]+6,pyB[1]+4);
+  const xm=P(x0,y0-r*1.12,zf), ym=P(x0+r*1.12,y0,zf); haloText(ctx,'x',xm[0],xm[1]+4,'#24413c'); haloText(ctx,'y',ym[0],ym[1]+4,'#24413c');
+  // surfaces
+  const quads=[]; const Lx=-0.45,Ly=-0.35,Lz=0.82, Ln=Math.hypot(Lx,Ly,Lz); const a2=2/Ng;
+  const showF=$('showF').checked, showT=$('showT').checked;
+  const PF=[],PT=[]; for(let i=0;i<=Ng;i++){PF[i]=[];PT[i]=[]; for(let j=0;j<=Ng;j++){ const x=x0-r+2*r*i/Ng, y=y0-r+2*r*j/Ng; PF[i][j]=isFinite(fv[i][j])?P(x,y,fv[i][j]):null; PT[i][j]=isFinite(tv[i][j])?P(x,y,tv[i][j]):null; }}
+  function addQuads(vals,PP,kind){
+    for(let i=0;i<Ng;i++) for(let j=0;j<Ng;j++){
+      const z00=vals[i][j],z10=vals[i+1][j],z11=vals[i+1][j+1],z01=vals[i][j+1];
+      if(!(isFinite(z00)&&isFinite(z10)&&isFinite(z11)&&isFinite(z01))) continue;
+      if(z00<lo||z00>hi||z10<lo||z10>hi||z11<lo||z11>hi||z01<lo||z01>hi) continue;
+      const p=[PP[i][j],PP[i+1][j],PP[i+1][j+1],PP[i][j+1]];
+      const pz=((z10-z00)+(z11-z01))/2*zs, qz=((z01-z00)+(z11-z10))/2*zs;
+      let nx=-pz*a2, ny=-a2*qz, nz=a2*a2; const nn=Math.hypot(nx,ny,nz); const lam=Math.abs((nx*Lx+ny*Ly+nz*Lz)/(nn*Ln));
+      const br=0.5+0.55*lam; const zav=(z00+z10+z11+z01)/4;
+      quads.push({p,d:(p[0][2]+p[1][2]+p[2][2]+p[3][2])/4,kind,br,t:(zav-zmin)/span});
+    } }
+  if(showF) addQuads(fv,PF,0);
+  if(showT) addQuads(tv,PT,1);
+  quads.sort((a,b)=>b.d-a.d);
+  ctx.lineWidth=0.6;
+  for(const qd of quads){
+    ctx.beginPath(); ctx.moveTo(qd.p[0][0],qd.p[0][1]); for(let k=1;k<4;k++) ctx.lineTo(qd.p[k][0],qd.p[k][1]); ctx.closePath();
+    if(qd.kind===0){ const c=lerpC(SURF,qd.t).map(v=>Math.min(255,v*qd.br)); ctx.fillStyle=rgb(c,0.9); ctx.fill(); ctx.strokeStyle='rgba(255,255,255,0.13)'; ctx.stroke(); }
+    else { const c=[202*qd.br,157*qd.br,72*qd.br].map(v=>Math.min(255,v)); ctx.fillStyle=rgb(c,0.5); ctx.fill(); ctx.strokeStyle='rgba(120,85,25,0.35)'; ctx.stroke(); }
+  }
+  if(!$('showSeg').checked) return;
+  // segment overlays
+  const A0=P(x0,y0,zf), A1=P(x0+h1,y0+h2,zf);
+  ctx.setLineDash([5,4]); ctx.strokeStyle='#24413c'; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(A0[0],A0[1]); ctx.lineTo(A1[0],A1[1]); ctx.stroke();
+  const fa=f(x0,y0); const pa=P(x0,y0,fa), pf=P(x0+h1,y0+h2,TS.fah), pt=P(x0+h1,y0+h2,Math.max(lo,Math.min(hi,TS.Th)));
+  ctx.lineWidth=1; ctx.strokeStyle='rgba(36,65,60,.6)';
+  ctx.beginPath(); ctx.moveTo(A0[0],A0[1]); ctx.lineTo(pa[0],pa[1]); ctx.stroke();
+  if(isFinite(TS.fah)){ ctx.beginPath(); ctx.moveTo(A1[0],A1[1]); ctx.lineTo(pf[0],pf[1]); ctx.stroke(); }
+  ctx.setLineDash([]);
+  const crv=[],crvT=[]; for(let i=0;i<=80;i++){ const t=i/80; const x=x0+t*h1,y=y0+t*h2; const z=f(x,y); if(isFinite(z)) crv.push(P(x,y,z)); const zt=TS.T(t*h1,t*h2); if(zt>=lo&&zt<=hi) crvT.push(P(x,y,zt)); }
+  ctx.lineWidth=3; ctx.strokeStyle='#1d3531'; ctx.beginPath(); crv.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke();
+  ctx.strokeStyle='#a87d2f'; ctx.lineWidth=2.5; ctx.beginPath(); crvT.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke();
+  if(isFinite(TS.fah)&&isFinite(TS.Th)){ ctx.strokeStyle='#b8433a'; ctx.lineWidth=3.5; ctx.beginPath(); ctx.moveTo(pf[0],pf[1]); ctx.lineTo(pt[0],pt[1]); ctx.stroke(); }
+  const dot=(p,col,rad)=>{ctx.beginPath();ctx.arc(p[0],p[1],rad||5,0,7);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle='#fff';ctx.stroke();};
+  dot(pa,'#1d3531'); haloText(ctx,'a',pa[0]+8,pa[1]-6,'#1d3531');
+  if(isFinite(TS.fah)){ dot(pf,'#345a53'); haloText(ctx,'f(a+h)',pf[0]+8,pf[1]-6,'#24413c'); }
+  dot(pt,'#ca9d48'); haloText(ctx,'T'+subs(m)+'(h)',pt[0]+8,pt[1]+14,'#a87d2f');
+  if(!TS.thetaAll&&TS.thetas.length){ const t=TS.thetas[0]; const pc=P(x0+t*h1,y0+t*h2,f(x0+t*h1,y0+t*h2)); dot(pc,'#7b4fa8',4.5); haloText(ctx,'c',pc[0]-14,pc[1]-6,'#7b4fa8'); }
+  haloText(ctx,'R'+subs(m)+' = '+fmtP(TS.R,3),12,22,'#b8433a','600 14px system-ui,sans-serif');
+}
+function subs(n){ return String(n).split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[+d]).join(''); }
+
+/* ================== error map ================== */
+const ERRP=[[29,64,58],[62,120,106],[158,186,140],[226,206,140],[202,157,72],[184,80,58],[105,32,30]];
+function renderErr(){
+  const cv=$('cvErr'); if(!cv.offsetParent) return; const {ctx,w,h}=setupCanvas(cv);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  if(!TS.ok){ msg(ctx,w,h,TS.err||'Немає даних'); return; }
+  const L=50,Rr=62,Tp=10,B=34; const side=Math.min(w-L-Rr,h-Tp-B); const ox=L, oy=Tp;
+  const G=130, W=G+1; const {x0,y0,r,m,eps}=TS; const f=TS.F[0][0];
+  const vals=new Float64Array(W*W); let lmin=Infinity,lmax=-Infinity;
+  for(let j=0;j<=G;j++) for(let i=0;i<=G;i++){ const u=-r+2*r*i/G, v=-r+2*r*j/G; const E=Math.abs(f(x0+u,y0+v)-TS.T(u,v)); vals[j*W+i]=E; if(E>0&&isFinite(E)){const l=Math.log10(E); if(l<lmin)lmin=l; if(l>lmax)lmax=l;} }
+  if(!isFinite(lmax)){ lmax=0; lmin=-1; }
+  { const ls=[]; for(let q=0;q<vals.length;q+=3){ const E=vals[q]; if(E>0&&isFinite(E)) ls.push(Math.log10(E)); } ls.sort((a,b)=>a-b); if(ls.length>20) lmin=Math.max(lmin,ls[Math.floor(ls.length*0.03)]); }
+  lmax=Math.ceil(lmax); lmin=Math.max(Math.floor(lmin),lmax-12); if(lmax-lmin<1) lmin=lmax-1;
+  const off=document.createElement('canvas'); off.width=W; off.height=W; const oc=off.getContext('2d'); const id=oc.createImageData(W,W);
+  for(let j=0;j<=G;j++) for(let i=0;i<=G;i++){ const E=vals[j*W+i]; let c;
+    if(!isFinite(E)) c=[230,230,230]; else { const l=E>0?Math.max(lmin,Math.log10(E)):lmin; const band=Math.floor(l*2)/2; c=lerpC(ERRP,(band-lmin)/(lmax-lmin)); }
+    const k=((G-j)*W+i)*4; id.data[k]=c[0];id.data[k+1]=c[1];id.data[k+2]=c[2];id.data[k+3]=255; }
+  oc.putImageData(id,0,0); ctx.imageSmoothingEnabled=false; ctx.drawImage(off,ox,oy,side,side); ctx.imageSmoothingEnabled=true;
+  const X=u=>ox+(u+r)/(2*r)*side, Y=v=>oy+side-(v+r)/(2*r)*side, gx=i=>ox+i/G*side, gy=j=>oy+side-j/G*side;
+  ctx.save(); ctx.beginPath(); ctx.rect(ox,oy,side,side); ctx.clip();
+  // eps contour
+  const segs=[]; contour(vals,G,eps,(p,q)=>segs.push([p,q]));
+  for(const [lw,col] of [[4,'rgba(255,255,255,.95)'],[1.4,'#1d3531']]){ ctx.lineWidth=lw; ctx.strokeStyle=col; ctx.beginPath(); for(const [p,q] of segs){ ctx.moveTo(gx(p[0]),gy(p[1])); ctx.lineTo(gx(q[0]),gy(q[1])); } ctx.stroke(); }
+  // guaranteed diamond
+  const k=m+1, Gs=36; let Msq=0;
+  for(let p=0;p<=Gs;p++) for(let q=0;q<=Gs;q++){ const px=x0-r+2*r*p/Gs, py=y0-r+2*r*q/Gs; for(let j=0;j<=k;j++){ const d=Math.abs(TS.F[k-j][j](px,py)); if(isFinite(d)&&d>Msq) Msq=d; } }
+  let rho=Msq>0?Math.pow(eps*fact[k]/Msq,1/k):Infinity;
+  TS.rho=rho; TS.Msq=Msq;
+  if(isFinite(rho)){ ctx.setLineDash([7,5]); ctx.lineWidth=2.4; ctx.strokeStyle='#ca9d48'; ctx.beginPath(); ctx.moveTo(X(rho),Y(0)); ctx.lineTo(X(0),Y(rho)); ctx.lineTo(X(-rho),Y(0)); ctx.lineTo(X(0),Y(-rho)); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]); }
+  // segment, points
+  const {h1,h2}=TS;
+  ctx.lineWidth=2; ctx.strokeStyle='#fff'; ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(h1),Y(h2)); ctx.stroke();
+  const dot=(x,y,col,rad)=>{ctx.beginPath();ctx.arc(x,y,rad||4.5,0,7);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle='#fff';ctx.stroke();};
+  dot(X(0),Y(0),'#1d3531'); dot(X(h1),Y(h2),'#ca9d48');
+  if(!TS.thetaAll&&TS.thetas.length){ const t=TS.thetas[0]; dot(X(t*h1),Y(t*h2),'#7b4fa8',3.8); }
+  haloText(ctx,'a',X(0)+7,Y(0)-6,'#1d3531'); haloText(ctx,'a+h',X(h1)+7,Y(h2)-6,'#a87d2f');
+  ctx.restore();
+  ctx.strokeStyle='#8b8574'; ctx.lineWidth=1; ctx.strokeRect(ox+.5,oy+.5,side-1,side-1);
+  ctx.font='11px system-ui,sans-serif'; ctx.fillStyle='#5b6b68';
+  for(const t of niceTicks(x0-r,x0+r,5)){ const x=X(t-x0); ctx.textAlign='center'; ctx.fillText(fmtP(t,3),x,oy+side+14); }
+  for(const t of niceTicks(y0-r,y0+r,5)){ const y=Y(t-y0); ctx.textAlign='right'; ctx.fillText(fmtP(t,3),ox-5,y+4); }
+  ctx.textAlign='left'; ctx.fillText('x',ox+side-8,oy+side+28); ctx.fillText('y',ox-40,oy+10);
+  // legend
+  const lx=ox+side+14, lw=14;
+  const nb=(lmax-lmin)*2;
+  for(let b=0;b<nb;b++){ const yy=oy+side-(b+1)/nb*side; ctx.fillStyle=rgb(lerpC(ERRP,(b/2)/(lmax-lmin))); ctx.fillRect(lx,yy,lw,side/nb+0.5); }
+  ctx.strokeStyle='#8b8574'; ctx.strokeRect(lx+.5,oy+.5,lw,side-1);
+  ctx.fillStyle='#5b6b68'; const st=Math.max(1,Math.ceil((lmax-lmin)/8));
+  for(let l=lmin;l<=lmax;l+=st){ const yy=oy+side-(l-lmin)/(lmax-lmin)*side; ctx.fillText('10^'+l,lx+lw+4,yy+4); }
+  const ey=oy+side-(Math.log10(eps)-lmin)/(lmax-lmin)*side;
+  if(ey>=oy&&ey<=oy+side){ ctx.strokeStyle='#1d3531'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(lx-4,ey); ctx.lineTo(lx+lw+2,ey); ctx.stroke(); }
+}
+
+/* ================== segment tab ================== */
+const MCOL=['#9db3ad','#345a53','#ca9d48','#b8433a'];
+function renderPhi(){
+  const cv=$('cvPhi'); if(!cv.offsetParent) return; const {ctx,w,h}=setupCanvas(cv); ctx.clearRect(0,0,w,h);
+  if(!TS.ok){ msg(ctx,w,h,TS.err||'Немає даних'); $('phiCap').textContent=''; return; }
+  const {x0,y0,h1,h2,m}=TS; const f=TS.F[0][0];
+  const d0=[0,1,2,3].map(k=>dk(k,x0,y0,h1,h2));
+  const Pk=(t,mm)=>{let s=0; for(let k=0;k<=mm;k++) s+=d0[k]*t**k/fact[k]; return s;};
+  const t0=-0.6,t1=1.6, pts=[]; let ymin=Infinity,ymax=-Infinity;
+  for(let i=0;i<=300;i++){ const t=t0+(t1-t0)*i/300; const v=f(x0+t*h1,y0+t*h2); pts.push([t,v]); if(isFinite(v)){ymin=Math.min(ymin,v);ymax=Math.max(ymax,v);} }
+  if(!isFinite(ymin)){ msg(ctx,w,h,'φ не визначена'); return; }
+  const pad=Math.max((ymax-ymin)*0.15,1e-9*(1+Math.abs(ymax))); ymin-=pad; ymax+=pad;
+  const ax=axes(ctx,w,h,{x0:t0,x1:t1,y0:ymin,y1:ymax,xl:'t',yl:'φ(t)'});
+  ax.clip();
+  ctx.fillStyle='rgba(202,157,72,.08)'; ctx.fillRect(ax.X(0),ax.T,ax.X(1)-ax.X(0),ax.ph);
+  for(let mm=0;mm<=3;mm++){ if(mm===m) continue; ctx.strokeStyle='#cfc8b6'; ctx.lineWidth=1.2; ctx.setLineDash([4,4]); polyline(ctx,pts.map(([t])=>[t,Pk(t,mm)]),ax.X,ax.Y); }
+  ctx.setLineDash([]);
+  ctx.strokeStyle='#345a53'; ctx.lineWidth=2.6; polyline(ctx,pts,ax.X,ax.Y);
+  ctx.strokeStyle='#ca9d48'; ctx.lineWidth=2.4; polyline(ctx,pts.map(([t])=>[t,Pk(t,m)]),ax.X,ax.Y);
+  const yF=ax.Y(TS.fah), yT=ax.Y(TS.Th);
+  ctx.strokeStyle='#b8433a'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(ax.X(1),yF); ctx.lineTo(ax.X(1),yT); ctx.stroke();
+  const dot=(x,y,col)=>{ctx.beginPath();ctx.arc(x,y,4.5,0,7);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();};
+  dot(ax.X(0),ax.Y(d0[0]),'#1d3531'); dot(ax.X(1),yF,'#345a53'); dot(ax.X(1),yT,'#ca9d48');
+  if(!TS.thetaAll) for(const t of TS.thetas){ dot(ax.X(t),ax.Y(f(x0+t*h1,y0+t*h2)),'#7b4fa8'); }
+  ax.unclip();
+  haloText(ctx,'t = 0 (точка a)',ax.X(0)+4,ax.T+ax.ph-6,'#1d3531','11.5px system-ui,sans-serif');
+  haloText(ctx,'t = 1 (точка a+h)',ax.X(1)+4,ax.T+16,'#1d3531','11.5px system-ui,sans-serif');
+  const Pm1=Pk(1,m);
+  $('phiCap').innerHTML=`Графік φ — переріз поверхні вертикальною площиною над відрізком. Многочлен Тейлора функції φ у нулі при t = 1 дорівнює ${fmt(Pm1,10)} = T<sub>${m}</sub>(h) (лема 1: φ<sup>(k)</sup>(0) = d<sup>k</sup>f(a; h)). Похідні: ${d0.slice(0,m+1).map((v,k)=>'φ<sup>('+k+')</sup>(0) = '+fmt(v,5)).join(', ')}.`;
+}
+function renderPsi(){
+  const cv=$('cvPsi'); if(!cv.offsetParent) return; const {ctx,w,h}=setupCanvas(cv); ctx.clearRect(0,0,w,h);
+  if(!TS.ok){ msg(ctx,w,h,TS.err||'Немає даних'); $('psiCap').textContent=''; return; }
+  const {x0,y0,h1,h2,m,R}=TS; const k=m+1;
+  const psi=t=>dk(k,x0+t*h1,y0+t*h2,h1,h2)/fact[k];
+  const pts=[]; let ymin=R,ymax=R;
+  for(let i=0;i<=300;i++){ const t=-0.1+1.2*i/300; const v=psi(t); pts.push([t,v]); if(isFinite(v)&&t>=0&&t<=1){ymin=Math.min(ymin,v);ymax=Math.max(ymax,v);} }
+  let pad=(ymax-ymin)*0.18; if(!(pad>0)) pad=Math.abs(R)*0.2+1e-12; ymin-=pad; ymax+=pad;
+  const ax=axes(ctx,w,h,{x0:-0.1,x1:1.1,y0:ymin,y1:ymax,xl:'t',yl:'ψ(t) = d^'+k+' f(a+th; h) / '+k+'!',padL:64});
+  ax.clip();
+  ctx.fillStyle='rgba(52,90,83,.06)'; ctx.fillRect(ax.X(0),ax.T,ax.X(1)-ax.X(0),ax.ph);
+  ctx.strokeStyle='#b8433a'; ctx.lineWidth=1.6; ctx.setLineDash([6,4]); ctx.beginPath(); ctx.moveTo(ax.L,ax.Y(R)); ctx.lineTo(ax.L+ax.pw,ax.Y(R)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#7b4fa8'; ctx.lineWidth=2.6; polyline(ctx,pts,ax.X,ax.Y);
+  if(!TS.thetaAll) for(const t of TS.thetas){ const x=ax.X(t), y=ax.Y(R); ctx.strokeStyle='rgba(123,79,168,.5)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,ax.T+ax.ph); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,5,0,7); ctx.fillStyle='#7b4fa8'; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke(); haloText(ctx,'θ = '+fmtP(t,4),x+6,ax.T+ax.ph-8,'#7b4fa8'); }
+  ax.unclip();
+  haloText(ctx,'рівень R'+subs(m)+' = '+fmtP(R,3),ax.L+ax.pw-170,ax.Y(R)-7,'#b8433a','600 12px system-ui,sans-serif');
+  $('psiCap').innerHTML=`Залишок у формі Лагранжа: R<sub>${m}</sub>(h) = ψ(θ), де ψ(t) = d<sup>${k}</sup>f(a + th; h)/${k}!. Оскільки φ<sup>(${k})</sup> неперервна, рівень R<sub>${m}</sub> лежить між найменшим і найбільшим значеннями ψ на [0, 1], тому пряма неодмінно перетне графік; абсциса перетину і є θ. ${TS.thetaAll?'Тут ψ ≡ R, тож підходить будь-яке θ.':TS.thetas.length>1?'Тут коренів кілька — теорема гарантує існування, а не єдиність θ.':''}`;
+}
+function renderLog(){
+  const cv=$('cvLog'); if(!cv.offsetParent) return; const {ctx,w,h}=setupCanvas(cv); ctx.clearRect(0,0,w,h);
+  if(!TS.ok){ msg(ctx,w,h,TS.err||'Немає даних'); return; }
+  const {x0,y0,h1,h2,m}=TS; const f=TS.F[0][0]; const hn=Math.hypot(h1,h2);
+  if(hn===0){ msg(ctx,w,h,'Задайте ненульовий приріст h'); return; }
+  const fa=Math.abs(f(x0,y0)); const floorV=2e-14*Math.max(1,fa);
+  const S=[]; for(let q=0;q<=180;q++) S.push(Math.pow(10,-4+q*4.3/180));
+  let ymin=Infinity,ymax=-Infinity; const slopes=[];
+  const series=[0,1,2,3].map(mm=>{ const arr=S.map(s=>{ const R=Math.abs(f(x0+s*h1,y0+s*h2)-TS.T(s*h1,s*h2,mm)); let v=(R>floorV&&isFinite(R))?R:NaN; if(LOGMODE==='P'&&isFinite(v)) v=v/Math.pow(s*hn,mm); return [s,v]; });
+    arr.forEach(([s,v])=>{ if(isFinite(v)&&v>0){ ymin=Math.min(ymin,v); ymax=Math.max(ymax,v);} });
+    const sel=arr.filter(([s,v])=>s>=1e-3&&s<=0.1&&isFinite(v)&&v>0);
+    if(sel.length>5){ let sx=0,sy=0,sxx=0,sxy=0; for(const [s,v] of sel){const X=Math.log10(s),Y=Math.log10(v);sx+=X;sy+=Y;sxx+=X*X;sxy+=X*Y;} const n=sel.length; slopes[mm]=(n*sxy-sx*sy)/(n*sxx-sx*sx); }
+    return arr; });
+  let bnd=[];
+  if(LOGMODE==='R'&&TS.boundTerm>0){ bnd=S.filter(s=>s<=1).map(s=>[s,TS.boundTerm*s**(m+1)]); bnd.forEach(([s,v])=>{ if(v>0){ymin=Math.min(ymin,v);ymax=Math.max(ymax,v);} }); }
+  if(!isFinite(ymin)){ msg(ctx,w,h,'Похибка нижча за точність обчислень (f — многочлен?)'); return; }
+  const ax=axes(ctx,w,h,{x0:1e-4,x1:S[S.length-1],y0:Math.pow(10,Math.floor(Math.log10(ymin))),y1:Math.pow(10,Math.ceil(Math.log10(ymax))+0.05),logX:true,logY:true,xl:'s',padL:52});
+  ax.clip();
+  if(bnd.length){ ctx.strokeStyle=MCOL[m]; ctx.globalAlpha=.7; ctx.setLineDash([6,4]); ctx.lineWidth=1.5; polyline(ctx,bnd,ax.X,ax.Y); ctx.setLineDash([]); ctx.globalAlpha=1; }
+  series.forEach((arr,mm)=>{ ctx.strokeStyle=MCOL[mm]; ctx.lineWidth=mm===m?3.2:1.6; ctx.globalAlpha=mm===m?1:.75; polyline(ctx,arr,ax.X,ax.Y); });
+  ctx.globalAlpha=1;
+  ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(ax.X(1),ax.T); ctx.lineTo(ax.X(1),ax.T+ax.ph); ctx.stroke(); ctx.setLineDash([]);
+  ax.unclip();
+  // legend
+  ctx.font='12px system-ui,sans-serif'; let ly=ax.T+16;
+  for(let mm=0;mm<=3;mm++){ ctx.fillStyle='rgba(255,253,248,.85)'; ctx.fillRect(ax.L+8,ly-11,200,16); ctx.fillStyle=MCOL[mm]; ctx.fillRect(ax.L+12,ly-5,18,mm===m?4:2.5);
+    ctx.fillStyle='#24413c'; ctx.font=(mm===m?'600 ':'')+'12px system-ui,sans-serif';
+    ctx.fillText('m = '+mm+':  нахил ≈ '+(slopes[mm]!==undefined?fmtP(slopes[mm],3):'—')+' (теорія '+(LOGMODE==='R'?mm+1:1)+')',ax.L+36,ly); ly+=17; }
+  $('logCap').innerHTML = LOGMODE==='R'
+    ? `У логарифмічних шкалах залежність |R<sub>m</sub>(sh)| ≈ C·s<sup>m+1</sup> перетворюється на пряму з нахилом m + 1. Пунктир — почленна оцінка теореми 2 для поточного m (вона чинна при s ≤ 1, бо менший відрізок лежить у тому самому прямокутнику). При дуже малих s криві обриваються: похибка опускається до рівня похибок округлення.`
+    : `Форма Пеано: R<sub>m</sub>(h) = o(|h|<sup>m</sup>) означає, що відношення |R<sub>m</sub>(sh)|/|sh|<sup>m</sup> прямує до нуля. На графіку видно, що воно спадає приблизно як s (нахил 1), — і нічого не говорить про величину похибки при конкретному s, якщо не знати константи.`;
+}
+function renderHalf(){
+  const box=$('halfBox'); if(!TS.ok){ box.innerHTML=''; return; }
+  const {x0,y0,h1,h2,m}=TS; const f=TS.F[0][0];
+  let rows='', prev=null;
+  for(let q=0;q<=6;q++){ const s=1/2**q; const R=Math.abs(f(x0+s*h1,y0+s*h2)-TS.T(s*h1,s*h2,m));
+    const rat=prev!==null&&R>0?prev/R:NaN; rows+=`<tr><td>s = 1/${2**q}</td><td>${fmt(s*Math.abs(h1)+s*Math.abs(h2),4)}</td><td>${fmt(R,4)}</td><td>${isFinite(rat)?fmt(rat,4):'—'}</td></tr>`; prev=R; }
+  box.innerHTML=`<table class="t"><tr><th>приріст sh</th><th>‖sh‖₁</th><th>|R<sub>${m}</sub>(sh)|</th><th>зменшення</th></tr>${rows}</table>
+  <div class="caption">Очікуване відношення для m = ${m}: 2<sup>${m+1}</sup> = ${2**(m+1)}.</div>`;
+}
+
+/* ================== ERROR THEORY ================== */
+const EPRE=[
+  {name:'Математичний маятник: g за L і T',expr:'4*pi^2*L/T^2',v:{L:['1,000','0,001'],T:['2,007','0,004']},note:'g = 4π²L/T² (м/с²): довжину нитки L виміряно рулеткою, період T — секундоміром.'},
+  {name:'Потужність на резисторі: P = U²/R',expr:'U^2/R',v:{U:['220','2'],R:['48,4','0,5']},note:'Напруга U (В) за вольтметром, опір R (Ом) за омметром; P у ватах.'},
+  {name:'Кінетична енергія: E = mv²/2',expr:'m*v^2/2',v:{m:['0,500','0,005'],v:['12,0','0,2']},note:'Маса m (кг) на вагах, швидкість v (м/с) з датчика.'},
+  {name:'Дальність польоту тіла',expr:'v^2*sin(2*alpha)/9.81',v:{v:['20','0,3'],alpha:['pi/6','0,01']},note:'L = v²·sin 2α / g (м): початкова швидкість v і кут кидання α (рад).'},
+  {name:'Паралельне з’єднання резисторів',expr:'R1*R2/(R1+R2)',v:{R1:['100','1'],R2:['220','2']},note:'Опори R₁ і R₂ (Ом) з допусками 1 %.'},
+  {name:'Питання 4 лекції: √(x² + y²)',expr:'sqrt(x^2+y^2)',v:{x:['3','0,02'],y:['4','0,03']},note:'Довжина вектора за наближеними координатами.'},
+  {name:'Власна формула…',custom:true}
+];
+const ES={vals:{},key:null};
+EPRE.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p.name;$('ePreset').appendChild(o);});
+$('ePreset').addEventListener('change',()=>{ const p=EPRE[+$('ePreset').value]; if(p.custom){$('eExpr').focus();return;} $('eExpr').value=p.expr; ES.vals={}; for(const k in p.v) ES.vals[k]=p.v[k].slice(); $('eNote').textContent=p.note; errSetup(); });
+$('eExpr').addEventListener('input',debounce(()=>{ $('ePreset').value=EPRE.length-1; $('eNote').textContent=''; errSetup(); },300));
+function errSetup(){
+  try{
+    const {ast,vars}=parseExpr($('eExpr').value,null);
+    if(vars.length===0) throw new Error('У формулі немає змінних');
+    if(vars.length>6) throw new Error('Не більше 6 змінних');
+    ES.vars=vars; ES.f=compile(ast,vars);
+    const g=vars.map(v=>D(ast,v)); ES.g=g.map(e=>compile(e,vars));
+    ES.H=[]; for(let i=0;i<vars.length;i++){ ES.H[i]=[]; for(let j=0;j<=i;j++) ES.H[i][j]=compile(D(g[i],vars[j]),vars); }
+    $('eErr').textContent=''; ES.ok=true;
+  }catch(e){ ES.ok=false; $('eErr').textContent=e.message; $('eRes').innerHTML=''; $('eBars').innerHTML=''; renderHist(); return; }
+  const box=$('eRows'); box.innerHTML='';
+  ES.vars.forEach(v=>{ if(!ES.vals[v]) ES.vals[v]=['1','0,01'];
+    const row=document.createElement('div'); row.className='varrow';
+    row.innerHTML=`<span class="nm">${v}</span><input type="text" value="${ES.vals[v][0]}"><input type="text" value="${ES.vals[v][1]}">`;
+    const [i1,i2]=row.querySelectorAll('input');
+    i1.addEventListener('input',debounce(()=>{ES.vals[v][0]=i1.value;errCompute();},200));
+    i2.addEventListener('input',debounce(()=>{ES.vals[v][1]=i2.value;errCompute();},200));
+    box.appendChild(row); });
+  errCompute();
+}
+function errCompute(){
+  if(!ES.ok) return;
+  const n=ES.vars.length; const a=ES.vars.map(v=>evalNum(ES.vals[v][0])); const d=ES.vars.map(v=>Math.abs(evalNum(ES.vals[v][1])));
+  if(a.some(x=>!isFinite(x))||d.some(x=>!isFinite(x))){ $('eErr').textContent='Некоректні числові значення'; return; }
+  $('eErr').textContent='';
+  const u0=ES.f(...a); const g=ES.g.map(fg=>fg(...a)); const contr=g.map((gi,i)=>Math.abs(gi)*d[i]); const lin=contr.reduce((s,x)=>s+x,0);
+  // M2
+  let M2=0, nan=false; const p=new Array(n);
+  const evalH=()=>{ for(let i=0;i<n;i++) for(let j=0;j<=i;j++){ const v=Math.abs(ES.H[i][j](...p)); if(!isFinite(v)) nan=true; else if(v>M2) M2=v; } };
+  const tot3=Math.pow(3,n);
+  for(let idx=0;idx<tot3;idx++){ let q=idx; for(let i=0;i<n;i++){ p[i]=a[i]+((q%3)-1)*d[i]; q=Math.floor(q/3);} evalH(); }
+  for(let s=0;s<3000;s++){ for(let i=0;i<n;i++) p[i]=a[i]+(2*Math.random()-1)*d[i]; evalH(); }
+  const sd=d.reduce((s,x)=>s+x,0); const quad=M2/2*sd*sd; const total=lin+quad;
+  // Monte Carlo
+  const NMC=20000; const us=new Float64Array(NMC); let maxDev=0;
+  for(let s=0;s<NMC;s++){ for(let i=0;i<n;i++) p[i]=a[i]+(2*Math.random()-1)*d[i]; const u=ES.f(...p); us[s]=u; const dv=Math.abs(u-u0); if(isFinite(dv)&&dv>maxDev) maxDev=dv; }
+  // corners (the max of the linear part is attained at a vertex)
+  for(let idx=0;idx<Math.pow(2,n);idx++){ for(let i=0;i<n;i++) p[i]=a[i]+(((idx>>i)&1)?1:-1)*d[i]; const dv=Math.abs(ES.f(...p)-u0); if(isFinite(dv)&&dv>maxDev) maxDev=dv; }
+  Object.assign(ES,{u0,lin,quad,total,maxDev,us,M2});
+  // rounding of the result
+  let rec='—';
+  if(total>0&&isFinite(total)&&isFinite(u0)){ const e=Math.floor(Math.log10(total))-1; const unit=Math.pow(10,e); const dr=Math.ceil(total/unit-1e-9)*unit; const ur=Math.round(u0/unit)*unit; const dec=Math.max(0,-e);
+    rec=(ur.toFixed(dec)+' ± '+dr.toFixed(dec)).replace(/\./g,',').replace(/-/g,'−'); }
+  $('eRes').innerHTML=`<div class="res">
+    <span class="k">u(a)</span><span class="v big">${fmt(u0,8)}</span>
+    ${ES.vars.map((v,i)=>`<span class="k">∂f/∂${v}(a)</span><span class="v">${fmt(g[i],6)}</span>`).join('')}
+    <span class="sep"></span>
+    <span class="k">Δ<sub>лін</sub> = Σ |∂f/∂xᵢ(a)|·Δᵢ</span><span class="v">${fmt(lin,5)}</span>
+    <span class="k">M₂ (max |∂²f/∂xᵢ∂xⱼ|)</span><span class="v">${fmt(M2,5)}${nan?' <span class="pill warn">є невизначені точки</span>':''}</span>
+    <span class="k">M₂(ΣΔᵢ)²/2 — чим нехтують</span><span class="v">${fmt(quad,4)} <span class="pill">${lin>0?fmt(quad/lin*100,3)+' % від Δ<sub>лін</sub>':''}</span></span>
+    <span class="k">гарантована межа Δ</span><span class="v big" style="color:var(--red)">${fmt(total,5)}</span>
+    <span class="k">відносна похибка δ</span><span class="v">${u0!==0?fmt(total/Math.abs(u0)*100,3)+' %':'—'}</span>
+    <span class="sep"></span>
+    <span class="k">Монте-Карло: max |u − u(a)|</span><span class="v">${fmt(maxDev,5)} ${maxDev<=total*(1+1e-9)?'<span class="pill ok">≤ Δ ✓</span>':'<span class="pill warn">> Δ: M₂ оцінено грубо</span>'}</span>
+    <span class="k">запис результату</span><span class="v big">u = ${rec}</span>
+  </div>`;
+  const mx=Math.max(...contr,1e-300);
+  $('eBars').innerHTML=ES.vars.map((v,i)=>`<div class="r"><span class="nm">${v}</span><div style="background:#f1ede3;border-radius:7px"><div class="bar" style="width:${Math.max(1,contr[i]/mx*100)}%"></div></div><span>${lin>0?fmt(contr[i]/lin*100,3)+' %':'—'}</span></div>`).join('');
+  renderHist();
+}
+function renderHist(){
+  const cv=$('cvHist'); if(!cv.offsetParent) return; const {ctx,w,h}=setupCanvas(cv); ctx.clearRect(0,0,w,h);
+  if(!ES.ok||!ES.us){ msg(ctx,w,h,'Немає даних'); return; }
+  const {u0,lin,total,us}=ES; const half=(total>0?total:Math.abs(u0)*1e-3+1e-12)*1.18;
+  const x0=u0-half,x1=u0+half, nb=60; const cnt=new Array(nb).fill(0);
+  for(const u of us){ const b=Math.floor((u-x0)/(x1-x0)*nb); if(b>=0&&b<nb) cnt[b]++; }
+  const cm=Math.max(...cnt,1);
+  const ax=axes(ctx,w,h,{x0,x1,y0:0,y1:cm*1.12,xl:'u',ny:4});
+  ctx.fillStyle='rgba(94,138,128,.85)';
+  for(let b=0;b<nb;b++){ const xa=ax.X(x0+(x1-x0)*b/nb), xb=ax.X(x0+(x1-x0)*(b+1)/nb); const y=ax.Y(cnt[b]); ctx.fillRect(xa+0.5,y,xb-xa-1,ax.T+ax.ph-y); }
+  const vline=(x,col,dash,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(ax.X(x),ax.T);ctx.lineTo(ax.X(x),ax.T+ax.ph);ctx.stroke();ctx.setLineDash([]);};
+  vline(u0,'#1d3531',[],1.5); vline(u0-lin,'#ca9d48',[6,4],2.2); vline(u0+lin,'#ca9d48',[6,4],2.2); vline(u0-total,'#b8433a',[],2); vline(u0+total,'#b8433a',[],2);
+  haloText(ctx,'u(a)',ax.X(u0)+4,ax.T+14,'#1d3531','12px system-ui,sans-serif');
+}
+
+/* ================== SIMULATION ================== */
+const SPRE=[
+  {name:'Два маятники, зв’язані пружиною',U:'(1-cos(x))+(1-cos(y))+0.4*(x-y)^2',a:['0','0'],r0:['0,5','0'],v0:['0','0'],view:2.2,
+   note:'x, y — кути відхилення маятників. Нормальні моди: синфазна (ω = 1) і протифазна. Початкове відхилення одного маятника дає биття.'},
+  {name:'Анізотропний маятник (дві осі)',U:'(1-cos(x))+2*(1-cos(y))',a:['0','0'],r0:['0,6','0,45'],v0:['0','0'],view:2.4,note:''},
+  {name:'Потенціал Енона–Гейлеса (зоря в галактиці)',U:'(x^2+y^2)/2+x^2*y-y^3/3',a:['0','0'],r0:['0','0,35'],v0:['0,35','0'],view:1.25,
+   note:'Класична модель руху зорі в осесиметричній галактиці. При енергії E > 1/6 частинка може покинути яму.'},
+  {name:'Гаусова потенціальна яма',U:'-exp(-(x^2+2*y^2)/2)',a:['0','0'],r0:['0,9','0,5'],v0:['0','0'],view:2.4,note:''},
+  {name:'Власний потенціал…',custom:true}
+];
+const SIM={ok:false,running:false,dt:0.005,speed:2,bgKey:'',dirty:true};
+SPRE.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p.name;$('sPreset').appendChild(o);});
+function loadSim(i){ const p=SPRE[i]; if(p.custom){$('sExpr').focus();return;}
+  $('sExpr').value=p.U; $('sAx').value=p.a[0]; $('sAy').value=p.a[1]; $('sX0').value=p.r0[0]; $('sY0').value=p.r0[1]; $('sVx').value=p.v0[0]; $('sVy').value=p.v0[1];
+  $('sView').value=Math.log10(p.view).toFixed(2); SIM.note=p.note; simSetup(); }
+$('sPreset').addEventListener('change',()=>loadSim(+$('sPreset').value));
+$('sExpr').addEventListener('input',debounce(()=>{$('sPreset').value=SPRE.length-1;SIM.note='';simSetup();},350));
+['sAx','sAy','sX0','sY0','sVx','sVy'].forEach(id=>$(id).addEventListener('input',debounce(simSetup,300)));
+$('sView').addEventListener('input',()=>{SIM.view=Math.pow(10,+$('sView').value);$('sViewVal').textContent=fmtP(SIM.view,3);SIM.bgKey='';SIM.dirty=true;});
+$('sSpeed').addEventListener('input',()=>{SIM.speed=+$('sSpeed').value;$('sSpeedVal').textContent=fmtP(SIM.speed,2)+'×';});
+$('sShowH').addEventListener('change',()=>{SIM.dirty=true;});
+$('sPlay').addEventListener('click',()=>{ if(!SIM.ok) return; if(SIM.escT&&SIM.escH) simReset(); SIM.running=!SIM.running; updPlay(); });
+$('sReset').addEventListener('click',()=>{ simSetup(); });
+function updPlay(){ $('sPlay').textContent=SIM.running?'❚❚ Пауза':'▶ Пуск'; }
+$('sFindMin').addEventListener('click',()=>{
+  if(!SIM.ok&&!SIM.F) return; const F=SIM.F; let x=evalNum($('sAx').value)||0, y=evalNum($('sAy').value)||0;
+  for(let it=0;it<60;it++){ const gx=F[1][0](x,y), gy=F[0][1](x,y), a=F[2][0](x,y), b=F[1][1](x,y), c=F[0][2](x,y); const det=a*c-b*b;
+    let dx,dy; if(det>0&&a>0){ dx=-(c*gx-b*gy)/det; dy=-(-b*gx+a*gy)/det; } else { dx=-0.1*gx; dy=-0.1*gy; }
+    const st=Math.hypot(dx,dy); if(st>0.5){dx*=0.5/st;dy*=0.5/st;} x+=dx; y+=dy; if(Math.hypot(dx,dy)<1e-13) break; }
+  if(isFinite(x)&&isFinite(y)){ $('sAx').value=numStr(x,10); $('sAy').value=numStr(y,10); simSetup(); }
+});
+function eig2(p,q,s){ const m=(p+s)/2, dd=Math.sqrt(((p-s)/2)**2+q*q); const ls=[m-dd,m+dd];
+  return ls.map(l=>{ let vx,vy; if(Math.abs(q)>1e-12*(1+Math.abs(p)+Math.abs(s))){vx=q;vy=l-p;} else if(Math.abs(p-l)<Math.abs(s-l)){vx=1;vy=0;} else {vx=0;vy=1;} const n=Math.hypot(vx,vy); return {l,v:[vx/n,vy/n]}; }); }
+function simSetup(){
+  SIM.running=false; updPlay();
+  try{
+    const src=$('sExpr').value;
+    if(src!==SIM.key){ const {ast}=parseExpr(src,['x','y']); const A=buildDerivs(ast,3); SIM.F=A.map(r=>r.map(e=>compile(e,['x','y']))); SIM.key=src; }
+    $('sErr').textContent='';
+  }catch(e){ SIM.ok=false; SIM.key=null; $('sErr').textContent=e.message; SIM.dirty=true; return; }
+  const ax=evalNum($('sAx').value), ay=evalNum($('sAy').value);
+  if(!isFinite(ax)||!isFinite(ay)){ SIM.ok=false; $('sErr').textContent='Некоректна точка рівноваги'; return; }
+  const F=SIM.F; SIM.a=[ax,ay]; SIM.U0=F[0][0](ax,ay); SIM.g=[F[1][0](ax,ay),F[0][1](ax,ay)]; SIM.Hm=[F[2][0](ax,ay),F[1][1](ax,ay),F[0][2](ax,ay)];
+  if(![SIM.U0,...SIM.g,...SIM.Hm].every(isFinite)){ SIM.ok=false; $('sErr').textContent='U або її похідні не визначені в точці a'; return; }
+  SIM.eig=eig2(...SIM.Hm);
+  SIM.view=Math.pow(10,+$('sView').value); $('sViewVal').textContent=fmtP(SIM.view,3);
+  SIM.speed=+$('sSpeed').value; $('sSpeedVal').textContent=fmtP(SIM.speed,2)+'×';
+  SIM.ok=true; simReset();
+}
+const T2=(x,y)=>{ const u=x-SIM.a[0], v=y-SIM.a[1], [p,q,s]=SIM.Hm; return SIM.U0+SIM.g[0]*u+SIM.g[1]*v+0.5*(p*u*u+2*q*u*v+s*v*v); };
+const accT=(x,y)=>[-SIM.F[1][0](x,y),-SIM.F[0][1](x,y)];
+const accH=(x,y)=>{ const u=x-SIM.a[0], v=y-SIM.a[1], [p,q,s]=SIM.Hm; return [-(SIM.g[0]+p*u+q*v),-(SIM.g[1]+q*u+s*v)]; };
+function rk4(st,acc,dt){ const [x,y,vx,vy]=st;
+  const a1=acc(x,y);
+  const vx2=vx+a1[0]*dt/2, vy2=vy+a1[1]*dt/2; const a2=acc(x+vx*dt/2,y+vy*dt/2);
+  const vx3=vx+a2[0]*dt/2, vy3=vy+a2[1]*dt/2; const a3=acc(x+vx2*dt/2,y+vy2*dt/2);
+  const vx4=vx+a3[0]*dt, vy4=vy+a3[1]*dt; const a4=acc(x+vx3*dt,y+vy3*dt);
+  return [x+dt/6*(vx+2*vx2+2*vx3+vx4), y+dt/6*(vy+2*vy2+2*vy3+vy4), vx+dt/6*(a1[0]+2*a2[0]+2*a3[0]+a4[0]), vy+dt/6*(a1[1]+2*a2[1]+2*a3[1]+a4[1])]; }
+function simReset(){
+  if(!SIM.ok) return;
+  const x0=evalNum($('sX0').value), y0=evalNum($('sY0').value), vx=evalNum($('sVx').value), vy=evalNum($('sVy').value);
+  if(![x0,y0,vx,vy].every(isFinite)){ $('sErr').textContent='Некоректні початкові умови'; SIM.ok=false; return; }
+  SIM.sT=[x0,y0,vx,vy]; SIM.sH=[x0,y0,vx,vy]; SIM.t=0; SIM.trT=[[x0,y0]]; SIM.trH=[[x0,y0]]; SIM.ser=[[0,x0,y0,x0,y0]]; SIM.escT=false; SIM.escH=false; SIM.cnt=0;
+  SIM.E0=(vx*vx+vy*vy)/2+SIM.F[0][0](x0,y0); SIM.EH0=(vx*vx+vy*vy)/2+T2(x0,y0);
+  // remainder at start (theorem 2, m = 2)
+  const [ax,ay]=SIM.a, h1=x0-ax, h2=y0-ay; const R2=SIM.F[0][0](x0,y0)-T2(x0,y0);
+  const Mj=[0,0,0,0], G=24; for(let p=0;p<=G;p++) for(let q=0;q<=G;q++){ const px=ax+h1*p/G, py=ay+h2*q/G; for(let j=0;j<=3;j++){ const d=Math.abs(SIM.F[3-j][j](px,py)); if(isFinite(d)&&d>Mj[j]) Mj[j]=d; } }
+  let bt=0; for(let j=0;j<=3;j++) bt+=Mj[j]/(fact[3-j]*fact[j])*Math.abs(h1)**(3-j)*Math.abs(h2)**j;
+  const M3=Math.max(...Mj), bc=M3/6*(Math.abs(h1)+Math.abs(h2))**3;
+  const [e1,e2]=SIM.eig; const gn=Math.hypot(...SIM.g);
+  const om=e=>e.l>0?fmt(Math.sqrt(e.l),5):'<span class="pill warn">λ ≤ 0</span>';
+  $('sStatic').innerHTML=`${SIM.note?'<div class="caption" style="margin-bottom:8px">'+SIM.note+'</div>':''}<div class="res">
+    <span class="k">|∇U(a)|</span><span class="v">${fmt(gn,3)} ${gn<1e-8?'<span class="pill ok">рівновага</span>':'<span class="pill warn">не рівновага</span>'}</span>
+    <span class="k">H<sub>U</sub>(a)</span><span class="v">(${fmt(SIM.Hm[0],4)}  ${fmt(SIM.Hm[1],4)}; ${fmt(SIM.Hm[1],4)}  ${fmt(SIM.Hm[2],4)})</span>
+    <span class="k">λ₁, λ₂</span><span class="v">${fmt(e1.l,5)}; ${fmt(e2.l,5)}</span>
+    <span class="k">ω₁ = √λ₁, ω₂ = √λ₂</span><span class="v">${om(e1)}; ${om(e2)}</span>
+    <span class="sep"></span>
+    <span class="k">R₂ у початковій точці</span><span class="v">${fmt(R2,4)}</span>
+    <span class="k">теорема 2: M₃‖h‖₁³/6</span><span class="v">${fmt(bc,4)}</span>
+    <span class="k">почленна оцінка</span><span class="v">${fmt(bt,4)}</span>
+    <span class="k">енергія E</span><span class="v">${fmt(SIM.E0,5)}</span>
+  </div>${(e1.l<=0)?'<div class="note">Матриця Гессе не є додатно визначеною: a — не мінімум, гармонічна модель нестійка.</div>':''}`;
+  SIM.bgKey=''; SIM.dirty=true;
+}
+function simStep(){
+  const dt=SIM.dt, [ax,ay]=SIM.a, lim=40*SIM.view+10;
+  if(!SIM.escT){ SIM.sT=rk4(SIM.sT,accT,dt); if(!SIM.sT.every(isFinite)||Math.hypot(SIM.sT[0]-ax,SIM.sT[1]-ay)>lim) SIM.escT=true; }
+  if(!SIM.escH){ SIM.sH=rk4(SIM.sH,accH,dt); if(!SIM.sH.every(isFinite)||Math.hypot(SIM.sH[0]-ax,SIM.sH[1]-ay)>lim) SIM.escH=true; }
+  SIM.t+=dt; SIM.cnt++;
+  if(SIM.cnt%3===0){ SIM.trT.push([SIM.sT[0],SIM.sT[1]]); SIM.trH.push([SIM.sH[0],SIM.sH[1]]); if(SIM.trT.length>2200){SIM.trT.shift();SIM.trH.shift();}
+    SIM.ser.push([SIM.t,SIM.sT[0],SIM.sT[1],SIM.sH[0],SIM.sH[1]]); if(SIM.ser.length>9000) SIM.ser.shift(); }
+}
+let lastTs=null, liveCnt=0;
+function simLoop(ts){
+  requestAnimationFrame(simLoop);
+  if(activeTab!=='sim'){ lastTs=null; return; }
+  if(SIM.ok&&SIM.running){ const fdt=lastTs?Math.min(0.05,(ts-lastTs)/1000):1/60; let n=Math.ceil(fdt*SIM.speed/SIM.dt); n=Math.min(n,4000); for(let i=0;i<n;i++) simStep(); SIM.dirty=true;
+    if(SIM.escT&&SIM.escH){ SIM.running=false; updPlay(); } }
+  lastTs=ts;
+  if(SIM.dirty){ SIM.dirty=false; drawSim(); drawSimT(); if((liveCnt++)%4===0||!SIM.running) simLive(); }
+}
+requestAnimationFrame(simLoop);
+function simGeom(w,h){ const L=40,R=12,T=10,B=28; const side=Math.min(w-L-R,h-T-B); return {ox:L+(w-L-R-side)/2,oy:T,side}; }
+function buildSimBg(w,h,dpr){
+  const off=document.createElement('canvas'); off.width=Math.round(w*dpr); off.height=Math.round(h*dpr); const ctx=off.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  const {ox,oy,side}=simGeom(w,h); const [ax,ay]=SIM.a, vr=SIM.view;
+  const X=x=>ox+(x-ax+vr)/(2*vr)*side, Y=y=>oy+side-(y-ay+vr)/(2*vr)*side;
+  const G=150, W=G+1; const uv=new Float64Array(W*W), tv=new Float64Array(W*W); const fin=[];
+  for(let j=0;j<=G;j++) for(let i=0;i<=G;i++){ const x=ax-vr+2*vr*i/G, y=ay-vr+2*vr*j/G; const u=SIM.F[0][0](x,y); uv[j*W+i]=u; tv[j*W+i]=T2(x,y); if(isFinite(u)) fin.push(u); }
+  fin.sort((a,b)=>a-b); const top=fin.length?fin[Math.floor(0.9*(fin.length-1))]:SIM.U0+1;
+  const nL=14, base=SIM.U0, levels=[]; const spanU=Math.max(top-base,1e-9); for(let k=1;k<=nL;k++) levels.push(base+spanU*(k/nL)**2);
+  const pal=[[250,246,234],[236,226,196],[202,190,150],[140,165,145],[82,122,110],[42,74,68]];
+  const offc=document.createElement('canvas'); offc.width=W; offc.height=W; const oc=offc.getContext('2d'); const id=oc.createImageData(W,W);
+  for(let j=0;j<=G;j++) for(let i=0;i<=G;i++){ const u=uv[j*W+i]; let b=0; if(isFinite(u)) while(b<nL&&u>levels[b]) b++; const c=isFinite(u)?lerpC(pal,b/nL):[220,220,220];
+    const k=((G-j)*W+i)*4; id.data[k]=c[0];id.data[k+1]=c[1];id.data[k+2]=c[2];id.data[k+3]=255; }
+  oc.putImageData(id,0,0); ctx.imageSmoothingEnabled=true; ctx.drawImage(offc,ox,oy,side,side);
+  ctx.save(); ctx.beginPath(); ctx.rect(ox,oy,side,side); ctx.clip();
+  const gx=i=>ox+i/G*side, gy=j=>oy+side-j/G*side;
+  const drawC=(vals,lev,col,lw,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.setLineDash(dash||[]); ctx.beginPath(); contour(vals,G,lev,(p,q)=>{ctx.moveTo(gx(p[0]),gy(p[1]));ctx.lineTo(gx(q[0]),gy(q[1]));}); ctx.stroke(); ctx.setLineDash([]); };
+  for(const l of levels) drawC(uv,l,'rgba(36,65,60,.28)',0.8);
+  if($('sShowH').checked) for(const l of levels) drawC(tv,l,'rgba(168,125,47,.75)',1,[4,3]);
+  drawC(uv,SIM.E0,'#1d3531',2.2);
+  if($('sShowH').checked) drawC(tv,SIM.EH0,'#a87d2f',2,[7,4]);
+  // eigen axes
+  SIM.eig.forEach((e,k)=>{ const L=vr*0.95; ctx.strokeStyle='rgba(120,145,140,.9)'; ctx.lineWidth=1.2; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(X(ax-e.v[0]*L),Y(ay-e.v[1]*L)); ctx.lineTo(X(ax+e.v[0]*L),Y(ay+e.v[1]*L)); ctx.stroke(); ctx.setLineDash([]);
+    haloText(ctx,(e.l>0?'ω'+(k?'₂':'₁')+' = '+fmtP(Math.sqrt(e.l),3):'λ'+(k?'₂':'₁')+' ≤ 0'),X(ax+e.v[0]*L*0.8)+4,Y(ay+e.v[1]*L*0.8)-4,'#4f6964','11.5px system-ui,sans-serif'); });
+  ctx.beginPath(); ctx.arc(X(ax),Y(ay),3.5,0,7); ctx.fillStyle='#1d3531'; ctx.fill(); haloText(ctx,'a',X(ax)+6,Y(ay)+14,'#1d3531');
+  ctx.restore();
+  ctx.strokeStyle='#8b8574'; ctx.lineWidth=1; ctx.strokeRect(ox+.5,oy+.5,side-1,side-1);
+  ctx.font='11px system-ui,sans-serif'; ctx.fillStyle='#5b6b68';
+  for(const t of niceTicks(ax-vr,ax+vr,5)){ ctx.textAlign='center'; ctx.fillText(fmtP(t,3),X(t),oy+side+14); }
+  for(const t of niceTicks(ay-vr,ay+vr,5)){ ctx.textAlign='right'; ctx.fillText(fmtP(t,3),ox-5,Y(t)+4); }
+  ctx.textAlign='left';
+  return off;
+}
+function drawSim(){
+  const cv=$('cvSim'); if(!cv.offsetParent) return; const {ctx,w,h,dpr}=setupCanvas(cv);
+  if(!SIM.ok){ ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); msg(ctx,w,h,$('sErr').textContent||'Немає даних'); return; }
+  const key=w+'x'+h+'x'+dpr+'|'+SIM.view+'|'+$('sShowH').checked+'|'+SIM.E0;
+  if(SIM.bgKey!==key){ SIM.bg=buildSimBg(w,h,dpr); SIM.bgKey=key; }
+  ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(SIM.bg,0,0); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const {ox,oy,side}=simGeom(w,h); const [ax,ay]=SIM.a, vr=SIM.view;
+  const X=x=>ox+(x-ax+vr)/(2*vr)*side, Y=y=>oy+side-(y-ay+vr)/(2*vr)*side;
+  ctx.save(); ctx.beginPath(); ctx.rect(ox,oy,side,side); ctx.clip();
+  const trail=(tr,col,lw,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.setLineDash(dash||[]); ctx.beginPath(); tr.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))); ctx.stroke(); ctx.setLineDash([]); };
+  const showH=$('sShowH').checked;
+  if(showH) trail(SIM.trH,'rgba(202,157,72,.95)',1.8,[5,3]);
+  trail(SIM.trT,'rgba(29,53,49,.9)',1.8);
+  const ball=(x,y,col)=>{ ctx.beginPath(); ctx.arc(X(x),Y(y),7,0,7); ctx.fillStyle=col; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle='#fff'; ctx.stroke(); };
+  if(showH&&!SIM.escH) ball(SIM.sH[0],SIM.sH[1],'#ca9d48');
+  if(!SIM.escT) ball(SIM.sT[0],SIM.sT[1],'#24413c');
+  ctx.restore();
+  if(SIM.escT) haloText(ctx,'частинка покинула яму',ox+8,oy+18,'#b8433a');
+}
+function drawSimT(){
+  const cv=$('cvSimT'); if(!cv.offsetParent) return; const {ctx,w,h}=setupCanvas(cv); ctx.clearRect(0,0,w,h);
+  if(!SIM.ok||!SIM.ser) return;
+  const Wn=30, t1=Math.max(Wn,SIM.t), t0=t1-Wn; const pts=SIM.ser.filter(p=>p[0]>=t0);
+  const showH=$('sShowH').checked; const [ax,ay]=SIM.a;
+  const half=h/2;
+  [[1,3,'x(t) − x*',ax],[2,4,'y(t) − y*',ay]].forEach(([iT,iH,lab,c0],k)=>{
+    let mx=1e-6; for(const p of pts){ const a=Math.abs(p[iT]-c0); if(isFinite(a)&&a<1e6) mx=Math.max(mx,a); if(showH){const b=Math.abs(p[iH]-c0); if(isFinite(b)&&b<1e6) mx=Math.max(mx,b);} }
+    mx*=1.12;
+    ctx.save(); ctx.translate(0,k*half);
+    const A=axes(ctx,w,half,{x0:t0,x1:t1,y0:-mx,y1:mx,yl:lab,xl:k===1?'t':'',padB:k===1?30:22,padT:8,ny:4});
+    A.clip();
+    if(showH){ ctx.strokeStyle='#ca9d48'; ctx.lineWidth=1.8; ctx.setLineDash([5,3]); polyline(ctx,pts.map(p=>[p[0],p[iH]-c0]),A.X,A.Y); ctx.setLineDash([]); }
+    ctx.strokeStyle='#24413c'; ctx.lineWidth=1.8; polyline(ctx,pts.map(p=>[p[0],p[iT]-c0]),A.X,A.Y);
+    A.unclip(); ctx.restore();
+  });
+}
+function simLive(){
+  if(!SIM.ok||!SIM.sT){ $('sLive').innerHTML=''; return; }
+  const [x,y,vx,vy]=SIM.sT; const E=(vx*vx+vy*vy)/2+SIM.F[0][0](x,y);
+  const dist=Math.hypot(SIM.sT[0]-SIM.sH[0],SIM.sT[1]-SIM.sH[1]);
+  const amp=Math.hypot(x-SIM.a[0],y-SIM.a[1]);
+  $('sLive').innerHTML=`<span class="k">час t</span><span class="v">${fmt(SIM.t,4)}</span>
+    <span class="k">енергія E (збереження)</span><span class="v">${SIM.escT?'—':fmt(E,7)} <span class="pill">${SIM.escT?'':'ΔE/E ≈ '+fmt(Math.abs(E-SIM.E0)/Math.max(Math.abs(SIM.E0),1e-12),2)}</span></span>
+    <span class="k">відстань від a</span><span class="v">${SIM.escT?'—':fmt(amp,4)}</span>
+    <span class="k">розбіжність |r − r<sub>гарм</sub>|</span><span class="v" style="color:var(--red)">${(SIM.escT||SIM.escH)?'—':fmt(dist,4)}</span>`;
+}
+$('cvSim').addEventListener('click',e=>{
+  if(!SIM.ok) return; const r=$('cvSim').getBoundingClientRect(); const {ox,oy,side}=simGeom(r.width,r.height);
+  const px=e.clientX-r.left, py=e.clientY-r.top; if(px<ox||px>ox+side||py<oy||py>oy+side) return;
+  const [ax,ay]=SIM.a, vr=SIM.view; const x=ax-vr+(px-ox)/side*2*vr, y=ay-vr+(oy+side-py)/side*2*vr;
+  $('sX0').value=numStr(x,4); $('sY0').value=numStr(y,4); simReset(); SIM.running=true; updPlay();
+});
+
+/* ================== init ================== */
+loadPreset(0);
+$('ePreset').value=0; $('ePreset').dispatchEvent(new Event('change'));
+loadSim(0);
+</script>
+</body>
+</html>
