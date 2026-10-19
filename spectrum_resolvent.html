@@ -1,0 +1,1227 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Спектр і резольвента</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
+<style>
+:root{
+  --green:#345a53; --green-d:#25443e; --green-dd:#162e29;
+  --gold:#ca9d48; --gold-l:#ecd6a6; --gold-pale:#fbf3df;
+  --cream:#f4f0e6; --paper:#fffdf9; --ink:#1d2a27; --muted:#5f6d69; --line:#e2dacb;
+  --ok:#2e7d5b; --warn:#b0582f; --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--cream);color:var(--ink);font:15px/1.58 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--green)}
+header.top{background:radial-gradient(circle at 15% -20%,#47766d,var(--green) 45%,var(--green-dd));color:#fff;padding:18px 18px 16px;border-bottom:3px solid var(--gold)}
+.top .in{max-width:1320px;margin:0 auto;display:flex;gap:18px;align-items:center}
+.top svg{width:82px;height:82px;flex:none;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
+.top h1{font-family:'PT Serif',Georgia,serif;font-size:clamp(20px,2.7vw,31px);line-height:1.2;margin:0;font-weight:700}
+.top .sub{color:var(--gold-l);font-size:14px;margin-top:4px}
+.top .dept{font-size:13px;color:#d9e5e1;margin-top:2px}
+nav.tabs{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line);box-shadow:0 2px 12px rgba(30,40,38,.07)}
+nav.tabs .in{max-width:1320px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;padding:0 10px;scrollbar-width:none}
+nav.tabs .in::-webkit-scrollbar{display:none}
+.tabbtn{appearance:none;border:0;background:none;padding:13px 13px 10px;font:inherit;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tabbtn:hover{color:var(--green)}
+.tabbtn.active{color:var(--green-d);border-bottom-color:var(--gold)}
+.tabbtn .num{display:inline-block;width:20px;height:20px;border-radius:50%;background:#eee6d4;color:var(--green-d);font-size:12px;line-height:20px;text-align:center;margin-right:6px}
+.tabbtn.active .num{background:var(--gold);color:#fff}
+main{max-width:1320px;margin:0 auto;padding:22px 16px 40px}
+.tab{display:none}.tab.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2.tt{font-family:'PT Serif',serif;font-size:25px;margin:0 0 6px;color:var(--green-d)}
+.lead{max-width:960px;color:var(--muted);margin:0 0 18px}
+.g2{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:18px;align-items:start}
+.g2r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.03);min-width:0}
+.card h3{font-family:'PT Serif',serif;font-size:18px;margin:0 0 10px;color:var(--green-d)}
+.card h4{font-size:14px;margin:12px 0 6px;color:var(--green-d);text-transform:uppercase;letter-spacing:.05em}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.row label{font-size:14px;color:var(--muted)}
+input.t,select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid #d6cdbb;border-radius:8px;background:#fff;color:var(--ink);min-width:0}
+input.t{font-family:'IBM Plex Mono',monospace}
+input.t:focus,select:focus{outline:2px solid var(--gold);outline-offset:0;border-color:var(--gold)}
+input.bad{border-color:#c0392b!important;background:#fff2ef}
+input[type=range]{accent-color:var(--green);flex:1;min-width:120px}
+input[type=checkbox]{accent-color:var(--green)}
+.w70{width:70px}.w90{width:90px}.w120{width:120px}.w160{width:160px}
+.mgrid{display:grid;gap:6px;margin:10px 0 8px;position:relative;padding:6px 14px}
+.mgrid::before,.mgrid::after{content:'';position:absolute;top:0;bottom:0;width:9px;border:2px solid var(--green)}
+.mgrid::before{left:0;border-right:0;border-radius:7px 0 0 7px}
+.mgrid::after{right:0;border-left:0;border-radius:0 7px 7px 0}
+.mgrid input{width:100%;text-align:center;padding:6px 2px}
+.btn{appearance:none;border:1px solid var(--green);background:var(--green);color:#fff;font:inherit;font-size:14px;font-weight:500;padding:6px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--green-d)}
+.btn.ghost{background:#fff;color:var(--green)}
+.btn.ghost:hover{background:#eef3f1}
+.btn.gold{background:var(--gold);border-color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid #d9d0be;background:#fff;border-radius:999px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.chip:hover{border-color:var(--gold);background:var(--gold-pale)}
+.chip.on{background:var(--green);color:#fff;border-color:var(--green)}
+.note{background:#f2eee2;border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 8px 8px 0;font-size:14px;color:#384643;margin:8px 0}
+.hint{font-size:13px;color:var(--muted)}
+.mono{font-family:'IBM Plex Mono',monospace}
+.ok{color:var(--ok);font-weight:600}.warn{color:var(--warn);font-weight:600}
+table.tbl{border-collapse:collapse;width:100%;font-size:14px}
+.tbl th{font-weight:600;text-align:left;color:var(--muted);border-bottom:1px solid var(--line);padding:4px 6px;font-size:13px}
+.tbl td{padding:4px 6px;border-bottom:1px solid #f0eadc;font-family:'IBM Plex Mono',monospace;font-size:13px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;border:1px solid rgba(0,0,0,.25)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px}
+.kv span:nth-child(odd){color:var(--muted)}
+.kv span:nth-child(even){font-family:'IBM Plex Mono',monospace}
+canvas{display:block;width:100%}
+canvas.plane{border-radius:12px;cursor:crosshair;touch-action:none;background:var(--green-dd)}
+canvas.light{border-radius:12px;background:#fff;border:1px solid var(--line);touch-action:none}
+.cbar{height:10px;border-radius:5px;margin-top:8px}
+.cbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:6px}
+.legend i.dash{border-top-style:dashed}
+.matbox{display:inline-grid;gap:2px 10px;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:4px 10px;border-left:2px solid var(--green);border-right:2px solid var(--green);border-radius:6px}
+.prose{max-width:900px}
+.prose p{margin:0 0 12px}
+.prose h3{font-family:'PT Serif',serif;color:var(--green-d);font-size:21px;margin:26px 0 10px}
+.prose h3:first-child{margin-top:0}
+.prose .k{display:inline-block;background:var(--gold-pale);border:1px solid #ecdcb5;border-radius:6px;padding:0 6px;font-size:13px;color:#6d5320;margin-right:4px}
+.theory{columns:2 430px;column-gap:28px}
+.theory .card{break-inside:avoid;margin:0 0 16px;display:block}
+.theory p{margin:0 0 9px}
+.tlabel{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.katex{font-size:1.04em}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:18px 16px;text-align:center}
+footer svg{width:30px;height:30px;vertical-align:middle;margin-right:8px}
+.small{font-size:13px}
+@media (max-width:980px){.g2,.g2r{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <span id="logoTop"></span>
+    <div>
+      <h1>Спектр, резольвента і теорема Гельфанда</h1>
+      <div class="sub">Функціональний аналіз ІІ · Лекції 14–15: спектр і власні значення; теорема Ліувілля для векторнозначних функцій</div>
+      <div class="dept">Кафедра фундаментальної математики · ХНУ імені В. Н. Каразіна</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs"><div class="in">
+  <button class="tabbtn" data-tab="lab"><span class="num">1</span>Спектр і резольвента</button>
+  <button class="tabbtn" data-tab="gelfand"><span class="num">2</span>Спектральний радіус</button>
+  <button class="tabbtn" data-tab="geom"><span class="num">3</span>Геометрія 2×2</button>
+  <button class="tabbtn" data-tab="map"><span class="num">4</span>Спектральне відображення</button>
+  <button class="tabbtn" data-tab="inf"><span class="num">5</span>Нескінченний вимір</button>
+  <button class="tabbtn" data-tab="apps"><span class="num">6</span>Застосування</button>
+  <button class="tabbtn" data-tab="theory"><span class="num">7</span>Теоретична довідка</button>
+</div></nav>
+
+<main>
+
+<!-- shared matrix editor (moved between tabs) -->
+<div id="matrixEditor" class="card">
+  <h3>Матриця оператора T</h3>
+  <div class="row"><label for="mSize">Розмір n:</label>
+    <select id="mSize"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+    <span class="hint">оператор на ℂⁿ</span></div>
+  <div id="mGrid" class="mgrid"></div>
+  <div class="hint">Комплексні числа вводяться як <span class="mono">2</span>, <span class="mono">-0.5</span>, <span class="mono">1+2i</span>, <span class="mono">-i</span>, <span class="mono">0.3i</span>. Enter — наступна клітинка, ↑↓ — рядки.</div>
+  <div id="mStatus" class="hint" style="margin-top:4px"></div>
+  <h4>Готові приклади</h4>
+  <div class="chips" id="presets"></div>
+  <div id="presetNote" class="note" style="display:none"></div>
+</div>
+
+<!-- TAB 1 -->
+<section class="tab" id="tab-lab">
+  <h2 class="tt">Спектр і резольвента на комплексній площині</h2>
+  <p class="lead">Карта показує величину \(\|R_\lambda\|=\|(T-\lambda I)^{-1}\|\) у кожній точці \(\lambda\in\mathbb C\). Наведіть курсор — побачите резольвенту в точці і круг, де збігається її степеневий ряд; клацніть — точку буде зафіксовано. Колесо миші — масштаб, перетягування — зсув.</p>
+  <div class="g2">
+    <div class="stack">
+      <div id="slot-lab"></div>
+      <div class="card">
+        <h3>Спектр σ(T)</h3>
+        <div id="labSpec"></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn ghost" id="zIn">＋</button><button class="btn ghost" id="zOut">－</button><button class="btn ghost" id="zAuto">Авто</button>
+          <label class="small"><input type="checkbox" id="showNorm" checked> коло |λ| = ‖T‖</label>
+          <label class="small"><input type="checkbox" id="showR" checked> коло |λ| = r(T)</label>
+          <label class="small"><input type="checkbox" id="showDisc" checked> круг збіжності ряду</label>
+        </div>
+        <canvas id="labCanvas" class="plane"></canvas>
+        <div class="cbar" id="cbar1"></div>
+        <div class="cbl"><span>‖R_λ‖ ≤ 0.1</span><span>1</span><span>10</span><span>100</span><span>≥ 1000</span></div>
+        <div class="legend"><span><i style="border-color:#fff"></i>лінії рівня ‖R_λ‖ = 10ᵏ (межі ε-псевдоспектрів)</span><span><i class="dash" style="border-color:#ca9d48"></i>|λ| = ‖T‖</span><span><i style="border-color:#bfe3d6"></i>|λ| = r(T)</span></div>
+      </div>
+      <div class="g2r">
+        <div class="card">
+          <h3>Точка λ і резольвента</h3>
+          <div class="row"><label for="lamIn">λ =</label><input id="lamIn" class="t w160" placeholder="напр. 1+0.5i"><button class="btn ghost" id="unpin">Відкріпити</button></div>
+          <div id="probeInfo" class="small"></div>
+        </div>
+        <div class="card">
+          <h3>Контурний інтеграл резольвенти</h3>
+          <div class="row"><label><input type="checkbox" id="cShow"> показати контур</label></div>
+          <div class="row"><label>центр c =</label><input id="cCen" class="t w90" value="0"><label>радіус ρ =</label><input id="cRad" class="t w70" value="2"></div>
+          <div class="row"><button class="chip" id="cAll">охопити весь спектр</button><button class="chip" id="cOne">навколо λ₁</button></div>
+          <div id="contourInfo" class="small"></div>
+        </div>
+      </div>
+      <div class="card prose small">
+        <h3 style="font-size:17px">Як це читати</h3>
+        <p><b>Геометрично.</b> Число \(\|R_\lambda\|\) вимірює, наскільки «погано» розв'язується рівняння \((T-\lambda I)x=y\): мала зміна правої частини \(y\) може змінити розв'язок у \(\|R_\lambda\|\) разів. На спектрі розв'язність зникає, і колір стає світлим. Теорема 4.2(b) лекції 14 гарантує \(\|R_\lambda\|\ge 1/\operatorname{dist}(\lambda,\sigma(T))\), тому світла пляма завжди оточує кожне власне значення; для нормальних матриць це рівність, і лінії рівня — кола. Для ненормальних матриць (спробуйте «Ненормальну» чи «Жорданову клітку») лінії рівня далеко виходять за межі спектра: це ε-псевдоспектри \(\sigma_\varepsilon(T)=\{\lambda:\|R_\lambda\|>1/\varepsilon\}\), тобто точки, що стають власними значеннями після збурення \(T\) на оператор нормою менше \(\varepsilon\).</p>
+        <p><b>Аналітично.</b> Золотий круг навколо курсора має радіус \(1/\|R_\lambda\|\): саме в ньому збігається ряд \(R_\mu=\sum_n(\mu-\lambda)^nR_\lambda^{n+1}\) (теорема 4.2(a)). Він ніколи не зачіпає спектр — так доводиться відкритість \(\rho(T)\). Ззовні кола \(|\lambda|=\|T\|\) працює ряд Неймана і оцінка \(\|R_\lambda\|\le 1/(|\lambda|-\|T\|)\), а резольвента згасає на нескінченності — це ключовий факт у доведенні теореми Гельфанда через теорему Ліувілля.</p>
+        <p><b>Фізично.</b> Якщо лінійна система \(\dot x=Tx+e^{i\omega t}f\) збуджується з частотою \(\omega\), усталений відгук дорівнює \(-R_{i\omega}f\). Отже, зріз карти вздовж уявної осі — це амплітудно-частотна характеристика, а світлі смуги поблизу спектра — резонанси.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAB 2 -->
+<section class="tab" id="tab-gelfand">
+  <h2 class="tt">Спектральний радіус і формула Гельфанда</h2>
+  <p class="lead">\(r(T)=\max\{|\lambda|:\lambda\in\sigma(T)\}=\lim_n\|T^n\|^{1/n}=\inf_n\|T^n\|^{1/n}\). Норма бачить «перехідний процес», спектр — лише асимптотичний темп. Матриця спільна з вкладкою 1.</p>
+  <div class="g2">
+    <div class="stack">
+      <div id="slot-gelfand"></div>
+      <div class="card">
+        <h3>Параметри</h3>
+        <div class="row"><label for="gNorm">Норма в ℂⁿ:</label>
+          <select id="gNorm"><option value="2">‖·‖₂ (евклідова)</option><option value="1">‖·‖₁ (суми стовпців)</option><option value="inf">‖·‖∞ (суми рядків)</option></select></div>
+        <div class="row"><label for="gN">Кількість степенів N:</label><input id="gN" class="t w70" type="number" min="2" max="200" value="40"></div>
+        <div class="row"><label for="gLam">λ для ряду Неймана:</label><input id="gLam" class="t w120" value="1.2"></div>
+        <div class="row"><label for="gPhi">Промінь arg λ (°):</label><input id="gPhi" class="t w70" type="number" value="30"></div>
+        <div id="gInfo" class="small"></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>‖Tⁿ‖^{1/n} → r(T)</h3>
+        <canvas id="gc1" class="chart"></canvas>
+        <div class="legend"><span><i style="border-color:#ca9d48"></i>‖Tⁿ‖^{1/n}</span><span><i style="border-color:#345a53"></i>inf<sub>k≤n</sub> ‖Tᵏ‖^{1/k}</span><span><i class="dash" style="border-color:#c0392b"></i>r(T)</span><span><i class="dash" style="border-color:#999"></i>‖T‖</span></div>
+        <p class="small hint">Змініть норму: ‖T‖ зміниться, а границя — ні, бо всі норми в ℂⁿ еквівалентні, і сталі \(C^{1/n}\to1\). Спектральний радіус — алгебраїчна, а не метрична величина.</p>
+      </div>
+      <div class="card">
+        <h3>‖Tⁿ‖ — підсилення за n кроків (логарифмічна шкала)</h3>
+        <canvas id="gc2" class="chart"></canvas>
+        <div class="legend"><span><i style="border-color:#ca9d48"></i>‖Tⁿ‖</span><span><i class="dash" style="border-color:#c0392b"></i>r(T)ⁿ</span><span><i class="dash" style="border-color:#999"></i>‖T‖ⁿ</span></div>
+        <p class="small hint">Для системи \(x_{k+1}=Tx_k\) маємо \(\|x_n\|\le\|T^n\|\|x_0\|\). Якщо \(r(T)<1\), то з формули Гельфанда для будь-якого \(\varepsilon\) знайдеться \(C\) з \(\|T^n\|\le C(r+\varepsilon)^n\) — система експоненційно стійка, хоча при \(\|T\|>1\) спершу можливе сильне зростання («Ненормальна» матриця).</p>
+      </div>
+      <div class="g2r">
+        <div class="card">
+          <h3>Ряд Неймана для R_λ</h3>
+          <canvas id="gc3" class="chart"></canvas>
+          <p class="small hint">Похибка \(\bigl\|R_\lambda+\sum_{k=0}^{N}T^k\lambda^{-k-1}\bigr\|\). Ряд збігається при \(|\lambda|>r(T)\) (ознака Коші + формула Гельфанда), навіть якщо \(|\lambda|\le\|T\|\).</p>
+        </div>
+        <div class="card">
+          <h3>Резольвента на нескінченності</h3>
+          <canvas id="gc4" class="chart"></canvas>
+          <div class="legend small"><span><i style="border-color:#ca9d48"></i>‖R_λ‖</span><span><i class="dash" style="border-color:#ca9d48"></i>1/(|λ|−‖T‖)</span><span><i style="border-color:#345a53"></i>‖λR_λ+I‖</span><span><i class="dash" style="border-color:#345a53"></i>‖T‖/(|λ|−‖T‖)</span></div>
+          <p class="small hint">Вздовж променя \(\lambda=se^{i\varphi}\): \(R_\lambda\to0\), \(\lambda R_\lambda\to-I\) (твердження 5.3 лекції 15). Саме згасання на нескінченності разом із теоремою Ліувілля не дозволяє резольвенті бути цілою функцією.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAB 3 -->
+<section class="tab" id="tab-geom">
+  <h2 class="tt">Геометричний зміст власних значень: дійсна матриця 2×2</h2>
+  <p class="lead">Перетягніть синій вектор x: золотий вектор — його образ Tx. Коли x лягає на власний напрям, Tx стає паралельним x, а коефіцієнт розтягу дорівнює власному значенню. Точки — орбіта x, Tx, T²x, … дискретної динамічної системи.</p>
+  <div class="g2">
+    <div class="stack">
+      <div class="card">
+        <h3>Матриця T</h3>
+        <div class="mgrid" style="grid-template-columns:1fr 1fr">
+          <input class="t" id="ga" type="number" step="0.1" value="1.2"><input class="t" id="gb" type="number" step="0.1" value="0.5">
+          <input class="t" id="gcc" type="number" step="0.1" value="0.3"><input class="t" id="gd" type="number" step="0.1" value="0.7">
+        </div>
+        <div class="row"><label>Довжина орбіти:</label><input id="gk" class="t w70" type="number" min="0" max="60" value="10"></div>
+        <div class="row"><button class="btn" id="gAnim">▶ Анімувати перетворення</button></div>
+        <h4>Приклади</h4>
+        <div class="chips" id="gPresets"></div>
+      </div>
+      <div class="card"><h3>Аналіз</h3><div id="geomInfo" class="small"></div></div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <canvas id="geomCanvas" class="light"></canvas>
+        <div class="legend"><span><i style="border-color:#3b6ea8"></i>x</span><span><i style="border-color:#ca9d48"></i>Tx</span><span><i class="dash" style="border-color:#c0392b"></i>власні напрями</span><span><i style="border-color:#345a53"></i>образ одиничного кола (еліпс) і сітки</span></div>
+      </div>
+      <div class="card prose small">
+        <p><b>Еліпс.</b> Одиничне коло переходить в еліпс з півосями \(s_1=\|T\|\) та \(s_2\) — сингулярними числами. Власні напрями — це не осі еліпса (окрім симетричних матриць), а прямі, що переходять самі в себе. Спектральний радіус і норма збігаються лише тоді, коли ці дві системи узгоджені (нормальний випадок).</p>
+        <p><b>Обертання.</b> Для обертання на кут \(\pi/2\) жодна пряма не переходить у себе: дійсних власних значень немає, і для кожного дійсного \(\lambda\) оператор \(T-\lambda I\) оборотний — над \(\mathbb R\) теорема про непорожність спектра хибна. Над \(\mathbb C\) з'являються \(\lambda=\pm i\): комплексне власне значення кодує поворот на кут \(\arg\lambda\) з розтягом \(|\lambda|\).</p>
+        <p><b>Динаміка.</b> Орбіта \(T^nx\) стискається до нуля, коли \(r(T)<1\), і розбігається, коли \(r(T)>1\). У застосуваннях (комп'ютерний зір) симетричну додатну матрицю 2×2 — структурний тензор зображення — аналізують саме за цим еліпсом: два малі власні значення — однорідна ділянка, одне велике — край, два великі — кут (детектори Харріса і Ші–Томасі).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAB 4 -->
+<section class="tab" id="tab-map">
+  <h2 class="tt">Спектральне відображення для многочленів</h2>
+  <p class="lead">Теорема 8.1: \(\sigma(p(T))=p(\sigma(T))\). Ліворуч — \(\sigma(T)\) і коло \(|z|=\rho\); праворуч — обчислений спектр матриці \(p(T)\) (заповнені точки), образи \(p(\lambda_k)\) (кільця того ж кольору) і образ кола під дією \(p\).</p>
+  <div class="g2">
+    <div class="stack">
+      <div id="slot-map"></div>
+      <div class="card">
+        <h3>Многочлен p(z) = a₀ + a₁z + a₂z² + a₃z³ + a₄z⁴</h3>
+        <div class="row" id="pCoefs"></div>
+        <div class="chips" id="pPresets" style="margin-top:6px"></div>
+        <div class="row" style="margin-top:10px"><label>ρ =</label><input type="range" id="pRho" min="0.05" max="3" step="0.01" value="1"><span id="pRhoV" class="mono small">1</span></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="g2r">
+          <div><div class="small hint" style="margin-bottom:4px">площина z: σ(T)</div><canvas id="mapL" class="light"></canvas></div>
+          <div><div class="small hint" style="margin-bottom:4px">площина w = p(z): σ(p(T))</div><canvas id="mapR" class="light"></canvas></div>
+        </div>
+      </div>
+      <div class="card"><h3>Перевірка</h3><div id="mapInfo" class="small"></div></div>
+      <div class="card prose small">
+        <p><b>Чому це правда.</b> Розкладемо \(p(z)-\mu=a\prod_k(z-z_k)\). Множники \(T-z_k\) комутують, а добуток комутуючих операторів оборотний тоді й лише тоді, коли оборотний кожен множник (лема 2.3). Тому \(\mu\in\sigma(p(T))\iff\) деяке \(z_k\in\sigma(T)\iff\mu=p(\lambda)\) для \(\lambda\in\sigma(T)\).</p>
+        <p><b>Що спостерігати.</b> Для \(p(z)=z^2\) точки \(\pm\lambda\) зливаються в одну — кратності додаються. Образ кола обходить точку \(p(0)\) стільки разів, який степінь многочлена: це топологічний слід основної теореми алгебри, яку в лекції 15 виведено з непорожності спектра. Для сталого \(p\) рівність для точкового спектра може порушуватися — спробуйте \(p\equiv 2\).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAB 5 -->
+<section class="tab" id="tab-inf">
+  <h2 class="tt">Нескінченновимірні приклади з лекцій</h2>
+  <p class="lead">У скінченному вимірі спектр складається лише з власних значень. Тут видно, як з'являються неперервний і залишковий спектр, як скінченні наближення «не бачать» справжнього спектра і чому будь-який компакт може бути спектром.</p>
+
+  <div class="card" style="margin-bottom:18px">
+    <h3>A. Зсув: зрізана жорданова клітка J_N і її псевдоспектри</h3>
+    <div class="g2">
+      <div>
+        <div class="row"><label>Розмір N:</label><input type="range" id="sN" min="2" max="80" value="16"><span id="sNv" class="mono small">16</span></div>
+        <div class="row"><label><input type="checkbox" id="sPert" checked> збурення ε у кутку</label><label>log₁₀ ε =</label><input id="sEps" class="t w70" type="number" min="-16" max="0" step="1" value="-8"></div>
+        <div id="shiftInfo" class="small"></div>
+        <div class="prose small" style="margin-top:10px">
+          <p>Оператор \(J_N\) — лівий зсув на \(\mathbb C^N\): \((x_1,\dots,x_N)\mapsto(x_2,\dots,x_N,0)\). Він нільпотентний, тому \(\sigma(J_N)=\{0\}\). Проте норма резольвенти (у нормі \(\ell^1\)) дорівнює \(\sum_{k=1}^N|\lambda|^{-k}\) і всередині одиничного круга зростає як \(|\lambda|^{-N}\). При \(N\to\infty\) лінії рівня притискаються до кола, і в границі отримуємо \(\sigma(S)=\sigma(L)=\overline{\mathbb D}\) (приклад 9.2).</p>
+          <p>Якщо додати в лівий нижній кут крихітне \(\varepsilon\), власні значення стрибають з нуля на коло радіуса \(\varepsilon^{1/N}\), яке при великих \(N\) майже одиничне: спектр нестійкий, а псевдоспектр — стійкий. Для правого зсуву на \(\ell^p\): \(\sigma_p(S)=\varnothing\), \(\sigma_r(S)=\mathbb D\) (бо \(\sigma_p(S^*)=\sigma_p(L)\supset\mathbb D\)), а точки кола \(|\lambda|=1\) — межа спектра, отже лежать в апроксимативному спектрі (теорема 7.1).</p>
+        </div>
+      </div>
+      <div class="stack">
+        <canvas id="shiftCanvas" class="plane"></canvas>
+        <canvas id="shiftChart" class="chart"></canvas>
+        <div class="legend small"><span><i style="border-color:#ca9d48"></i>log ‖(J_N − λ)⁻¹‖₁ вздовж |λ| = s</span><span><i class="dash" style="border-color:#c0392b"></i>границя N = ∞: 1/(s − 1)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <h3>B. Оператор Вольтерри (Vx)(t) = ∫₀ᵗ x(s) ds на C[0,1]: квазінільпотентність</h3>
+    <div class="g2">
+      <div>
+        <div class="row"><label>x(t) =</label><input id="vX" class="t" style="flex:1" value="cos(8*t) + 0.5"></div>
+        <div class="row"><label>Степені до K =</label><input id="vK" class="t w70" type="number" min="1" max="10" value="5"></div>
+        <div class="hint">Доступні: sin, cos, exp, log, sqrt, abs, PI, ^ для степеня.</div>
+        <div id="voltInfo" class="small" style="margin-top:8px"></div>
+        <h4>Рівняння Вольтерри x − μVx = f</h4>
+        <div class="row"><label>μ =</label><input id="vMu" class="t w70" type="number" step="0.5" value="6"><label>f(t) =</label><input id="vF" class="t w120" value="1 + sin(5*t)"></div>
+        <div class="row"><label>Членів ряду Неймана:</label><input type="range" id="vTerms" min="0" max="30" value="6"><span id="vTermsV" class="mono small">6</span></div>
+        <div id="voltSolveInfo" class="small"></div>
+      </div>
+      <div class="stack">
+        <canvas id="voltC1" class="chart"></canvas>
+        <div class="g2r">
+          <div><canvas id="voltC2" class="chart"></canvas><div class="legend small"><span><i style="border-color:#ca9d48"></i>‖Vⁿ‖∞ (чисельно)</span><span><i class="dash" style="border-color:#345a53"></i>1/n!</span></div></div>
+          <div><canvas id="voltC3" class="chart"></canvas><div class="legend small"><span><i style="border-color:#c0392b"></i>розв'язок</span><span><i style="border-color:#ca9d48"></i>часткові суми ряду Неймана</span></div></div>
+        </div>
+        <p class="small hint">Кожне інтегрування згладжує і стискає функцію: \(\|V^n\|\le 1/n!\), тому \(r(V)=\lim\|V^n\|^{1/n}=0\) і \(\sigma(V)=\{0\}\). Нуль не є власним значенням, а образ \(V\) лежить у замкненому підпросторі \(\{y(0)=0\}\), отже \(0\in\sigma_r(V)\). Наслідок: рівняння \(x-\mu Vx=f\) однозначно розв'язне при будь-якому \(\mu\), і ряд Неймана (метод послідовних наближень Пікара) збігається завжди — навіть при великих \(\mu\), де \(\|\mu V\|>1\).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>C. Будь-який непорожній компакт — спектр (теорема 7.5 лекції 15)</h3>
+    <div class="g2">
+      <div>
+        <div class="row"><label>Компакт K:</label><select id="kShape">
+          <option value="circle">коло |z| = 1</option><option value="disk">круг |z| ≤ 1</option><option value="segment">відрізок [−1.2, 1.2]</option>
+          <option value="square">межа квадрата</option><option value="cantor">множина Кантора</option><option value="union">коло ∪ відрізок ∪ точка</option></select></div>
+        <div class="row"><label>Членів послідовності N:</label><input type="range" id="kN" min="1" max="4000" value="300"><span id="kNv" class="mono small">300</span></div>
+        <div class="row"><button class="btn" id="kAnim">▶ Дописувати послідовність</button></div>
+        <div id="kInfo" class="small"></div>
+        <p class="small prose" style="margin-top:10px">Беремо щільну в \(K\) послідовність \((d_n)\) і діагональний оператор \(D(x_n)=(d_nx_n)\) на \(\ell^2\). Кожне \(d_n\) — власне значення, спектр замкнений, тому \(K\subset\sigma(D)\); а для \(\lambda\notin K\) оператор \(((d_n-\lambda)^{-1}x_n)\) обмежений нормою \(1/\operatorname{dist}(\lambda,K)\). Наведіть курсор: коло навколо курсора — це круг \(|\mu-\lambda|<\operatorname{dist}(\lambda,K)\), що повністю лежить у резольвентній множині. Точки \(K\), які не є членами послідовності, належать неперервному спектру.</p>
+      </div>
+      <canvas id="kCanvas" class="light"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- TAB 6 -->
+<section class="tab" id="tab-apps">
+  <h2 class="tt">Як це виглядає у прикладних задачах</h2>
+  <p class="lead">Спектр відповідає на питання «що система робить у довгостроковій перспективі», резольвента — «як сильно вона відгукується на зовнішній вплив», а різниця між ними — «що відбувається в перехідному режимі».</p>
+  <div class="g2" style="grid-template-columns:minmax(0,1fr) minmax(320px,520px)">
+    <div class="prose">
+      <h3>1. Коливання і резонанс: резольвента як передавальна функція</h3>
+      <p>Система мас і пружин з демпфуванням описується рівнянням \(M\ddot x+C\dot x+Kx=Fe^{i\omega t}\). Шукаючи усталений розв'язок у вигляді \(x=Xe^{i\omega t}\), отримуємо \(X=(K-\omega^2M+i\omega C)^{-1}F\), тобто амплітуда відгуку задається резольвентою матричного пучка. Без демпфування власні частоти \(\omega_k=\sqrt{\lambda_k(M^{-1}K)}\) — це точки спектра, і при наближенні частоти збудження до них амплітуда необмежено зростає, у повній відповідності з оцінкою \(\|R_\lambda\|\ge1/\operatorname{dist}(\lambda,\sigma)\). Демпфування зсуває спектр з дійсної осі, і резонансний пік стає скінченним. Модель праворуч дозволяє це побачити; клацніть на графіку, щоб вибрати частоту збудження.</p>
+      <p>Інженерно це означає, що конструкцію перевіряють, чи не лежать її власні частоти поблизу частот експлуатаційних навантажень: кроків пішоходів, обертання двигуна, поривів вітру. Відомий приклад — лондонський Міст тисячоліття, який після відкриття у 2000 році довелося закрити й обладнати демпферами через бічні коливання, збуджені синхронними кроками людей.</p>
+
+      <h3>2. Стійкість ітерацій і формула Гельфанда</h3>
+      <p>Будь-який лінійний ітераційний процес \(x_{k+1}=Tx_k+c\) збігається при довільному початковому наближенні тоді й лише тоді, коли \(r(T)<1\); граничне значення \(x=(I-T)^{-1}c\) задається рядом Неймана. Так влаштовані методи Якобі й Зейделя для систем лінійних рівнянь, явні різницеві схеми для рівнянь теплопровідності й переносу (спектральна умова фон Неймана), метод послідовних наближень для інтегральних рівнянь. Швидкість збіжності — приблизно \(r(T)^k\), а норма \(\|T\|\) дає лише грубу оцінку.</p>
+      <p>Принципову роль відіграє різниця між \(r(T)\) і \(\|T\|\). Якщо матриця ненормальна, система може бути асимптотично стійкою і водночас підсилювати збурення в тисячі разів, перш ніж вони згаснуть. У гідродинаміці цей механізм пояснює перехід до турбулентності в течіях, які лінійно стійкі (роботи Л. Трефетена зі співавторами про псевдоспектри). <button class="chip" data-open="Ненормальна" data-tab="gelfand">відкрити приклад на вкладці 2</button></p>
+
+      <h3>3. Квантова механіка: точковий і неперервний спектр</h3>
+      <p>Спостережувані величини в квантовій механіці — самоспряжені оператори, а результати вимірювань лежать у їхньому спектрі. Точковий спектр гамільтоніана — це дискретні рівні енергії зв'язаних станів (лінії в спектрі випромінювання атома водню), а неперервний — енергії станів розсіяння: вільна частинка має спектр \([0,\infty)\) без жодного власного значення. «Власні функції» \(e^{ikx}\) неперервного спектра не лежать у \(L^2\), але хвильові пакети, зосереджені біля частоти \(k\), утворюють послідовність апроксимативних власних векторів — рівно та конструкція \(\sigma_{ap}\), що й у теоремі 7.1 і в прикладі зі зсувом на вкладці 5. Гамільтоніани необмежені, тому ця теорія виходить за межі лекцій, але всі ідеї ті самі.</p>
+
+      <h3>4. Марковські ланцюги і PageRank</h3>
+      <p>Стохастична матриця переходів \(P\) має \(\|P\|_\infty=1\), отже \(\sigma(P)\) лежить в одиничному крузі, а \(1\in\sigma(P)\), бо \(P\mathbf 1=\mathbf 1\); тому \(r(P)=1\). Стаціонарний розподіл — власний вектор транспонованої матриці для \(\lambda=1\), а швидкість, з якою ланцюг «забуває» початковий стан, визначається другим за модулем власним значенням. Алгоритм PageRank знаходить стаціонарний розподіл випадкового блукання по вебграфу степеневим методом; домішування телепортації з коефіцієнтом \(\alpha\) гарантує, що решта спектра лежить у крузі радіуса \(\alpha\), і забезпечує швидку збіжність. <button class="chip" data-open="Стохастична 3×3" data-tab="lab">відкрити стохастичну матрицю</button></p>
+
+      <h3>5. Комп'ютерний зір і машинне навчання</h3>
+      <p><b>Особливі точки.</b> Детектори кутів Харріса і Ші–Томасі обчислюють для кожного пікселя структурний тензор — симетричну матрицю 2×2 з похідних яскравості — і класифікують точку за двома власними значеннями: однорідна ділянка, край або кут. Це рівно еліпс з вкладки 3. <b>Головні компоненти.</b> Метод «власних облич» (eigenfaces) і взагалі PCA зводять зображення до проєкцій на власні вектори коваріаційного оператора з найбільшими власними значеннями. <b>Сегментація.</b> Спектральна кластеризація і метод нормалізованих розрізів Ші–Маліка розбивають зображення на частини за власними векторами лапласіана графа пікселів.</p>
+      <p><b>Стійкість нейромереж.</b> Константа Ліпшиця лінійного шару — це операторна норма \(\|W\|\) (найбільше сингулярне число); спектральна нормалізація в генеративно-змагальних мережах ділить ваги на \(\|W\|\), оцінене кількома кроками степеневого методу, — тим самим, яким тут рахуються норми. У рекурентних мережах \(h_{t+1}=Wh_t+\dots\) градієнти «вибухають» чи «зникають» залежно від поведінки \(\|W^t\|\), тобто від спектрального радіуса за формулою Гельфанда; у сучасних моделях простору станів матрицю переходу параметризують так, щоб її спектр гарантовано лежав у зоні стійкості.</p>
+
+      <h3>6. Інтегральні рівняння з пам'яттю</h3>
+      <p>Рівняння Вольтерри \(x(t)-\mu\int_0^tk(t,s)x(s)\,ds=f(t)\) описують процеси, що залежать від історії: відновлення популяцій, в'язкопружні матеріали, теплопровідність з пам'яттю, нагромадження в економіці. Як і для оператора Вольтерри, такі оператори з неперервним ядром квазінільпотентні, тому рівняння має єдиний розв'язок для будь-якого \(\mu\), і його можна знаходити послідовними наближеннями. Інтерактивну перевірку наведено на вкладці 5, картка B.</p>
+    </div>
+    <div class="stack" style="position:sticky;top:64px">
+      <div class="card">
+        <h3>Модель: дві маси, дві пружини</h3>
+        <div class="row"><label>m₁</label><input class="t w70" id="rm1" type="number" step="0.1" value="1"><label>m₂</label><input class="t w70" id="rm2" type="number" step="0.1" value="1"></div>
+        <div class="row"><label>k₁</label><input class="t w70" id="rk1" type="number" step="0.1" value="1"><label>k₂</label><input class="t w70" id="rk2" type="number" step="0.1" value="1"></div>
+        <div class="row"><label>демпфування c</label><input class="t w70" id="rc" type="number" step="0.01" min="0" value="0.05"><label>ω</label><input class="t w70" id="rw" type="number" step="0.01" min="0" value="0.618"></div>
+        <canvas id="resAnim" class="light"></canvas>
+        <canvas id="resChart" class="chart" style="margin-top:8px;cursor:pointer"></canvas>
+        <div class="legend small"><span><i style="border-color:#3b6ea8"></i>|X₁(ω)|</span><span><i style="border-color:#ca9d48"></i>|X₂(ω)|</span><span><i class="dash" style="border-color:#c0392b"></i>власні частоти</span></div>
+        <div id="resInfo" class="small"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAB 7 -->
+<section class="tab" id="tab-theory">
+  <h2 class="tt">Коротка теоретична довідка</h2>
+  <p class="lead">Стислий конспект лекцій 14 і 15. Скрізь \(X\ne\{0\}\) — комплексний банахів простір, \(L(X)\) — банахова алгебра обмежених операторів з нормою \(\|T\|=\sup_{\|x\|\le1}\|Tx\|\), \(\|AB\|\le\|A\|\|B\|\).</p>
+  <div class="theory">
+    <div class="card"><div class="tlabel">Лекція 14 · §2</div><h3>Ряд Неймана і оборотні оператори</h3>
+      <p>Якщо \(\|A\|<1\), то \(I-A\) оборотний і \[(I-A)^{-1}=\sum_{n=0}^\infty A^n,\qquad \|(I-A)^{-1}\|\le\frac1{1-\|A\|}.\] Звідси множина \(G(X)\) оборотних операторів відкрита, а обернення неперервне: якщо \(\|B-A\|<1/\|A^{-1}\|\), то \(B\in G(X)\). Добуток попарно комутуючих операторів оборотний тоді й лише тоді, коли оборотний кожен множник. Оператор, обмежений знизу (\(\|Ax\|\ge c\|x\|\)), ін'єктивний і має замкнений образ; якщо образ ще й щільний, оператор оборотний.</p></div>
+    <div class="card"><div class="tlabel">Лекція 14 · §3</div><h3>Спектр, резольвента, класифікація</h3>
+      <p>Резольвентна множина \(\rho(T)=\{\lambda: T-\lambda I\text{ оборотний}\}\), спектр \(\sigma(T)=\mathbb C\setminus\rho(T)\), резольвента \(R_\lambda=(T-\lambda I)^{-1}\). Спектр розпадається на три частини, що не перетинаються: точковий \(\sigma_p\) (оператор \(T-\lambda\) не ін'єктивний), неперервний \(\sigma_c\) (ін'єктивний, образ щільний, але не весь \(X\)) і залишковий \(\sigma_r\) (ін'єктивний, образ не щільний). Апроксимативний спектр \(\sigma_{ap}\) — це ті \(\lambda\), для яких існують \(\|x_n\|=1\) з \(\|(T-\lambda)x_n\|\to0\); маємо \(\sigma_p\cup\sigma_c\subset\sigma_{ap}\subset\sigma\). У скінченному вимірі \(\sigma(T)=\sigma_p(T)\) — множина коренів \(\det(T-\lambda I)\).</p></div>
+    <div class="card"><div class="tlabel">Лекція 14 · §4</div><h3>Властивості резольвенти</h3>
+      <p>Тотожність Гільберта: \(R_\lambda-R_\mu=(\lambda-\mu)R_\lambda R_\mu\), резольвенти комутують між собою і з \(T\). Якщо \(\lambda_0\in\rho(T)\) і \(|\lambda-\lambda_0|<\|R_{\lambda_0}\|^{-1}\), то \[R_\lambda=\sum_{n\ge0}(\lambda-\lambda_0)^nR_{\lambda_0}^{n+1},\] тому \(\rho(T)\) відкрита і \(\|R_\lambda\|\ge 1/\operatorname{dist}(\lambda,\sigma(T))\). При \(|\lambda|>\|T\|\) \[R_\lambda=-\sum_{n\ge0}\frac{T^n}{\lambda^{n+1}},\qquad \|R_\lambda\|\le\frac1{|\lambda|-\|T\|},\] отже \(\sigma(T)\) — компакт у крузі \(|\lambda|\le\|T\|\). Для кожного \(\Phi\in L(X)^*\) функція \(\Phi(R_\lambda)\) голоморфна на \(\rho(T)\).</p></div>
+    <div class="card"><div class="tlabel">Лекції 14–15</div><h3>Теорема Гельфанда: σ(T) ≠ ∅</h3>
+      <p>Припустимо, що \(\rho(T)=\mathbb C\). Тоді резольвента — ціла функція зі значеннями в \(L(X)\) (лекція 15: вона сильно голоморфна, \(\frac{d}{d\lambda}R_\lambda=R_\lambda^2\)), і \(\|R_\lambda\|\to0\) при \(|\lambda|\to\infty\). За векторною теоремою Ліувілля \(R_\lambda\equiv0\), але \((T-\lambda)R_\lambda=I\ne0\). У лекції 14 те саме зроблено через скалярні функції \(\Phi(R_\lambda)\) і теорему Хана–Банаха. Обидві умови суттєві: при \(X=\{0\}\) спектр порожній, а над \(\mathbb R\) поворот площини на \(\pi/2\) не має спектра.</p></div>
+    <div class="card"><div class="tlabel">Лекція 14 · §5</div><h3>Спектральний радіус</h3>
+      <p>\(r(T)=\max\{|\lambda|:\lambda\in\sigma(T)\}\le\|T\|\). Формула Гельфанда: \[r(T)=\lim_{n\to\infty}\|T^n\|^{1/n}=\inf_{n\ge1}\|T^n\|^{1/n}.\] Нерівність \(r\le\inf\) випливає з того, що \(\lambda^n\in\sigma(T^n)\); обернена — з розкладу Лорана функцій \(\Phi(R_\lambda)\) у кільці \(|\lambda|>r(T)\) і принципу рівномірної обмеженості. Нерівність \(r(T)\le\|T\|\) може бути строгою: для нільпотентної \(\begin{pmatrix}0&1\\0&0\end{pmatrix}\) маємо \(\|T\|=1\), \(r(T)=0\). Оператори з \(\sigma(T)=\{0\}\) називають квазінільпотентними.</p></div>
+    <div class="card"><div class="tlabel">Лекція 14 · §6–7</div><h3>Спряжений оператор і межа спектра</h3>
+      <p>Для банахового спряженого \(T^*\in L(X^*)\), \((T^*f)(x)=f(Tx)\): \(A\) оборотний \(\iff A^*\) оборотний, тому \(\sigma(T^*)=\sigma(T)\) і \(R_\lambda(T^*)=R_\lambda(T)^*\). Образ \(A\) щільний \(\iff A^*\) ін'єктивний, звідки \(\sigma_r(T)=\sigma_p(T^*)\setminus\sigma_p(T)\). Межа спектра завжди лежить в апроксимативному спектрі: \(\partial\sigma(T)\subset\sigma_{ap}(T)\); апроксимативні власні вектори будуються з \(R_{\lambda_n}y_n\), де \(\lambda_n\to\lambda\), \(\|R_{\lambda_n}\|\to\infty\).</p></div>
+    <div class="card"><div class="tlabel">Лекція 14 · §8</div><h3>Спектральне відображення</h3>
+      <p>Для многочлена \(p\): \(\sigma(p(T))=p(\sigma(T))\), а для несталого \(p\) також \(\sigma_p(p(T))=p(\sigma_p(T))\). Доведення: розклад \(p(z)-\mu=a\prod(z-z_k)\) і лема про комутуючі множники.</p></div>
+    <div class="card"><div class="tlabel">Лекція 15 · §2–4</div><h3>Голоморфні функції зі значеннями в банаховому просторі</h3>
+      <p>Інтеграл Рімана від неперервної функції \(u:[a,b]\to Y\) існує, лінійний, \(\|\int u\|\le\int\|u\|\), комутує з обмеженими операторами і однозначно визначається умовами \(\varphi(\int u)=\int\varphi(u)\), \(\varphi\in Y^*\). Теорема Данфорда: слабко голоморфна функція (усі \(\varphi\circ f\) голоморфні) сильно голоморфна. Справджуються формула Коші \(f(z)=\frac1{2\pi i}\oint\frac{f(\zeta)}{\zeta-z}d\zeta\), розклад Тейлора з коефіцієнтами \(c_n=\frac1{2\pi i}\oint\frac{f(\zeta)}{(\zeta-a)^{n+1}}d\zeta\) та оцінки Коші \(\|c_n\|\le M(r)/r^n\). Звідси теорема Ліувілля: обмежена ціла \(Y\)-значна функція стала; якщо \(\|f(z)\|\le A+B|z|^N\), то \(f\) — многочлен степеня \(\le N\); якщо \(\|f(z)\|\to0\), то \(f\equiv0\).</p></div>
+    <div class="card"><div class="tlabel">Лекція 15 · §7</div><h3>Наслідки</h3>
+      <p>У кожній комплексній унітальній банаховій алгебрі спектр кожного елемента — непорожній компакт. Теорема Гельфанда–Мазура: банахова алгебра з діленням ізометрично ізоморфна \(\mathbb C\). Основна теорема алгебри випливає з непорожності спектра оператора \(q\mapsto zq-\kappa(q)p\) на просторі многочленів степеня \(<n\). Будь-який непорожній компакт \(K\subset\mathbb C\) є спектром діагонального оператора на \(\ell^2\). Інтеграл по колу \(|\lambda|=\varrho>\|T\|\) дає \(\frac1{2\pi i}\oint R_\lambda\,d\lambda=-I\) (вправа 8.2); для кола, що охоплює частину спектра, отримуємо мінус проєктор Рісса — див. вкладку 1.</p></div>
+    <div class="card"><div class="tlabel">Приклади</div><h3>Типові спектри</h3>
+      <table class="tbl"><tr><th>Оператор</th><th>σ</th><th>σ_p</th><th>σ_c</th><th>σ_r</th></tr>
+        <tr><td>Вольтерри на C[0,1]</td><td>{0}</td><td>∅</td><td>∅</td><td>{0}</td></tr>
+        <tr><td>правий зсув S на ℓ_p, 1&lt;p&lt;∞</td><td>|λ|≤1</td><td>∅</td><td>|λ|=1</td><td>|λ|&lt;1</td></tr>
+        <tr><td>правий зсув S на ℓ₁</td><td>|λ|≤1</td><td>∅</td><td>∅</td><td>|λ|≤1</td></tr>
+        <tr><td>лівий зсув L на ℓ_q, q&lt;∞</td><td>|λ|≤1</td><td>|λ|&lt;1</td><td colspan="2">решта на |λ|=1</td></tr>
+        <tr><td>діагональний D(dₙ) на ℓ²</td><td>{dₙ}‾</td><td>{dₙ}</td><td colspan="2">граничні точки</td></tr>
+      </table>
+      <p class="small hint" style="margin-top:8px">Для лівого зсуву на \(\ell_\infty\) (\(q=\infty\)) маємо \(\sigma_p(L)=\overline{\mathbb D}\). Для діагонального оператора точки замикання, що не є членами послідовності, належать неперервному спектру.</p></div>
+  </div>
+</section>
+
+</main>
+<footer><span id="logoFoot"></span>Кафедра фундаментальної математики ХНУ імені В. Н. Каразіна · Функціональний аналіз ІІ, лекції 14–15</footer>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const DPR=()=>Math.min(window.devicePixelRatio||1,2);
+const GREEN='#345a53', GOLD='#ca9d48', RED='#c0392b', BLUE='#3b6ea8';
+const PAL=['#ca9d48','#7fc4ae','#e07b6a','#8fa8e0','#e8e1cf','#c58fd6'];
+
+/* ---------------- logo ---------------- */
+function logoSVG(){
+  const rows={6:[3],5:[2,3],4:[1,2,3,4],3:[0,1,2,3,4,5,6],2:[0,1,2,3,4,5],1:[0,1,2,3,4],0:[0,1,2,3]};
+  const st=28, sz=23; let cells='';
+  for(const r in rows) for(const c of rows[r]){
+    const x=940-(c+1)*st+2.5, y=930-(+r+1)*st+2.5;
+    const pts=[[x,y],[1936-x-sz,y],[x,1936-y-sz],[1936-x-sz,1936-y-sz]];
+    for(const [px,py] of pts) cells+=`<rect x="${px.toFixed(1)}" y="${py.toFixed(1)}" width="${sz}" height="${sz}"/>`;
+  }
+  const f='font-family="Times New Roman,Times,serif" font-size="430" fill="#fff" text-anchor="middle" dominant-baseline="central"';
+  return `<svg viewBox="0 0 1936 1936" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Логотип кафедри фундаментальної математики">
+  <circle cx="968" cy="968" r="903" fill="#ca9d48"/><circle cx="968" cy="968" r="852" fill="#345a53"/>
+  <rect x="946" y="100" width="44" height="1736" fill="#ca9d48"/><rect x="100" y="946" width="1736" height="44" fill="#ca9d48"/>
+  <g fill="#ca9d48">${cells}</g>
+  <text x="612" y="600" ${f}>∀</text>
+  <text transform="translate(1345 600) scale(-1 1)" ${f}>ε</text>
+  <text x="595" y="1385" ${f}>∃</text>
+  <text x="1325" y="1360" ${f}>δ</text></svg>`;
+}
+$('#logoTop').innerHTML=logoSVG(); $('#logoFoot').innerHTML=logoSVG();
+
+/* ---------------- formatting ---------------- */
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+const sup=k=>String(k).split('').map(ch=>SUP[ch]||ch).join('');
+function fmtR(x,d=3){
+  if(x===Infinity) return '∞'; if(x===-Infinity) return '−∞'; if(!isFinite(x)) return '—';
+  const a=Math.abs(x); if(a<1e-10) return '0';
+  if(a>=1e5||a<1e-3) return x.toExponential(2).replace(/-/g,'−');
+  let s=x.toFixed(d); if(s.indexOf('.')>=0) s=s.replace(/0+$/,'').replace(/\.$/,'');
+  return s.replace(/-/g,'−');
+}
+function fmtC(z,d=3){
+  const tol=1e-9*(1+Math.hypot(z.re,z.im));
+  const re=Math.abs(z.re)<tol?0:z.re, im=Math.abs(z.im)<tol?0:z.im;
+  if(im===0) return fmtR(re,d);
+  let ims=fmtR(Math.abs(im),d); ims=(ims==='1'?'':ims)+'i';
+  if(re===0) return (im<0?'−':'')+ims;
+  return fmtR(re,d)+(im<0?' − ':' + ')+ims;
+}
+function parseC(str){
+  let s=String(str==null?'':str).trim().replace(/\s+/g,'').replace(/,/g,'.').replace(/\*/g,'').replace(/j/g,'i').replace(/−/g,'-');
+  if(s==='') return null;
+  const terms=s.match(/[+-]?[^+-]+/g);
+  if(!terms||terms.join('')!==s) return null;
+  let re=0,im=0;
+  for(const t of terms){
+    if(t.endsWith('i')){ let c=t.slice(0,-1); if(c===''||c==='+') c='1'; else if(c==='-') c='-1';
+      const v=Number(c); if(!isFinite(v)) return null; im+=v; }
+    else { const v=Number(t); if(!isFinite(v)) return null; re+=v; }
+  }
+  return {re,im};
+}
+const cabs=z=>Math.hypot(z.re,z.im);
+const cmul=(a,b)=>({re:a.re*b.re-a.im*b.im,im:a.re*b.im+a.im*b.re});
+const cadd=(a,b)=>({re:a.re+b.re,im:a.im+b.im});
+const csub=(a,b)=>({re:a.re-b.re,im:a.im-b.im});
+
+/* ---------------- complex matrices ---------------- */
+function M(n){return {n,re:new Float64Array(n*n),im:new Float64Array(n*n)};}
+function mclone(A){return {n:A.n,re:A.re.slice(),im:A.im.slice()};}
+function mident(n){const I=M(n);for(let i=0;i<n;i++)I.re[i*n+i]=1;return I;}
+function mmul(A,B){const n=A.n,C=M(n);
+  for(let i=0;i<n;i++)for(let k=0;k<n;k++){const ar=A.re[i*n+k],ai=A.im[i*n+k];if(ar===0&&ai===0)continue;
+    for(let j=0;j<n;j++){const br=B.re[k*n+j],bi=B.im[k*n+j];C.re[i*n+j]+=ar*br-ai*bi;C.im[i*n+j]+=ar*bi+ai*br;}}
+  return C;}
+function mshift(A,lr,li){const B=mclone(A),n=A.n;for(let i=0;i<n;i++){B.re[i*n+i]-=lr;B.im[i*n+i]-=li;}return B;}
+function mscaleIn(A,sr,si){for(let k=0;k<A.re.length;k++){const r=A.re[k],i=A.im[k];A.re[k]=r*sr-i*si;A.im[k]=r*si+i*sr;}return A;}
+function maddIn(A,B){for(let k=0;k<A.re.length;k++){A.re[k]+=B.re[k];A.im[k]+=B.im[k];}return A;}
+function maxAbs(A){let s=0;for(let k=0;k<A.re.length;k++)s=Math.max(s,Math.hypot(A.re[k],A.im[k]));return s;}
+function mconjT(A){const n=A.n,B=M(n);for(let i=0;i<n;i++)for(let j=0;j<n;j++){B.re[j*n+i]=A.re[i*n+j];B.im[j*n+i]=-A.im[i*n+j];}return B;}
+function minv(A){
+  const n=A.n, ar=A.re.slice(), ai=A.im.slice(), I=mident(n), br=I.re, bi=I.im;
+  let sc=0; for(let k=0;k<n*n;k++) sc=Math.max(sc,Math.hypot(ar[k],ai[k]));
+  if(sc===0) return null;
+  for(let c=0;c<n;c++){
+    let p=c,pm=-1; for(let r=c;r<n;r++){const m=Math.hypot(ar[r*n+c],ai[r*n+c]); if(m>pm){pm=m;p=r;}}
+    if(pm<1e-14*sc) return null;
+    if(p!==c) for(let j=0;j<n;j++){
+      let t=ar[p*n+j];ar[p*n+j]=ar[c*n+j];ar[c*n+j]=t; t=ai[p*n+j];ai[p*n+j]=ai[c*n+j];ai[c*n+j]=t;
+      t=br[p*n+j];br[p*n+j]=br[c*n+j];br[c*n+j]=t; t=bi[p*n+j];bi[p*n+j]=bi[c*n+j];bi[c*n+j]=t;}
+    const pr=ar[c*n+c], pi=ai[c*n+c], d=pr*pr+pi*pi, ir=pr/d, ii=-pi/d;
+    for(let j=0;j<n;j++){
+      let xr=ar[c*n+j],xi=ai[c*n+j]; ar[c*n+j]=xr*ir-xi*ii; ai[c*n+j]=xr*ii+xi*ir;
+      xr=br[c*n+j]; xi=bi[c*n+j]; br[c*n+j]=xr*ir-xi*ii; bi[c*n+j]=xr*ii+xi*ir;}
+    for(let r=0;r<n;r++){ if(r===c) continue; const fr=ar[r*n+c], fi=ai[r*n+c]; if(fr===0&&fi===0) continue;
+      for(let j=0;j<n;j++){
+        const xr=ar[c*n+j],xi=ai[c*n+j]; ar[r*n+j]-=fr*xr-fi*xi; ai[r*n+j]-=fr*xi+fi*xr;
+        const yr=br[c*n+j],yi=bi[c*n+j]; br[r*n+j]-=fr*yr-fi*yi; bi[r*n+j]-=fr*yi+fi*yr;}}
+  }
+  return I;
+}
+function norm1(A){const n=A.n;let m=0;for(let j=0;j<n;j++){let s=0;for(let i=0;i<n;i++)s+=Math.hypot(A.re[i*n+j],A.im[i*n+j]);m=Math.max(m,s);}return m;}
+function normInf(A){const n=A.n;let m=0;for(let i=0;i<n;i++){let s=0;for(let j=0;j<n;j++)s+=Math.hypot(A.re[i*n+j],A.im[i*n+j]);m=Math.max(m,s);}return m;}
+function norm2(A,iters=150,vr0,vi0){
+  const n=A.n,a=A.re,b=A.im;
+  const vr=vr0||new Float64Array(n), vi=vi0||new Float64Array(n);
+  let s=0; for(let i=0;i<n;i++) s+=vr[i]*vr[i]+vi[i]*vi[i];
+  if(!vr0||!(s>0)||!isFinite(s)){ for(let i=0;i<n;i++){vr[i]=1+0.31*i; vi[i]=0.17*i-0.05*i*i;} s=0; for(let i=0;i<n;i++) s+=vr[i]*vr[i]+vi[i]*vi[i]; }
+  s=Math.sqrt(s); for(let i=0;i<n;i++){vr[i]/=s;vi[i]/=s;}
+  const wr=new Float64Array(n),wi=new Float64Array(n),ur=new Float64Array(n),ui=new Float64Array(n);
+  let est=0;
+  for(let it=0;it<Math.max(1,iters);it++){
+    for(let i=0;i<n;i++){let sr=0,si=0;for(let j=0;j<n;j++){const ar=a[i*n+j],ai=b[i*n+j];sr+=ar*vr[j]-ai*vi[j];si+=ar*vi[j]+ai*vr[j];}wr[i]=sr;wi[i]=si;}
+    let nu=0;
+    for(let j=0;j<n;j++){let sr=0,si=0;for(let i=0;i<n;i++){const ar=a[i*n+j],ai=-b[i*n+j];sr+=ar*wr[i]-ai*wi[i];si+=ar*wi[i]+ai*wr[i];}ur[j]=sr;ui[j]=si;nu+=sr*sr+si*si;}
+    nu=Math.sqrt(nu); if(nu===0) return 0; if(!isFinite(nu)) return Infinity; est=nu;
+    for(let j=0;j<n;j++){vr[j]=ur[j]/nu;vi[j]=ui[j]/nu;}
+  }
+  return Math.sqrt(est);
+}
+function matNorm(A,type){return type==='1'?norm1(A):type==='inf'?normInf(A):norm2(A,200);}
+function resolventNorm(T,lr,li,vr,vi,iters){
+  const n=T.n;
+  if(n===1){const m=Math.hypot(T.re[0]-lr,T.im[0]-li);return m===0?Infinity:1/m;}
+  if(n===2){
+    const ar=T.re[0]-lr,ai=T.im[0]-li,br=T.re[1],bi=T.im[1],cr=T.re[2],ci=T.im[2],dr=T.re[3]-lr,di=T.im[3]-li;
+    const F=ar*ar+ai*ai+br*br+bi*bi+cr*cr+ci*ci+dr*dr+di*di;
+    const detr=ar*dr-ai*di-(br*cr-bi*ci), deti=ar*di+ai*dr-(br*ci+bi*cr), D=Math.hypot(detr,deti);
+    if(D===0) return Infinity;
+    return Math.sqrt((F+Math.sqrt(Math.max(0,F*F-4*D*D)))/2)/D;
+  }
+  const G=minv(mshift(T,lr,li)); if(!G) return Infinity; return norm2(G,iters,vr,vi);
+}
+function charpoly(A){
+  const n=A.n,c=new Array(n+1); c[n]={re:1,im:0}; let Mk=M(n);
+  for(let k=1;k<=n;k++){
+    const AM=mmul(A,Mk), ck=c[n-k+1];
+    for(let i=0;i<n;i++){AM.re[i*n+i]+=ck.re;AM.im[i*n+i]+=ck.im;}
+    Mk=AM; const AMk=mmul(A,Mk); let tr=0,ti=0;
+    for(let i=0;i<n;i++){tr+=AMk.re[i*n+i];ti+=AMk.im[i*n+i];}
+    c[n-k]={re:-tr/k,im:-ti/k};
+  }
+  return c;
+}
+function polyRoots(c){
+  const n=c.length-1; if(n<1) return []; if(n===1) return [{re:-c[0].re,im:-c[0].im}];
+  let R=1; for(let k=0;k<n;k++) R=Math.max(R,2*Math.pow(cabs(c[k]),1/(n-k)));
+  const zr=new Float64Array(n),zi=new Float64Array(n);
+  for(let k=0;k<n;k++){const th=2*Math.PI*k/n+0.4;zr[k]=0.8*R*Math.cos(th);zi[k]=0.8*R*Math.sin(th);}
+  for(let it=0;it<3000;it++){
+    let md=0;
+    for(let k=0;k<n;k++){
+      let pr=1,pi=0; for(let j=n-1;j>=0;j--){const tr=pr*zr[k]-pi*zi[k]+c[j].re, ti=pr*zi[k]+pi*zr[k]+c[j].im; pr=tr; pi=ti;}
+      let dr=1,di=0; for(let j=0;j<n;j++){ if(j===k) continue; const xr=zr[k]-zr[j],xi=zi[k]-zi[j]; const tr=dr*xr-di*xi; di=dr*xi+di*xr; dr=tr; }
+      let dd=dr*dr+di*di; if(dd===0){dr=1e-12;di=0;dd=1e-24;}
+      const qr=(pr*dr+pi*di)/dd, qi=(pi*dr-pr*di)/dd;
+      zr[k]-=qr; zi[k]-=qi; md=Math.max(md,Math.hypot(qr,qi));
+    }
+    if(md<1e-16*R) break;
+  }
+  const out=[]; for(let k=0;k<n;k++) out.push({re:zr[k],im:zi[k]}); return out;
+}
+function rank(A,tol){
+  const n=A.n,a=A.re.slice(),b=A.im.slice(); let r=0;
+  for(let c=0;c<n&&r<n;c++){
+    let p=-1,pm=tol; for(let i=r;i<n;i++){const m=Math.hypot(a[i*n+c],b[i*n+c]); if(m>pm){pm=m;p=i;}}
+    if(p<0) continue;
+    if(p!==r) for(let j=0;j<n;j++){let t=a[p*n+j];a[p*n+j]=a[r*n+j];a[r*n+j]=t;t=b[p*n+j];b[p*n+j]=b[r*n+j];b[r*n+j]=t;}
+    const pr=a[r*n+c],pi=b[r*n+c],d=pr*pr+pi*pi;
+    for(let i=r+1;i<n;i++){const xr=a[i*n+c],xi=b[i*n+c];const fr=(xr*pr+xi*pi)/d,fi=(xi*pr-xr*pi)/d;
+      for(let j=c;j<n;j++){const yr=a[r*n+j],yi=b[r*n+j];a[i*n+j]-=fr*yr-fi*yi;b[i*n+j]-=fr*yi+fi*yr;}}
+    r++;
+  }
+  return r;
+}
+function eigen(A){
+  const n=A.n, roots=polyRoots(charpoly(A));
+  const R=Math.max(1,...roots.map(cabs)), tol=5e-4*R, cl=[];
+  for(const z of roots){const f=cl.find(c=>Math.hypot(c.sr/c.m-z.re,c.si/c.m-z.im)<tol); if(f){f.sr+=z.re;f.si+=z.im;f.m++;} else cl.push({sr:z.re,si:z.im,m:1});}
+  const sc=1+maxAbs(A);
+  return cl.map(c=>{const z={re:c.sr/c.m,im:c.si/c.m};
+      if(Math.abs(z.im)<1e-10*sc) z.im=0; if(Math.abs(z.re)<1e-10*sc) z.re=0;
+      const geo=n-rank(mshift(A,z.re,z.im),1e-6*sc);
+      return {z,alg:c.m,geo:Math.max(1,Math.min(c.m,geo))};})
+    .sort((a,b)=>(b.z.re-a.z.re)||(b.z.im-a.z.im));
+}
+function polyEval(a,z){let p={re:0,im:0};for(let k=a.length-1;k>=0;k--)p=cadd(cmul(p,z),a[k]);return p;}
+
+/* ---------------- drawing helpers ---------------- */
+function fitCanvas(cv,aspect){
+  const w=Math.max(200,cv.clientWidth||cv.parentElement.clientWidth||600), h=Math.round(w*aspect), d=DPR();
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}
+  cv.style.height=h+'px'; const ctx=cv.getContext('2d'); ctx.setTransform(d,0,0,d,0,0); return {ctx,W:w,H:h};
+}
+const STOPS=[[0,[15,36,32]],[0.28,[33,64,58]],[0.5,[62,104,92]],[0.68,[140,140,90]],[0.8,[202,157,72]],[0.92,[236,214,162]],[1,[255,250,240]]];
+const LUT=new Uint8Array(256*3);
+for(let i=0;i<256;i++){const t=i/255;let k=0;while(k<STOPS.length-2&&t>STOPS[k+1][0])k++;
+  const [t0,c0]=STOPS[k],[t1,c1]=STOPS[k+1],u=Math.min(1,Math.max(0,(t-t0)/(t1-t0)));
+  for(let j=0;j<3;j++)LUT[i*3+j]=Math.round(c0[j]+(c1[j]-c0[j])*u);}
+const cbarCSS='linear-gradient(90deg,'+STOPS.map(s=>`rgb(${s[1].join(',')}) ${s[0]*100}%`).join(',')+')';
+$('#cbar1').style.background=cbarCSS;
+const lvl=v=>(v!==v||v===Infinity)?1000:Math.floor(v);
+function renderHeat(off,res,view,valueFn,vmin,vmax){
+  off.width=res; off.height=res; const c=off.getContext('2d'), img=c.createImageData(res,res), vals=new Float32Array(res*res);
+  const x0=view.cx-view.R, y0=view.cy+view.R, step=2*view.R/res;
+  for(let py=0;py<res;py++){const im=y0-(py+0.5)*step; for(let px=0;px<res;px++) vals[py*res+px]=valueFn(x0+(px+0.5)*step,im);}
+  for(let i=0;i<res*res;i++){
+    const v=vals[i]; let t=(v-vmin)/(vmax-vmin); if(!(t<=1)) t=1; if(t<0) t=0;
+    const li=Math.round(t*255)*3; let r=LUT[li],g=LUT[li+1],b=LUT[li+2];
+    const px=i%res, L=lvl(v);
+    if((px<res-1&&lvl(vals[i+1])!==L)||(i+res<res*res&&lvl(vals[i+res])!==L)){r=r*0.3+255*0.7;g=g*0.3+255*0.7;b=b*0.3+255*0.7;}
+    img.data[i*4]=r;img.data[i*4+1]=g;img.data[i*4+2]=b;img.data[i*4+3]=255;
+  }
+  c.putImageData(img,0,0);
+}
+function niceStep(range,target=6){const raw=range/target,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;}
+function planeMap(view,W,H){
+  return {X:re=>(re-(view.cx-view.R))/(2*view.R)*W, Y:im=>(view.cy+view.R-im)/(2*view.R)*H,
+          inv:(px,py)=>({re:view.cx-view.R+px/W*2*view.R, im:view.cy+view.R-py/H*2*view.R}), s:W/(2*view.R)};
+}
+function drawAxes(ctx,W,H,view,dark){
+  const m=planeMap(view,W,H), st=niceStep(2*view.R,7);
+  ctx.save(); ctx.lineWidth=1;
+  ctx.strokeStyle=dark?'rgba(255,255,255,0.08)':'rgba(52,90,83,0.08)';
+  ctx.beginPath();
+  for(let x=Math.ceil((view.cx-view.R)/st)*st;x<=view.cx+view.R;x+=st){ctx.moveTo(m.X(x),0);ctx.lineTo(m.X(x),H);}
+  for(let y=Math.ceil((view.cy-view.R)/st)*st;y<=view.cy+view.R;y+=st){ctx.moveTo(0,m.Y(y));ctx.lineTo(W,m.Y(y));}
+  ctx.stroke();
+  ctx.strokeStyle=dark?'rgba(255,255,255,0.45)':'rgba(29,42,39,0.5)';
+  ctx.beginPath(); ctx.moveTo(m.X(0),0);ctx.lineTo(m.X(0),H); ctx.moveTo(0,m.Y(0));ctx.lineTo(W,m.Y(0)); ctx.stroke();
+  ctx.fillStyle=dark?'rgba(255,255,255,0.7)':'rgba(29,42,39,0.65)'; ctx.font='11px IBM Plex Mono, monospace';
+  const ax=Math.min(Math.max(m.X(0),4),W-40), ay=Math.min(Math.max(m.Y(0),12),H-4);
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let x=Math.ceil((view.cx-view.R)/st)*st;x<=view.cx+view.R;x+=st){ if(Math.abs(x)<st/2) continue; ctx.fillText(fmtR(x,3),m.X(x),Math.min(ay+3,H-14)); }
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  for(let y=Math.ceil((view.cy-view.R)/st)*st;y<=view.cy+view.R;y+=st){ if(Math.abs(y)<st/2) continue; ctx.fillText(fmtR(y,3)+'i',ax+4,m.Y(y)); }
+  ctx.fillText('Re',W-24,Math.min(Math.max(m.Y(0)-10,10),H-10)); ctx.fillText('Im',Math.min(m.X(0)+6,W-24),10);
+  ctx.restore(); return m;
+}
+function circle(ctx,x,y,r,stroke,dash,width=1.5,fill){
+  ctx.save(); ctx.beginPath(); ctx.arc(x,y,Math.max(0,r),0,2*Math.PI);
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.setLineDash(dash||[]);ctx.stroke();} ctx.restore();
+}
+function drawChart(cv,o){
+  const {ctx,W,H}=fitCanvas(cv,o.aspect||0.5); ctx.clearRect(0,0,W,H);
+  const pad={l:52,r:12,t:12,b:34};
+  const tf=y=>o.logY?((y>0&&isFinite(y))?Math.log10(y):NaN):(isFinite(y)?y:NaN);
+  let xs=[],ys=[];
+  for(const s of o.series) for(const p of s.pts){const y=tf(p[1]); if(isFinite(p[0])) xs.push(p[0]); if(isFinite(y)) ys.push(y);}
+  for(const h of (o.hlines||[])){const y=tf(h.y); if(isFinite(y)) ys.push(y);}
+  let xmin=o.xmin!=null?o.xmin:Math.min(...xs), xmax=o.xmax!=null?o.xmax:Math.max(...xs);
+  let ymin=o.ymin!=null?o.ymin:Math.min(...ys), ymax=o.ymax!=null?o.ymax:Math.max(...ys);
+  if(o.yLo!=null) ymin=Math.max(ymin,o.yLo); if(o.yHi!=null) ymax=Math.min(ymax,o.yHi);
+  if(!isFinite(xmin)||!isFinite(xmax)){xmin=0;xmax=1;} if(xmax-xmin<1e-12){xmax=xmin+1;}
+  if(!isFinite(ymin)||!isFinite(ymax)){ymin=0;ymax=1;} if(ymax-ymin<1e-9){ymin-=0.5;ymax+=0.5;}
+  if(o.y0&&!o.logY){ymin=Math.min(ymin,0);}
+  const py=(ymax-ymin)*0.06; ymin-=py; ymax+=py;
+  const X=x=>pad.l+(x-xmin)/(xmax-xmin)*(W-pad.l-pad.r), Y=y=>pad.t+(ymax-y)/(ymax-ymin)*(H-pad.t-pad.b);
+  ctx.font='11px IBM Plex Mono, monospace'; ctx.fillStyle='#5f6d69'; ctx.strokeStyle='#ece5d6'; ctx.lineWidth=1;
+  let ys0;
+  if(o.logY){const sp=Math.max(1,Math.round(niceStep(ymax-ymin,5))); ys0=[];for(let k=Math.ceil(ymin/sp)*sp;k<=ymax;k+=sp)ys0.push(k);}
+  else {const sp=niceStep(ymax-ymin,5); ys0=[];for(let k=Math.ceil(ymin/sp)*sp;k<=ymax+1e-12;k+=sp)ys0.push(k);}
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(const k of ys0){ctx.beginPath();ctx.moveTo(pad.l,Y(k));ctx.lineTo(W-pad.r,Y(k));ctx.stroke(); ctx.fillText(o.logY?('10'+sup(Math.round(k))):fmtR(k,3),pad.l-5,Y(k));}
+  const sx=niceStep(xmax-xmin,6); ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let x=Math.ceil(xmin/sx)*sx;x<=xmax+1e-12;x+=sx){ctx.beginPath();ctx.moveTo(X(x),pad.t);ctx.lineTo(X(x),H-pad.b);ctx.stroke();ctx.fillText(fmtR(x,3),X(x),H-pad.b+4);}
+  ctx.strokeStyle='#b9b0a0'; ctx.strokeRect(pad.l,pad.t,W-pad.l-pad.r,H-pad.t-pad.b);
+  if(o.xlabel){ctx.fillStyle='#5f6d69';ctx.textAlign='right';ctx.fillText(o.xlabel,W-pad.r,H-14);}
+  ctx.save(); ctx.beginPath(); ctx.rect(pad.l,pad.t,W-pad.l-pad.r,H-pad.t-pad.b); ctx.clip();
+  for(const h of (o.hlines||[])){const y=tf(h.y); if(!isFinite(y)) continue; ctx.strokeStyle=h.color; ctx.setLineDash(h.dash||[5,4]); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(pad.l,Y(y)); ctx.lineTo(W-pad.r,Y(y)); ctx.stroke();}
+  for(const v of (o.vlines||[])){ctx.strokeStyle=v.color; ctx.setLineDash(v.dash||[5,4]); ctx.lineWidth=v.width||1.5; ctx.beginPath(); ctx.moveTo(X(v.x),pad.t); ctx.lineTo(X(v.x),H-pad.b); ctx.stroke();}
+  ctx.setLineDash([]);
+  for(const s of o.series){
+    ctx.strokeStyle=s.color; ctx.fillStyle=s.color; ctx.lineWidth=s.width||2; ctx.globalAlpha=s.alpha==null?1:s.alpha; ctx.setLineDash(s.dash||[]);
+    if(s.type==='dots'){for(const p of s.pts){const y=tf(p[1]); if(!isFinite(y)) continue; ctx.beginPath(); ctx.arc(X(p[0]),Y(y),s.r||2.6,0,7); ctx.fill();}}
+    else {ctx.beginPath(); let pen=false; for(const p of s.pts){const y=tf(p[1]); if(!isFinite(y)||!isFinite(p[0])){pen=false;continue;} const yy=Math.max(-1e4,Math.min(1e4,Y(y))); if(pen) ctx.lineTo(X(p[0]),yy); else {ctx.moveTo(X(p[0]),yy); pen=true;}} ctx.stroke();}
+    ctx.globalAlpha=1;
+  }
+  ctx.restore();
+  cv._x=px=>xmin+(px-pad.l)/(W-pad.l-pad.r)*(xmax-xmin);
+}
+
+/* ---------------- shared matrix state ---------------- */
+const state={n:3,ent:[],T:null,eig:[],normT:0,r:0,normal:false};
+const PRESETS=[
+  {name:'Трикутна 3×3',m:[['0.6','1','0'],['0','-0.3+0.7i','1.2'],['0','0','-0.5-0.4i']],note:'Верхня трикутна матриця: власні значення стоять на діагоналі, але через позадіагональні елементи вона ненормальна — лінії рівня резольвенти не є колами.'},
+  {name:'Обертання на π/2',m:[['0','-1'],['1','0']],note:'Над ℝ власних значень немає (T − λI оборотний для кожного дійсного λ), над ℂ σ(T) = {i, −i}. Саме тому в лекціях скаляри комплексні.'},
+  {name:'Нільпотентна 2×2',m:[['0','1'],['0','0']],note:'‖T‖ = 1, але T² = 0, отже r(T) = 0 < ‖T‖ (зауваження 5.4). Ряд Неймана обривається, резольвента — многочлен від 1/λ.'},
+  {name:'Ненормальна',m:[['0.9','5'],['0','0.8']],note:'r(T) = 0.9 < 1, але ‖T‖ ≈ 5.1: система xₖ₊₁ = Txₖ асимптотично стійка, проте ‖Tⁿ‖ спершу зростає (вкладка 2).'},
+  {name:'Ермітова',m:[['2','1-i'],['1+i','3']],note:'Самоспряжена матриця: спектр дійсний, ‖R_λ‖ = 1/dist(λ, σ(T)) точно, лінії рівня — об\'єднання кіл, r(T) = ‖T‖.'},
+  {name:'Жорданова клітка 4×4',m:[['0','1','0','0'],['0','0','1','0'],['0','0','0','1'],['0','0','0','0']],note:'Зрізаний зсув: σ = {0} (алгебраїчна кратність 4, геометрична 1), а псевдоспектри — майже круги. Порівняйте з вкладкою 5A.'},
+  {name:'Циклічний зсув 4×4',m:[['0','1','0','0'],['0','0','1','0'],['0','0','0','1'],['1','0','0','0']],note:'Унітарна матриця: σ = {1, i, −1, −i} — корені з одиниці, r(T) = ‖T‖ = 1. Скінченний «родич» зсуву на ℓ².'},
+  {name:'Два блоки 4×4',m:[['1','1','0','0'],['0','1','0','0'],['0','0','-1','0.5'],['0','0','-0.5','-1']],note:'λ = 1 (жорданова клітка 2×2) і λ = −1 ± 0.5i. Спробуйте контурний інтеграл навколо λ₁: отримаєте проєктор Рісса рангу 2.'},
+  {name:'Стохастична 3×3',m:[['0.5','0.3','0.2'],['0.1','0.8','0.1'],['0.25','0.25','0.5']],note:'Рядки — ймовірності переходів марковського ланцюга. ‖T‖∞ = 1 і T·𝟙 = 𝟙, тому r(T) = 1; решта спектра всередині круга визначає швидкість збіжності до рівноваги.'},
+  {name:'Діагональна 3×3',m:[['1','0','0'],['0','i','0'],['0','0','-1+0.5i']],note:'Діагональний (нормальний) оператор: власні значення — діагональні елементи, ‖R_λ‖ = 1/dist(λ, σ). Скінченна версія теореми 7.5.'}
+];
+function setMatrix(m,note){
+  state.n=m.length; state.ent=m.map(r=>r.slice()); $('#mSize').value=String(state.n);
+  buildGrid(); const pn=$('#presetNote'); if(note){pn.style.display='block';pn.textContent=note;} else pn.style.display='none';
+  applyMatrix(true);
+}
+function buildGrid(){
+  const g=$('#mGrid'); g.innerHTML=''; g.style.gridTemplateColumns=`repeat(${state.n},minmax(0,1fr))`;
+  for(let i=0;i<state.n;i++)for(let j=0;j<state.n;j++){
+    const inp=document.createElement('input'); inp.className='t'; inp.value=state.ent[i][j]; inp.dataset.i=i; inp.dataset.j=j;
+    inp.setAttribute('aria-label',`T[${i+1},${j+1}]`); inp.autocomplete='off'; inp.spellcheck=false;
+    inp.addEventListener('input',e=>{state.ent[i][j]=e.target.value; e.target.classList.toggle('bad',!parseC(e.target.value)); clearTimeout(state._t); state._t=setTimeout(()=>applyMatrix(false),150);});
+    inp.addEventListener('keydown',e=>{
+      const n=state.n; let ti=i,tj=j;
+      if(e.key==='Enter'){ e.preventDefault(); tj++; if(tj>=n){tj=0;ti=(ti+1)%n;} }
+      else if(e.key==='ArrowDown'){ti=Math.min(n-1,i+1);} else if(e.key==='ArrowUp'){ti=Math.max(0,i-1);} else return;
+      const t=g.querySelector(`input[data-i="${ti}"][data-j="${tj}"]`); if(t){t.focus();t.select();}
+    });
+    g.appendChild(inp);
+  }
+}
+$('#mSize').addEventListener('change',e=>{
+  const n=+e.target.value, old=state.ent, ne=[];
+  for(let i=0;i<n;i++){ne.push([]);for(let j=0;j<n;j++)ne[i].push(old[i]&&old[i][j]!=null?old[i][j]:'0');}
+  state.n=n; state.ent=ne; buildGrid(); $('#presetNote').style.display='none'; applyMatrix(true);
+});
+function applyMatrix(resetView){
+  const n=state.n, T=M(n); let bad=0;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){const z=parseC(state.ent[i][j]); if(!z){bad++;continue;} T.re[i*n+j]=z.re; T.im[i*n+j]=z.im;}
+  if(bad){$('#mStatus').innerHTML=`<span class="warn">Не розпізнано ${bad} елемент(и) — використовується попередня матриця.</span>`; return;}
+  $('#mStatus').textContent='';
+  state.T=T; state.eig=eigen(T); state.normT=norm2(T,400); state.r=Math.max(...state.eig.map(e=>cabs(e.z)));
+  const TT=mmul(mconjT(T),T), TT2=mmul(T,mconjT(T)); let d=0; for(let k=0;k<n*n;k++) d=Math.max(d,Math.hypot(TT.re[k]-TT2.re[k],TT.im[k]-TT2.im[k]));
+  state.normal=d<1e-9*(1+state.normT*state.normT);
+  const big=Math.max(state.normT,state.r,0.5);
+  if(resetView||big>0.97*lab.view.R||big<0.2*lab.view.R) lab.autoView();
+  lab.heatDirty=true; lab.contourDirty=true;
+  renderCurrent();
+}
+const presBox=$('#presets');
+PRESETS.forEach(p=>{const b=document.createElement('button');b.className='chip';b.textContent=p.name;b.onclick=()=>setMatrix(p.m,p.note);presBox.appendChild(b);});
+
+/* ---------------- TAB 1: lab ---------------- */
+const HEATRES=240;
+const lab={view:{cx:0,cy:0,R:3},off:document.createElement('canvas'),probe:null,pinned:false,heatDirty:true,contourDirty:true,contour:{c:{re:0,im:0},r:2}};
+lab.autoView=function(){const R=1.18*Math.max(state.normT,state.r,0.5);lab.view={cx:0,cy:0,R};lab.heatDirty=true;};
+lab.renderHeat=function(){
+  const T=state.T,n=T.n,vr=new Float64Array(n),vi=new Float64Array(n);
+  for(let i=0;i<n;i++){vr[i]=1+0.3*i;vi[i]=0.2*i;}
+  renderHeat(lab.off,HEATRES,lab.view,(re,im)=>{const r=resolventNorm(T,re,im,vr,vi,16);return r===Infinity?Infinity:Math.log10(r);},-1,3);
+  lab.heatDirty=false;
+};
+lab.draw=function(){
+  if(!state.T) return;
+  const cv=$('#labCanvas'), {ctx,W,H}=fitCanvas(cv,1);
+  if(lab.heatDirty) lab.renderHeat();
+  ctx.imageSmoothingEnabled=true; ctx.drawImage(lab.off,0,0,W,H);
+  const m=drawAxes(ctx,W,H,lab.view,true);
+  if($('#showNorm').checked) circle(ctx,m.X(0),m.Y(0),state.normT*m.s,GOLD,[7,5],1.8);
+  if($('#showR').checked&&state.r>0) circle(ctx,m.X(0),m.Y(0),state.r*m.s,'#bfe3d6',[],1.3);
+  if($('#cShow').checked){
+    const c=lab.contour; circle(ctx,m.X(c.c.re),m.Y(c.c.im),c.r*m.s,'#ffffff',[3,4],2);
+    // arrow
+    const ax=m.X(c.c.re+c.r), ay=m.Y(c.c.im); ctx.save(); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.moveTo(ax,ay-9); ctx.lineTo(ax-6,ay+2); ctx.lineTo(ax+6,ay+2); ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  const p=lab.probe;
+  if(p){
+    const rn=resolventNorm(state.T,p.re,p.im,null,null,120);
+    if($('#showDisc').checked&&isFinite(rn)) circle(ctx,m.X(p.re),m.Y(p.im),m.s/rn,GOLD,[],2,'rgba(202,157,72,0.13)');
+    let best=null,bd=Infinity; for(const e of state.eig){const d=Math.hypot(e.z.re-p.re,e.z.im-p.im); if(d<bd){bd=d;best=e;}}
+    if(best){ctx.save();ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(m.X(p.re),m.Y(p.im));ctx.lineTo(m.X(best.z.re),m.Y(best.z.im));ctx.stroke();ctx.restore();}
+    ctx.save(); ctx.strokeStyle=lab.pinned?'#fff':GOLD; ctx.lineWidth=2; const x=m.X(p.re),y=m.Y(p.im);
+    ctx.beginPath(); ctx.moveTo(x-7,y);ctx.lineTo(x+7,y);ctx.moveTo(x,y-7);ctx.lineTo(x,y+7);ctx.stroke(); ctx.restore();
+  }
+  state.eig.forEach((e,i)=>{const x=m.X(e.z.re),y=m.Y(e.z.im);
+    circle(ctx,x,y,6,'#fff',[],2,PAL[i%PAL.length]);
+    if(e.alg>1){ctx.save();ctx.fillStyle='#fff';ctx.font='bold 12px IBM Plex Sans';ctx.fillText('×'+e.alg,x+9,y-9);ctx.restore();}});
+};
+lab.info=function(){
+  let h='<table class="tbl"><tr><th>λₖ</th><th>|λₖ|</th><th title="алгебраїчна кратність">алг.</th><th title="геометрична кратність = dim ker(T − λI)">геом.</th></tr>';
+  state.eig.forEach((e,i)=>{h+=`<tr><td><span class="dot" style="background:${PAL[i%PAL.length]}"></span>${fmtC(e.z)}</td><td>${fmtR(cabs(e.z))}</td><td>${e.alg}</td><td>${e.geo}</td></tr>`;});
+  h+='</table><div class="kv" style="margin-top:10px">';
+  h+=`<span>‖T‖₂</span><span>${fmtR(state.normT,4)}</span><span>r(T)</span><span>${fmtR(state.r,4)}</span>`;
+  h+=`<span>r(T)/‖T‖</span><span>${state.normT>0?fmtR(state.r/state.normT,4):'—'}</span></div>`;
+  h+=`<div class="note">У скінченному вимірі σ(T) = σ_p(T): T − λI не оборотний ⇔ не ін'єктивний (твердження 3.7). `;
+  if(state.normal) h+='Матриця <b>нормальна</b> (T*T = TT*), тому r(T) = ‖T‖ і ‖R_λ‖ = 1/dist(λ, σ(T)).';
+  else h+='Матриця <b>ненормальна</b>: можливо r(T) &lt; ‖T‖, і резольвента буває значно більшою за 1/dist(λ, σ(T)).';
+  if(state.eig.some(e=>e.geo<e.alg)) h+=' Є власні значення з геометричною кратністю меншою за алгебраїчну — жорданові клітки.';
+  h+='</div>'; $('#labSpec').innerHTML=h;
+};
+lab.probeInfo=function(){
+  const p=lab.probe, box=$('#probeInfo');
+  if(!p){box.innerHTML='<span class="hint">Наведіть курсор на площину або введіть λ.</span>';return;}
+  const rn=resolventNorm(state.T,p.re,p.im,null,null,300);
+  let bd=Infinity; for(const e of state.eig) bd=Math.min(bd,Math.hypot(e.z.re-p.re,e.z.im-p.im));
+  const al=cabs(p);
+  let h=`<div class="kv"><span>λ</span><span>${fmtC(p,4)}</span>`;
+  if(!isFinite(rn)||bd<1e-12){h+=`</div><div class="note">λ ∈ σ(T): оператор T − λI не оборотний.</div>`;box.innerHTML=h;return;}
+  h+=`<span>‖R_λ‖</span><span>${fmtR(rn,4)}</span><span>dist(λ, σ)</span><span>${fmtR(bd,4)}</span><span>1/dist</span><span>${fmtR(1/bd,4)} ${1/bd<=rn*(1+1e-6)?'<span class="ok">≤ ‖R_λ‖ ✓</span>':'<span class="warn">?</span>'}</span>`;
+  h+=`<span>радіус круга збіжності</span><span>1/‖R_λ‖ = ${fmtR(1/rn,4)}</span></div>`;
+  if(al>state.normT){const b=1/(al-state.normT); h+=`<div class="note">|λ| = ${fmtR(al)} &gt; ‖T‖: ряд Неймана −Σ Tⁿ/λⁿ⁺¹ збігається, і ‖R_λ‖ ≤ 1/(|λ| − ‖T‖) = ${fmtR(b,4)} ${rn<=b*(1+1e-6)?'<span class="ok">✓</span>':''} (теорема 4.3).</div>`;}
+  else if(al>state.r) h+=`<div class="note">r(T) &lt; |λ| ≤ ‖T‖: оцінка теореми 4.3 не діє, але ряд Неймана все одно збігається, бо |λ| &gt; r(T) (формула Гельфанда).</div>`;
+  else h+=`<div class="note">|λ| ≤ r(T): ряд Неймана розбігається, але λ ∈ ρ(T), і резольвенту дає ряд Тейлора навколо інших точок (теорема 4.2(a)).</div>`;
+  box.innerHTML=h;
+};
+lab.contourInfo=function(){
+  const box=$('#contourInfo'), c=lab.contour, T=state.T, n=T.n;
+  const cc=parseC($('#cCen').value), rr=Number(String($('#cRad').value).replace(',','.'));
+  $('#cCen').classList.toggle('bad',!cc); $('#cRad').classList.toggle('bad',!(rr>0));
+  if(!cc||!(rr>0)) return; c.c=cc; c.r=rr;
+  let near=false, inside=0;
+  for(const e of state.eig){const d=Math.hypot(e.z.re-cc.re,e.z.im-cc.im); if(Math.abs(d-rr)<1e-3*(1+rr)) near=true; if(d<rr) inside+=e.alg;}
+  if(near){box.innerHTML='<div class="note warn">Контур проходить через спектр — інтеграл не визначений. Змініть c або ρ.</div>';return;}
+  const K=512, J=M(n);
+  for(let k=0;k<K;k++){const th=2*Math.PI*(k+0.5)/K, w={re:rr*Math.cos(th),im:rr*Math.sin(th)};
+    const R=minv(mshift(T,cc.re+w.re,cc.im+w.im)); if(!R) continue; mscaleIn(R,w.re/K,w.im/K); maddIn(J,R);}
+  const P=mscaleIn(mclone(J),-1,0); let tr=0; for(let i=0;i<n;i++) tr+=P.re[i*n+i];
+  const P2=mmul(P,P); let dd=0; for(let k=0;k<n*n;k++) dd=Math.max(dd,Math.hypot(P2.re[k]-P.re[k],P2.im[k]-P.im[k]));
+  let mat=`<div class="matbox" style="grid-template-columns:repeat(${n},auto)">`;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++) mat+=`<span>${fmtC({re:P.re[i*n+j],im:P.im[i*n+j]},2)}</span>`;
+  mat+='</div>';
+  let h=`<p style="margin:6px 0">P = −(1/2πi)∮ R_λ dλ =</p>${mat}<div class="kv" style="margin-top:8px"><span>tr P</span><span>${fmtR(tr,4)}</span><span>‖P² − P‖</span><span>${fmtR(dd)}</span><span>к-сть λ всередині (з кратн.)</span><span>${inside}</span></div>`;
+  if(inside===n) h+='<div class="note">Контур охоплює весь спектр: інтеграл дорівнює −I (вправа 8.2 лекції 15) — це інтегральна формула Коші для резольвенти, що поводиться як −1/λ на нескінченності.</div>';
+  else if(inside===0) h+='<div class="note">Усередині немає спектра: резольвента там голоморфна, і за теоремою Коші інтеграл дорівнює 0.</div>';
+  else h+=`<div class="note">P — проєктор Рісса (P² = P) на суму кореневих підпросторів для охоплених власних значень; tr P = ${inside} — їхня сумарна кратність. Це початок голоморфного функціонального числення.</div>`;
+  box.innerHTML=h;
+};
+(function(){
+  const cv=$('#labCanvas'); let down=null, moved=false;
+  const pos=e=>{const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top,W:r.width,H:r.height};};
+  cv.addEventListener('pointerdown',e=>{down=pos(e);down.cx=lab.view.cx;down.cy=lab.view.cy;moved=false;cv.setPointerCapture(e.pointerId);});
+  cv.addEventListener('pointermove',e=>{
+    const p=pos(e);
+    if(down){const dx=p.x-down.x,dy=p.y-down.y; if(Math.abs(dx)+Math.abs(dy)>4) moved=true;
+      if(moved){lab.view.cx=down.cx-dx/p.W*2*lab.view.R; lab.view.cy=down.cy+dy/p.H*2*lab.view.R; lab.heatDirty=true; schedule(lab.draw); return;}}
+    if(!lab.pinned){lab.probe=planeMap(lab.view,p.W,p.H).inv(p.x,p.y); schedule(()=>{lab.draw();lab.probeInfo();});}
+  });
+  cv.addEventListener('pointerup',e=>{const p=pos(e);
+    if(down&&!moved){lab.pinned=true; lab.probe=planeMap(lab.view,p.W,p.H).inv(p.x,p.y); $('#lamIn').value=fmtC(lab.probe,4).replace(/ /g,'').replace(/−/g,'-'); lab.draw(); lab.probeInfo();}
+    down=null;});
+  cv.addEventListener('pointerleave',()=>{if(!lab.pinned&&!down){lab.probe=null;lab.draw();lab.probeInfo();}});
+  cv.addEventListener('wheel',e=>{e.preventDefault(); const p=pos(e), m=planeMap(lab.view,p.W,p.H), z=m.inv(p.x,p.y), f=e.deltaY>0?1.15:1/1.15;
+    lab.view.cx=z.re+(lab.view.cx-z.re)*f; lab.view.cy=z.im+(lab.view.cy-z.im)*f; lab.view.R*=f; lab.heatDirty=true; schedule(lab.draw);},{passive:false});
+  $('#zIn').onclick=()=>{lab.view.R/=1.4;lab.heatDirty=true;lab.draw();};
+  $('#zOut').onclick=()=>{lab.view.R*=1.4;lab.heatDirty=true;lab.draw();};
+  $('#zAuto').onclick=()=>{lab.autoView();lab.draw();};
+  ['showNorm','showR','showDisc'].forEach(id=>$('#'+id).addEventListener('change',()=>lab.draw()));
+  $('#lamIn').addEventListener('input',e=>{const z=parseC(e.target.value); e.target.classList.toggle('bad',!z&&e.target.value.trim()!==''); if(z){lab.pinned=true;lab.probe=z;lab.draw();lab.probeInfo();}});
+  $('#unpin').onclick=()=>{lab.pinned=false;lab.probe=null;$('#lamIn').value='';lab.draw();lab.probeInfo();};
+  ['cCen','cRad'].forEach(id=>$('#'+id).addEventListener('input',()=>{lab.contourInfo();lab.draw();}));
+  $('#cShow').addEventListener('change',()=>lab.draw());
+  $('#cAll').onclick=()=>{$('#cCen').value='0';$('#cRad').value=fmtR(state.r*1.15+0.15,3).replace('−','-');$('#cShow').checked=true;lab.contourInfo();lab.draw();};
+  $('#cOne').onclick=()=>{const e=state.eig[0].z; let md=Infinity; for(const f of state.eig.slice(1)) md=Math.min(md,Math.hypot(f.z.re-e.re,f.z.im-e.im));
+    const r=isFinite(md)?md/2:0.5; $('#cCen').value=fmtC(e,4).replace(/ /g,'').replace(/−/g,'-'); $('#cRad').value=fmtR(r,3); $('#cShow').checked=true; lab.contourInfo(); lab.draw();};
+})();
+let _sched=null; function schedule(f){if(_sched) return; _sched=requestAnimationFrame(()=>{_sched=null;f();});}
+
+/* ---------------- TAB 2: Gelfand ---------------- */
+const gel={};
+gel.render=function(){
+  const T=state.T; if(!T) return; const n=T.n, type=$('#gNorm').value;
+  let N=Math.max(2,Math.min(200,parseInt($('#gN').value)||40));
+  const nT=matNorm(T,type), r=state.r;
+  let P=mident(n), logS=0, zero=false; const roots=[], norms=[], infs=[]; let inf=Infinity;
+  for(let k=1;k<=N;k++){
+    let root=0, nk=0;
+    if(!zero){P=mmul(P,T); const s=maxAbs(P); if(s===0){zero=true;} else {mscaleIn(P,1/s,0); logS+=Math.log(s); const L=logS+Math.log(matNorm(P,type)); root=Math.exp(L/k); nk=Math.exp(Math.min(700,L));}}
+    inf=Math.min(inf,root); roots.push([k,root]); infs.push([k,inf]); norms.push([k,zero?0:nk]);
+  }
+  drawChart($('#gc1'),{aspect:0.42,series:[{pts:infs,color:GREEN,width:2},{pts:roots,color:GOLD,type:'dots',r:3}],hlines:[{y:r,color:RED},{y:nT,color:'#999'}],y0:true,xlabel:'n'});
+  const rn=[],tn=[]; for(let k=1;k<=N;k++){rn.push([k,Math.pow(r,k)]);tn.push([k,Math.pow(nT,k)]);}
+  const nsVals=norms.map(p=>p[1]).filter(v=>v>0);
+  const lo=Math.log10(Math.max(1e-300,Math.min(...nsVals.concat([1]))))-1, hi=Math.log10(Math.max(...nsVals.concat([1])))+1;
+  drawChart($('#gc2'),{aspect:0.42,logY:true,series:[{pts:tn,color:'#999',dash:[5,4],width:1.5},{pts:rn,color:RED,dash:[5,4],width:1.5},{pts:norms,color:GOLD,width:2.2}],yLo:lo,yHi:hi,xlabel:'n'});
+  // Neumann
+  const lam=parseC($('#gLam').value); $('#gLam').classList.toggle('bad',!lam);
+  let info=`<div class="kv" style="margin-top:8px"><span>‖T‖ у вибраній нормі</span><span>${fmtR(nT,4)}</span><span>r(T)</span><span>${fmtR(r,4)}</span><span>‖T^${N}‖^{1/${N}}</span><span>${fmtR(roots[N-1][1],4)}</span></div>`;
+  if(lam&&cabs(lam)>0){
+    const R=minv(mshift(T,lam.re,lam.im)); const err=[]; let S=M(n); let term=mident(n); const il=(()=>{const d=lam.re*lam.re+lam.im*lam.im;return {re:lam.re/d,im:-lam.im/d};})();
+    mscaleIn(term,il.re,il.im);
+    for(let k=0;k<=60;k++){ maddIn(S,term); let e;
+      if(R){const D=mclone(R); maddIn(D,S); e=matNorm(D,type);} else e=matNorm(term,type);
+      err.push([k,e]); term=mmul(T,term); mscaleIn(term,il.re,il.im); if(maxAbs(term)>1e150) break; }
+    drawChart($('#gc3'),{aspect:0.62,logY:true,series:[{pts:err,color:GOLD,width:2}],yLo:-17,yHi:15,xlabel:'N'});
+    const a=cabs(lam);
+    info+=`<div class="note">|λ| = ${fmtR(a,4)}: `+(!R?'λ ∈ σ(T) — резольвенти немає (графік показує норму членів ряду).':a>nT?'|λ| &gt; ‖T‖ — збіжність гарантує вже лема 2.1.':a>r?'r(T) &lt; |λ| ≤ ‖T‖ — ряд усе одно збігається (ознака Коші + формула Гельфанда), але повільніше.':'|λ| &lt; r(T) — ряд розбігається, хоча λ ∈ ρ(T).')+'</div>';
+  }
+  // ray
+  const phi=(Number($('#gPhi').value)||0)*Math.PI/180, n2=state.normT, smax=3*Math.max(n2,r,0.5)+1;
+  const s1=[],s2=[],b1=[],b2=[];
+  for(let k=1;k<=320;k++){const s=smax*k/320, l={re:s*Math.cos(phi),im:s*Math.sin(phi)};
+    const Rl=minv(mshift(T,l.re,l.im)); if(!Rl){s1.push([s,NaN]);s2.push([s,NaN]);continue;}
+    s1.push([s,norm2(Rl,80)]); const Q=mscaleIn(mclone(Rl),l.re,l.im); for(let i=0;i<n;i++) Q.re[i*n+i]+=1; s2.push([s,norm2(Q,80)]);
+    if(s>n2*1.02){b1.push([s,1/(s-n2)]);b2.push([s,n2/(s-n2)]);} }
+  drawChart($('#gc4'),{aspect:0.62,logY:true,series:[{pts:b1,color:GOLD,dash:[5,4],width:1.5},{pts:b2,color:GREEN,dash:[5,4],width:1.5},{pts:s1,color:GOLD,width:2},{pts:s2,color:GREEN,width:2}],yLo:-2.5,yHi:4,xlabel:'|λ|',vlines:[{x:n2,color:'#999'}]});
+  $('#gInfo').innerHTML=info;
+};
+['gNorm','gN','gLam','gPhi'].forEach(id=>$('#'+id).addEventListener('input',()=>gel.render()));
+
+/* ---------------- TAB 3: geometry ---------------- */
+const geo={x:[1,0.6],t:1,L:3};
+const GPRE=[
+  {name:'Обертання на π/2',m:[0,-1,1,0]},{name:'Обертання з розтягом',m:[0.8,-0.5,0.5,0.8]},{name:'Розтяг уздовж осей',m:[1.5,0,0,0.5]},
+  {name:'Сідло',m:[1.2,0.3,0.6,-0.6]},{name:'Зсув (жорданова клітка)',m:[1,1,0,1]},{name:'Нільпотентна',m:[0,1,0,0]},
+  {name:'Симетрична (структурний тензор)',m:[2,0.8,0.8,0.6]},{name:'Проєкція',m:[1,0,0,0]},{name:'Ненормальна стійка',m:[0.9,1.6,0,0.8]}
+];
+GPRE.forEach(p=>{const b=document.createElement('button');b.className='chip';b.textContent=p.name;b.onclick=()=>{['ga','gb','gcc','gd'].forEach((id,k)=>$('#'+id).value=p.m[k]);geo.autoL();geo.render();};$('#gPresets').appendChild(b);});
+geo.mat=function(){return ['ga','gb','gcc','gd'].map(id=>{const v=Number($('#'+id).value);return isFinite(v)?v:0;});};
+geo.sv=function(a,b,c,d){const F=a*a+b*b+c*c+d*d,D=Math.abs(a*d-b*c);const s1=Math.sqrt((F+Math.sqrt(Math.max(0,F*F-4*D*D)))/2);return [s1,s1>0?D/s1:0];};
+geo.autoL=function(){const [a,b,c,d]=geo.mat();const [s1]=geo.sv(a,b,c,d);geo.L=Math.max(2.4,Math.min(12,1.35*Math.max(1,s1)*1.25));};
+geo.render=function(){
+  const [a,b,c,d]=geo.mat(), t=geo.t, cv=$('#geomCanvas'), {ctx,W,H}=fitCanvas(cv,0.78), L=geo.L, sc=Math.min(W,H)/(2*L);
+  const X=x=>W/2+x*sc, Y=y=>H/2-y*sc, A=[(1-t)+t*a,t*b,t*c,(1-t)+t*d], ap=(m,v)=>[m[0]*v[0]+m[1]*v[1],m[2]*v[0]+m[3]*v[1]];
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#fffdf9'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(29,42,39,0.10)'; ctx.lineWidth=1; ctx.beginPath();
+  const G=Math.ceil(L*W/H)+2;
+  for(let i=-G;i<=G;i++){ctx.moveTo(X(i),0);ctx.lineTo(X(i),H);ctx.moveTo(0,Y(i));ctx.lineTo(W,Y(i));} ctx.stroke();
+  ctx.strokeStyle='rgba(29,42,39,0.45)'; ctx.beginPath(); ctx.moveTo(0,Y(0));ctx.lineTo(W,Y(0));ctx.moveTo(X(0),0);ctx.lineTo(X(0),H);ctx.stroke();
+  // transformed grid
+  ctx.strokeStyle='rgba(52,90,83,0.30)'; ctx.beginPath();
+  for(let i=-6;i<=6;i++){let p=ap(A,[i,-6]),q=ap(A,[i,6]);ctx.moveTo(X(p[0]),Y(p[1]));ctx.lineTo(X(q[0]),Y(q[1]));p=ap(A,[-6,i]);q=ap(A,[6,i]);ctx.moveTo(X(p[0]),Y(p[1]));ctx.lineTo(X(q[0]),Y(q[1]));}
+  ctx.stroke();
+  // unit circle & image
+  ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(29,42,39,0.4)'; ctx.beginPath(); ctx.arc(X(0),Y(0),sc,0,7); ctx.stroke(); ctx.setLineDash([]);
+  ctx.beginPath(); for(let k=0;k<=200;k++){const th=2*Math.PI*k/200,p=ap(A,[Math.cos(th),Math.sin(th)]); if(k)ctx.lineTo(X(p[0]),Y(p[1])); else ctx.moveTo(X(p[0]),Y(p[1]));}
+  ctx.fillStyle='rgba(202,157,72,0.14)'; ctx.fill(); ctx.strokeStyle=GREEN; ctx.lineWidth=2; ctx.stroke();
+  // eigen
+  const tr=a+d, det=a*d-b*c, disc=tr*tr-4*det, eps=1e-12;
+  const evecs=[];
+  if(disc>=-1e-14){const sq=Math.sqrt(Math.max(0,disc)); const ls=disc>1e-14?[(tr+sq)/2,(tr-sq)/2]:[tr/2];
+    for(const l of ls){ if(Math.abs(b)>eps) evecs.push({l,v:[b,l-a]}); else if(Math.abs(c)>eps) evecs.push({l,v:[l-d,c]});
+      else { if(Math.abs(l-a)<1e-9) evecs.push({l,v:[1,0]}); if(Math.abs(l-d)<1e-9&&!(Math.abs(a-d)<1e-9&&evecs.length&&evecs[evecs.length-1].l===l&&false)) evecs.push({l,v:[0,1]}); } }}
+  const uniq=[]; for(const e of evecs){const nv=Math.hypot(...e.v); if(nv<eps) continue; const u=[e.v[0]/nv,e.v[1]/nv]; if(!uniq.some(f=>Math.abs(f.u[0]*u[1]-f.u[1]*u[0])<1e-9)) uniq.push({l:e.l,u});}
+  if(t>=0.999) for(const e of uniq){ctx.strokeStyle=RED;ctx.setLineDash([7,5]);ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(X(-3*L*e.u[0]),Y(-3*L*e.u[1]));ctx.lineTo(X(3*L*e.u[0]),Y(3*L*e.u[1]));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=RED; ctx.font='13px IBM Plex Sans'; const lx=0.82*L*e.u[0], ly=0.82*L*e.u[1]; ctx.fillText('λ = '+fmtR(e.l),X(lx)+6,Y(ly)-6);}
+  // orbit
+  const K=Math.max(0,Math.min(60,parseInt($('#gk').value)||0)), T=[a,b,c,d];
+  let v=geo.x.slice(); const orb=[v]; for(let k=0;k<K;k++){v=ap(T,v);orb.push(v);}
+  if(t>=0.999&&K>0){ctx.strokeStyle='rgba(59,110,168,0.45)';ctx.setLineDash([3,3]);ctx.lineWidth=1.2;ctx.beginPath();orb.forEach((p,k)=>{const px=X(p[0]),py=Y(p[1]);k?ctx.lineTo(px,py):ctx.moveTo(px,py);});ctx.stroke();ctx.setLineDash([]);
+    orb.forEach((p,k)=>{if(!k)return;ctx.fillStyle=`rgba(59,110,168,${Math.max(0.25,1-k/(K+1))})`;ctx.beginPath();ctx.arc(X(p[0]),Y(p[1]),3.2,0,7);ctx.fill();});}
+  const arrow=(v,col,w)=>{const x1=X(v[0]),y1=Y(v[1]),x0=X(0),y0=Y(0),ang=Math.atan2(y1-y0,x1-x0);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-12*Math.cos(ang-0.4),y1-12*Math.sin(ang-0.4));ctx.lineTo(x1-12*Math.cos(ang+0.4),y1-12*Math.sin(ang+0.4));ctx.closePath();ctx.fill();};
+  const Tx=ap(A,geo.x); arrow(Tx,GOLD,3); arrow(geo.x,BLUE,3);
+  ctx.fillStyle=BLUE; ctx.beginPath(); ctx.arc(X(geo.x[0]),Y(geo.x[1]),7,0,7); ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.font='600 14px IBM Plex Sans'; ctx.fillStyle=BLUE; ctx.fillText('x',X(geo.x[0])+10,Y(geo.x[1])+16); ctx.fillStyle='#8d6a26'; ctx.fillText(t<0.999?'Aₜx':'Tx',X(Tx[0])+8,Y(Tx[1])-8);
+  geo.info(a,b,c,d,uniq,orb);
+};
+geo.info=function(a,b,c,d,uniq,orb){
+  const tr=a+d, det=a*d-b*c, disc=tr*tr-4*det, [s1,s2]=geo.sv(a,b,c,d);
+  let ls, r;
+  if(disc>=0){const sq=Math.sqrt(disc); ls=[{re:(tr+sq)/2,im:0},{re:(tr-sq)/2,im:0}];}
+  else {const sq=Math.sqrt(-disc); ls=[{re:tr/2,im:sq/2},{re:tr/2,im:-sq/2}];}
+  r=Math.max(cabs(ls[0]),cabs(ls[1]));
+  const x=geo.x, Tx=[a*x[0]+b*x[1],c*x[0]+d*x[1]], nx=Math.hypot(...x), nTx=Math.hypot(...Tx);
+  const cr=x[0]*Tx[1]-x[1]*Tx[0], dot=x[0]*Tx[0]+x[1]*Tx[1], ang=Math.atan2(cr,dot)*180/Math.PI;
+  let h=`<div class="kv"><span>λ₁, λ₂</span><span>${fmtC(ls[0])}; ${fmtC(ls[1])}</span><span>tr T, det T</span><span>${fmtR(tr)}, ${fmtR(det)}</span>
+   <span>‖T‖ = s₁, s₂</span><span>${fmtR(s1)}, ${fmtR(s2)}</span><span>r(T)</span><span>${fmtR(r)}</span>
+   <span>кут між x і Tx</span><span>${fmtR(ang,1)}°</span><span>|Tx|/|x|</span><span>${nx>0?fmtR(nTx/nx):'—'}</span></div>`;
+  if(nx>0&&nTx>1e-9&&Math.abs(Math.sin(ang*Math.PI/180))<0.012) h+=`<div class="note ok">x — (майже) власний вектор: Tx ≈ ${fmtR((dot>0?1:-1)*nTx/nx)}·x</div>`;
+  else if(nx>0&&nTx<1e-6*nx) h+=`<div class="note ok">Tx = 0: x ∈ ker T, тобто власний вектор для λ = 0.</div>`;
+  let typ='';
+  if(disc<-1e-12) typ=`Комплексно-спряжені власні значення: T діє як поворот на кут ${fmtR(Math.abs(Math.atan2(ls[0].im,ls[0].re))*180/Math.PI,1)}° з розтягом |λ| = ${fmtR(Math.sqrt(det))} (у відповідному базисі). Дійсних власних напрямів немає — над ℝ спектр порожній.`;
+  else if(Math.abs(disc)<=1e-12){ if(Math.abs(b)<1e-12&&Math.abs(c)<1e-12&&Math.abs(a-d)<1e-12) typ='T = λI — гомотетія: кожен вектор власний.'; else typ='Кратне власне значення з одним власним напрямом — жорданова клітка (зсув уздовж власної прямої). Геометрична кратність 1 &lt; 2 = алгебраїчна.'; }
+  else typ=(ls[0].re*ls[1].re<0?'Сідло: один напрям розтягується, другий перевертається. ':'Два різні дійсні власні напрями: уздовж кожного T — розтяг (стиск). ')+(Math.abs(det)<1e-12?'det T = 0: є ядро, 0 ∈ σ(T).':'');
+  h+=`<div class="note">${typ}</div>`;
+  const last=orb[orb.length-1], ln=Math.hypot(...last);
+  h+=`<div class="note">Динаміка xₖ₊₁ = Txₖ: ${r<1-1e-9?'r(T) &lt; 1 — усі орбіти прямують до 0':r>1+1e-9?'r(T) &gt; 1 — орбіти загалом розбігаються':'r(T) = 1 — гранична (нейтральна) поведінка'}. |T^${orb.length-1}x| = ${fmtR(ln)}.${(s1>1+1e-9&&r<1-1e-9)?' Увага: ‖T‖ &gt; 1 при r(T) &lt; 1 — можливе тимчасове зростання.':''}</div>`;
+  $('#geomInfo').innerHTML=h;
+};
+(function(){
+  const cv=$('#geomCanvas'); let drag=false;
+  const world=e=>{const r=cv.getBoundingClientRect(),W=r.width,H=r.height,sc=Math.min(W,H)/(2*geo.L);return [(e.clientX-r.left-W/2)/sc,-(e.clientY-r.top-H/2)/sc];};
+  cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId);geo.x=world(e);geo.render();});
+  cv.addEventListener('pointermove',e=>{if(drag){geo.x=world(e);schedule(geo.render);}});
+  cv.addEventListener('pointerup',()=>drag=false);
+  ['ga','gb','gcc','gd','gk'].forEach(id=>$('#'+id).addEventListener('input',()=>{if(id!=='gk')geo.autoL();geo.render();}));
+  $('#gAnim').onclick=()=>{const t0=performance.now();const step=now=>{const u=Math.min(1,(now-t0)/1800);geo.t=u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;geo.render();if(u<1)requestAnimationFrame(step);else{geo.t=1;geo.render();}};requestAnimationFrame(step);};
+})();
+
+/* ---------------- TAB 4: spectral mapping ---------------- */
+const mp={coef:['0','0','1','0','0']};
+(function(){
+  const box=$('#pCoefs');
+  for(let k=0;k<5;k++){const l=document.createElement('label');l.textContent='a'+'₀₁₂₃₄'[k]+' =';const i=document.createElement('input');i.className='t w70';i.id='pc'+k;i.value=mp.coef[k];
+    i.addEventListener('input',()=>{i.classList.toggle('bad',!parseC(i.value)&&i.value.trim()!=='');mp.render();});box.appendChild(l);box.appendChild(i);}
+  const PP=[['z²',['0','0','1','0','0']],['z² − 1',['-1','0','1','0','0']],['(z − 1)²',['1','-2','1','0','0']],['z³ − z',['0','-1','0','1','0']],['i·z + 2',['2','i','0','0','0']],['z⁴',['0','0','0','0','1']],['стала p ≡ 2',['2','0','0','0','0']]];
+  PP.forEach(([nm,c])=>{const b=document.createElement('button');b.className='chip';b.textContent=nm;b.onclick=()=>{c.forEach((v,k)=>{$('#pc'+k).value=v;$('#pc'+k).classList.remove('bad');});mp.render();};$('#pPresets').appendChild(b);});
+  $('#pRho').addEventListener('input',e=>{$('#pRhoV').textContent=e.target.value;mp.render();});
+})();
+function fitView(pts){let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const p of pts){if(!isFinite(p.re)||!isFinite(p.im))continue;x0=Math.min(x0,p.re);x1=Math.max(x1,p.re);y0=Math.min(y0,p.im);y1=Math.max(y1,p.im);}
+  if(!isFinite(x0)) return {cx:0,cy:0,R:2}; const R=Math.max((x1-x0)/2,(y1-y0)/2,0.5)*1.18; return {cx:(x0+x1)/2,cy:(y0+y1)/2,R};}
+mp.render=function(){
+  const T=state.T; if(!T) return; const n=T.n;
+  const a=[]; for(let k=0;k<5;k++){const z=parseC($('#pc'+k).value); a.push(z||{re:0,im:0});}
+  let deg=4; while(deg>0&&cabs(a[deg])===0) deg--; const ac=a.slice(0,deg+1);
+  let P=mident(n); mscaleIn(P,ac[deg].re,ac[deg].im);
+  for(let k=deg-1;k>=0;k--){P=mmul(P,T); for(let i=0;i<n;i++){P.re[i*n+i]+=ac[k].re;P.im[i*n+i]+=ac[k].im;}}
+  const eP=eigen(P), rho=Number($('#pRho').value);
+  const circ=[],pc=[]; for(let k=0;k<=360;k++){const th=2*Math.PI*k/360,z={re:rho*Math.cos(th),im:rho*Math.sin(th)};circ.push(z);pc.push(polyEval(ac,z));}
+  const mapped=state.eig.map(e=>polyEval(ac,e.z));
+  const vL=fitView(state.eig.map(e=>e.z).concat(circ)), vR=fitView(mapped.concat(eP.map(e=>e.z)).concat(pc));
+  const draw=(cv,view,fn)=>{const {ctx,W,H}=fitCanvas(cv,1);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);const m=drawAxes(ctx,W,H,view,false);fn(ctx,m);};
+  draw($('#mapL'),vL,(ctx,m)=>{ctx.strokeStyle=GREEN;ctx.lineWidth=1.8;ctx.beginPath();circ.forEach((z,k)=>k?ctx.lineTo(m.X(z.re),m.Y(z.im)):ctx.moveTo(m.X(z.re),m.Y(z.im)));ctx.stroke();
+    state.eig.forEach((e,i)=>{circle(ctx,m.X(e.z.re),m.Y(e.z.im),7,'#1d2a27',[],1.5,PAL[i%PAL.length]);});});
+  draw($('#mapR'),vR,(ctx,m)=>{ctx.strokeStyle=GREEN;ctx.lineWidth=1.8;ctx.beginPath();pc.forEach((z,k)=>k?ctx.lineTo(m.X(z.re),m.Y(z.im)):ctx.moveTo(m.X(z.re),m.Y(z.im)));ctx.stroke();
+    mapped.forEach((z,i)=>circle(ctx,m.X(z.re),m.Y(z.im),11,PAL[i%PAL.length],[],3.5));
+    eP.forEach(e=>{circle(ctx,m.X(e.z.re),m.Y(e.z.im),4.5,'#fff',[],1.2,'#1d2a27'); if(e.alg>1){ctx.fillStyle='#1d2a27';ctx.font='bold 12px IBM Plex Sans';ctx.fillText('×'+e.alg,m.X(e.z.re)+12,m.Y(e.z.im)-10);}});
+    const w0=polyEval(ac,{re:0,im:0}); ctx.fillStyle=RED; ctx.beginPath(); ctx.arc(m.X(w0.re),m.Y(w0.im),3,0,7); ctx.fill(); ctx.font='12px IBM Plex Sans'; ctx.fillText('p(0)',m.X(w0.re)+5,m.Y(w0.im)+14);});
+  let h='<table class="tbl"><tr><th>λₖ ∈ σ(T)</th><th>кр.</th><th>p(λₖ)</th><th>найближча точка σ(p(T))</th><th>похибка</th></tr>';
+  state.eig.forEach((e,i)=>{const w=mapped[i]; let bd=Infinity,bz=null; for(const f of eP){const d=Math.hypot(f.z.re-w.re,f.z.im-w.im); if(d<bd){bd=d;bz=f.z;}}
+    h+=`<tr><td><span class="dot" style="background:${PAL[i%PAL.length]}"></span>${fmtC(e.z)}</td><td>${e.alg}</td><td>${fmtC(w)}</td><td>${bz?fmtC(bz):'—'}</td><td>${fmtR(bd)}</td></tr>`;});
+  h+='</table>';
+  const allHit=eP.every(f=>mapped.some(w=>Math.hypot(f.z.re-w.re,f.z.im-w.im)<1e-3*(1+cabs(w))));
+  h+=`<div class="note">σ(p(T)) = {${eP.map(e=>fmtC(e.z)+(e.alg>1?' (×'+e.alg+')':'')).join('; ')}}. ${allHit?'<span class="ok">Кожна точка σ(p(T)) має прообраз у σ(T) ✓</span>':'<span class="warn">розбіжність — ймовірно, числова (близькі кратні корені)</span>'}`;
+  if(deg===0) h+=' Многочлен сталий: p(T) = cI і σ(p(T)) = {c} = p(σ(T)), бо σ(T) ≠ ∅ — тут непорожність спектра справді використовується.';
+  else h+=` Степінь p = ${deg}: образ кола |z| = ρ ${rho>state.r?'охоплює всі образи власних значень':'проходить між образами'}.`;
+  h+='</div>'; $('#mapInfo').innerHTML=h;
+};
+
+/* ---------------- TAB 5: infinite-dimensional ---------------- */
+const inf={shiftOff:document.createElement('canvas')};
+inf.shift=function(){
+  const N=+$('#sN').value; $('#sNv').textContent=N; const view={cx:0,cy:0,R:2};
+  const val=(re,im)=>{const s=Math.hypot(re,im); if(s===0) return Infinity; const v=Math.abs(s-1)<1e-9?N:(Math.pow(s,-N)-1)/(1-s); return Math.log10(v);};
+  if(inf._sN!==N){renderHeat(inf.shiftOff,220,view,val,-1,3);inf._sN=N;}
+  const cv=$('#shiftCanvas'),{ctx,W,H}=fitCanvas(cv,1); ctx.imageSmoothingEnabled=true; ctx.drawImage(inf.shiftOff,0,0,W,H);
+  const m=drawAxes(ctx,W,H,view,true); circle(ctx,m.X(0),m.Y(0),m.s,GOLD,[6,4],1.8);
+  const pert=$('#sPert').checked, ee=Math.max(-16,Math.min(0,Number($('#sEps').value)||-8)), eps=Math.pow(10,ee);
+  let info;
+  if(pert){const rad=Math.pow(eps,1/N); for(let k=0;k<N;k++){const th=2*Math.PI*k/N; circle(ctx,m.X(rad*Math.cos(th)),m.Y(rad*Math.sin(th)),4.5,'#fff',[],1.3,GOLD);}
+    info=`Власні значення J_N + ε·e_N e₁ᵀ: λᴺ = ε, тобто |λ| = ε^{1/N} = <b>${fmtR(rad,4)}</b>. Збурення нормою 10${sup(ee)} зсунуло спектр на відстань ${fmtR(rad,4)} — у ${fmtR(rad/eps)} разів більше за саме збурення.`;}
+  else {circle(ctx,m.X(0),m.Y(0),6,'#fff',[],1.5,GOLD); info=`σ(J_N) = {0}, кратність ${N}; ‖J_N‖ = 1, r(J_N) = 0.`;}
+  const r05=(Math.pow(0.5,-N)-1)/(1-0.5);
+  info+=`<div class="kv" style="margin-top:6px"><span>‖(J_N − 0.5)⁻¹‖₁</span><span>${fmtR(r05)}</span><span>‖(J_N − 0.9)⁻¹‖₁</span><span>${fmtR((Math.pow(0.9,-N)-1)/0.1)}</span><span>‖(J_N − 1.5)⁻¹‖₁</span><span>${fmtR((Math.pow(1.5,-N)-1)/(1-1.5))} (→ 2 при N → ∞)</span></div>`;
+  $('#shiftInfo').innerHTML=info;
+  const ser=[]; const cols=['#c9d9d3','#9fbcb2','#6f978a',GOLD];
+  [Math.max(2,Math.round(N/8)),Math.max(2,Math.round(N/4)),Math.max(2,Math.round(N/2)),N].forEach((NN,k)=>{const pts=[];for(let j=1;j<=300;j++){const s=0.3+1.9*j/300;pts.push([s,Math.abs(s-1)<1e-9?NN:(Math.pow(s,-NN)-1)/(1-s)]);}ser.push({pts,color:cols[k],width:k===3?2.5:1.4});});
+  const lim=[];for(let j=1;j<=300;j++){const s=0.3+1.9*j/300;if(s>1.003)lim.push([s,1/(s-1)]);}
+  ser.push({pts:lim,color:RED,dash:[5,4],width:1.6});
+  drawChart($('#shiftChart'),{aspect:0.48,logY:true,series:ser,yLo:-0.6,yHi:9,xlabel:'s = |λ|',vlines:[{x:1,color:'#999'}]});
+};
+['sN','sPert','sEps'].forEach(id=>$('#'+id).addEventListener('input',inf.shift));
+function compileFn(expr){
+  try{const s=String(expr).replace(/\^/g,'**'); const f=new Function('t','with(Math){return ('+s+');}'); const v=f(0.37); if(!isFinite(v)) return null; return f;}catch(e){return null;}
+}
+inf.volt=function(){
+  const N=600,h=1/N,ts=[];for(let i=0;i<=N;i++)ts.push(i*h);
+  const cum=y=>{const o=new Float64Array(y.length);for(let i=1;i<y.length;i++)o[i]=o[i-1]+h*(y[i-1]+y[i])/2;return o;};
+  const fx=compileFn($('#vX').value); $('#vX').classList.toggle('bad',!fx);
+  const K=Math.max(1,Math.min(10,parseInt($('#vK').value)||5));
+  if(fx){let y=Float64Array.from(ts,t=>fx(t)); const series=[]; const cols=['#c0392b','#ca9d48','#8a9a5b','#345a53','#3b6ea8','#6b4f9c','#888','#555','#333','#111','#000'];
+    series.push({pts:ts.map((t,i)=>[t,y[i]]),color:cols[0],width:2.2});
+    const sup0=Math.max(...y.map(Math.abs)); let info=`<div class="kv"><span>‖x‖∞</span><span>${fmtR(sup0)}</span>`;
+    for(let k=1;k<=K;k++){y=cum(y);series.push({pts:ts.map((t,i)=>[t,y[i]]),color:cols[k%cols.length],width:1.8}); const s=Math.max(...y.map(Math.abs)); info+=`<span>‖V${sup(k)}x‖∞</span><span>${fmtR(s)} ≤ ${fmtR(sup0/fact(k))} = ‖x‖/${k}!</span>`;}
+    drawChart($('#voltC1'),{aspect:0.42,series,xlabel:'t'}); $('#voltInfo').innerHTML=info+'</div><div class="hint">Червоне — x, далі Vx, V²x, … (кольори темнішають).</div>';}
+  const nn=[],fac=[],rt=[]; let one=new Float64Array(N+1).fill(1);
+  for(let k=1;k<=15;k++){one=cum(one);nn.push([k,one[N]]);fac.push([k,1/fact(k)]);rt.push([k,Math.pow(one[N],1/k)]);}
+  drawChart($('#voltC2'),{aspect:0.75,logY:true,series:[{pts:fac,color:GREEN,dash:[5,4],width:1.6},{pts:nn,color:GOLD,type:'dots',r:3.2}],xlabel:'n'});
+  // Volterra equation
+  const mu=Math.max(-60,Math.min(60,Number($('#vMu').value)||0)), ff=compileFn($('#vF').value); $('#vF').classList.toggle('bad',!ff);
+  const KT=+$('#vTerms').value; $('#vTermsV').textContent=KT;
+  if(ff){const f=Float64Array.from(ts,t=>ff(t)); const x=new Float64Array(N+1); x[0]=f[0]; let I=0;
+    for(let i=1;i<=N;i++){x[i]=(f[i]+mu*(I+h*x[i-1]/2))/(1-mu*h/2); I+=h*(x[i-1]+x[i])/2;}
+    const ser=[]; let term=f.slice(), S=f.slice(); const show=[0]; 
+    const parts=[S.slice()];
+    for(let k=1;k<=KT;k++){term=cum(term).map(v=>v*mu); for(let i=0;i<=N;i++)S[i]+=term[i]; parts.push(S.slice());}
+    parts.forEach((p,k)=>ser.push({pts:ts.map((t,i)=>[t,p[i]]),color:GOLD,width:k===KT?2.4:1,alpha:k===KT?1:0.25+0.5*k/(KT+1)}));
+    ser.push({pts:ts.map((t,i)=>[t,x[i]]),color:RED,width:2,dash:[6,4]});
+    const xm=Math.max(...x.map(Math.abs)); drawChart($('#voltC3'),{aspect:0.75,series:ser,xlabel:'t',yLo:-3*xm-1,yHi:3*xm+1});
+    let err=0; for(let i=0;i<=N;i++) err=Math.max(err,Math.abs(S[i]-x[i]));
+    $('#voltSolveInfo').innerHTML=`<div class="kv"><span>‖μV‖</span><span>${fmtR(Math.abs(mu))} ${Math.abs(mu)>=1?'≥ 1 (лема 2.1 не застосовна!)':'&lt; 1'}</span><span>похибка S_${KT}</span><span>${fmtR(err)}</span><span>оцінка |μ|ᵏ⁺¹/(k+1)!·‖x‖</span><span>${fmtR(Math.pow(Math.abs(mu),KT+1)/fact(KT+1)*xm)}</span></div>`;}
+};
+function fact(k){let f=1;for(let i=2;i<=k;i++)f*=i;return f;}
+['vX','vK','vMu','vF','vTerms'].forEach(id=>$('#'+id).addEventListener('input',inf.volt));
+function vdc(n,b){let q=0,bk=1/b;while(n>0){q+=(n%b)*bk;n=Math.floor(n/b);bk/=b;}return q;}
+function kPoint(shape,n){
+  switch(shape){
+    case 'circle':{const t=2*Math.PI*vdc(n,2);return {re:Math.cos(t),im:Math.sin(t)};}
+    case 'disk':{const r=Math.sqrt(vdc(n,2)),t=2*Math.PI*vdc(n,3);return {re:r*Math.cos(t),im:r*Math.sin(t)};}
+    case 'segment':return {re:-1.2+2.4*vdc(n,2),im:0};
+    case 'square':{const u=4*vdc(n,2),s=u%1,e=Math.floor(u);const P=[[-1,-1],[1,-1],[1,1],[-1,1],[-1,-1]];return {re:P[e][0]+(P[e+1][0]-P[e][0])*s,im:P[e][1]+(P[e+1][1]-P[e][1])*s};}
+    case 'cantor':{let m=n,x=0,p=1/3;while(m>0){x+=2*(m%2)*p;m=Math.floor(m/2);p/=3;}return {re:-1.2+2.4*x,im:0};}
+    default:{const k=n%3,m=Math.floor(n/3)+1; if(k===0){const t=2*Math.PI*vdc(m,2);return {re:Math.cos(t),im:Math.sin(t)};} if(k===1) return {re:-0.5+vdc(m,2),im:0}; return {re:0,im:1.35};}
+  }
+}
+inf.kMouse=null;
+inf.compact=function(){
+  const shape=$('#kShape').value, N=+$('#kN').value; $('#kNv').textContent=N;
+  const cv=$('#kCanvas'),{ctx,W,H}=fitCanvas(cv,0.85), view={cx:0,cy:0.1,R:1.6};
+  const mm=planeMap(view,W,W); const m={X:mm.X,Y:im=>mm.Y(im)-(W-H)/2,s:mm.s};
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H); ctx.save(); ctx.translate(0,-(W-H)/2); drawAxes(ctx,W,W,view,false); ctx.restore();
+  const pts=[]; for(let k=1;k<=N;k++) pts.push(kPoint(shape,k));
+  pts.forEach((p,k)=>{ctx.fillStyle=k>=N-6?RED:GOLD;ctx.globalAlpha=k>=N-6?1:0.85;ctx.beginPath();ctx.arc(m.X(p.re),m.Y(p.im),k>=N-6?3.6:2.1,0,7);ctx.fill();});
+  ctx.globalAlpha=1;
+  let h=`<div class="hint">Перші члени: ${pts.slice(0,6).map((p,k)=>'d'+'₁₂₃₄₅₆'[k]+' = '+fmtC(p,3)).join(', ')} …</div>`;
+  if(inf.kMouse){const z=inf.kMouse; let d=Infinity; for(const p of pts) d=Math.min(d,Math.hypot(p.re-z.re,p.im-z.im));
+    circle(ctx,m.X(z.re),m.Y(z.im),d*m.s,GREEN,[5,4],1.6,'rgba(52,90,83,0.08)'); ctx.fillStyle=GREEN; ctx.beginPath(); ctx.arc(m.X(z.re),m.Y(z.im),3,0,7); ctx.fill();
+    h+=`<div class="kv" style="margin-top:6px"><span>λ</span><span>${fmtC(z)}</span><span>dist(λ, {d₁…d_N})</span><span>${fmtR(d,4)}</span><span>‖(D_N − λ)⁻¹‖</span><span>${d>0?fmtR(1/d,4):'∞'}</span></div>`;}
+  $('#kInfo').innerHTML=h;
+  inf._kmap=m;
+};
+(function(){
+  const cv=$('#kCanvas');
+  cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect(),W=r.width,H=r.height,view={cx:0,cy:0.1,R:1.6};const px=e.clientX-r.left,py=e.clientY-r.top+(W-H)/2;
+    inf.kMouse={re:view.cx-view.R+px/W*2*view.R,im:view.cy+view.R-py/W*2*view.R}; schedule(inf.compact);});
+  cv.addEventListener('pointerleave',()=>{inf.kMouse=null;inf.compact();});
+  ['kShape','kN'].forEach(id=>$('#'+id).addEventListener('input',inf.compact));
+  $('#kAnim').onclick=()=>{const t0=performance.now();const step=now=>{const u=Math.min(1,(now-t0)/5000);$('#kN').value=Math.max(1,Math.round(4000*u*u));inf.compact();if(u<1)requestAnimationFrame(step);};requestAnimationFrame(step);};
+})();
+inf.renderAll=function(){inf._sN=null;inf.shift();inf.volt();inf.compact();};
+
+/* ---------------- TAB 6: resonance ---------------- */
+const res={w:0.618,t0:performance.now(),anim:null};
+res.params=function(){const g=id=>{const v=Number($('#'+id).value);return isFinite(v)?v:0;};return {m1:Math.max(0.05,g('rm1')),m2:Math.max(0.05,g('rm2')),k1:Math.max(0,g('rk1')),k2:Math.max(0.001,g('rk2')),c:Math.max(0,g('rc'))};};
+res.X=function(p,w){
+  const z11r=p.k1+p.k2-w*w*p.m1, z22r=p.k2-w*w*p.m2, zi=w*p.c;
+  const detr=z11r*z22r-zi*zi-p.k2*p.k2, deti=zi*(z11r+z22r), dd=detr*detr+deti*deti;
+  if(dd===0) return [{re:Infinity,im:0},{re:Infinity,im:0}];
+  const div=(ar,ai)=>({re:(ar*detr+ai*deti)/dd,im:(ai*detr-ar*deti)/dd});
+  return [div(z22r,zi),div(p.k2,0)];
+};
+res.eig=function(p){const a11=(p.k1+p.k2)/p.m1,a12=-p.k2/p.m1,a21=-p.k2/p.m2,a22=p.k2/p.m2,tr=a11+a22,det=a11*a22-a12*a21,sq=Math.sqrt(Math.max(0,tr*tr/4-det));return [Math.sqrt(Math.max(0,tr/2-sq)),Math.sqrt(Math.max(0,tr/2+sq))];};
+res.render=function(){
+  const p=res.params(), [w1,w2]=res.eig(p), wmax=Math.max(1.8*w2,0.5);
+  const a1=[],a2=[]; for(let k=0;k<=700;k++){const w=wmax*k/700,X=res.X(p,w);a1.push([w,cabs(X[0])]);a2.push([w,cabs(X[1])]);}
+  res.w=Math.max(0,Number($('#rw').value)||0);
+  drawChart($('#resChart'),{aspect:0.55,logY:true,series:[{pts:a1,color:BLUE,width:2},{pts:a2,color:GOLD,width:2}],vlines:[{x:w1,color:RED},{x:w2,color:RED},{x:res.w,color:'#1d2a27',dash:[],width:1}],yLo:-2.5,yHi:3.5,xlabel:'ω'});
+  const X=res.X(p,res.w);
+  $('#resInfo').innerHTML=`<div class="kv"><span>власні частоти ω₁, ω₂</span><span>${fmtR(w1,4)}, ${fmtR(w2,4)}</span><span>|X₁|, |X₂| при ω = ${fmtR(res.w,3)}</span><span>${fmtR(cabs(X[0]))}, ${fmtR(cabs(X[1]))}</span><span>dist(ω², σ(M⁻¹K))</span><span>${fmtR(Math.min(Math.abs(res.w*res.w-w1*w1),Math.abs(res.w*res.w-w2*w2)),4)}</span></div><div class="note">ω₁ — синфазна мода (маси рухаються разом), ω₂ — протифазна. При c → 0 піки стають нескінченними: частота збудження потрапляє в спектр.</div>`;
+  res.X0=X; res.amp=Math.max(...a1.concat(a2).map(q=>q[1]).filter(isFinite));
+  if(!res.anim) res.anim=requestAnimationFrame(res.loop);
+};
+res.loop=function(now){
+  res.anim=null; if(current!=='apps') return;
+  const cv=$('#resAnim'),{ctx,W,H}=fitCanvas(cv,0.34); ctx.clearRect(0,0,W,H); ctx.fillStyle='#fffdf9'; ctx.fillRect(0,0,W,H);
+  const X=res.X0||[{re:0,im:0},{re:0,im:0}], t=(now-res.t0)/1000*Math.max(0.3,res.w)*1.0, wt=res.w*(now-res.t0)/1000*2.2;
+  const sc=Math.min(W*0.14, W*0.14*Math.max(cabs(X[0]),cabs(X[1]))/Math.max(1e-9,Math.min(res.amp,50)));
+  const norm=Math.max(cabs(X[0]),cabs(X[1]),1e-12);
+  const d1=sc*(X[0].re*Math.cos(wt)-X[0].im*Math.sin(wt))/norm, d2=sc*(X[1].re*Math.cos(wt)-X[1].im*Math.sin(wt))/norm;
+  const y=H/2+6, bw=46, x1=W*0.36+d1, x2=W*0.7+d2;
+  ctx.fillStyle='#d8cfbd'; ctx.fillRect(10,y-34,10,68); ctx.fillRect(10,y+30,W-20,4);
+  const spring=(xa,xb)=>{ctx.strokeStyle=GREEN;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xa,y);const nz=10;for(let k=1;k<nz;k++){ctx.lineTo(xa+(xb-xa)*k/nz,y+(k%2?-9:9));}ctx.lineTo(xb,y);ctx.stroke();};
+  spring(20,x1-bw/2); spring(x1+bw/2,x2-bw/2);
+  const box=(x,col,lab)=>{ctx.fillStyle=col;ctx.fillRect(x-bw/2,y-22,bw,44);ctx.fillStyle='#fff';ctx.font='600 14px IBM Plex Sans';ctx.textAlign='center';ctx.fillText(lab,x,y+5);ctx.textAlign='left';};
+  box(x1,BLUE,'m₁'); box(x2,GOLD,'m₂');
+  ctx.fillStyle=RED; ctx.font='12px IBM Plex Sans'; ctx.fillText('F·cos ωt →',x1-bw/2,y-30);
+  ctx.fillStyle='#5f6d69'; ctx.fillText('амплітуди нормовано (відносний масштаб)',W-250,14);
+  res.anim=requestAnimationFrame(res.loop);
+};
+['rm1','rm2','rk1','rk2','rc','rw'].forEach(id=>$('#'+id).addEventListener('input',res.render));
+$('#resChart').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect(),cv=e.currentTarget;if(!cv._x)return;const w=Math.max(0,cv._x(e.clientX-r.left));$('#rw').value=w.toFixed(3);res.render();});
+$$('[data-open]').forEach(b=>b.addEventListener('click',()=>{const p=PRESETS.find(q=>q.name===b.dataset.open); if(p) setMatrix(p.m,p.note); showTab(b.dataset.tab);}));
+
+/* ---------------- tabs ---------------- */
+let current='lab';
+function renderCurrent(){
+  if(current==='lab'){lab.draw();lab.info();lab.probeInfo();lab.contourInfo();}
+  else if(current==='gelfand') gel.render();
+  else if(current==='map') mp.render();
+}
+function renderTab(id){
+  if(id==='lab'||id==='gelfand'||id==='map') renderCurrent();
+  else if(id==='geom') geo.render(); else if(id==='inf') inf.renderAll(); else if(id==='apps') res.render();
+}
+function showTab(id){
+  $$('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  $$('.tab').forEach(s=>s.classList.toggle('active',s.id==='tab-'+id));
+  const slot=$('#slot-'+id); if(slot) slot.appendChild($('#matrixEditor'));
+  current=id; requestAnimationFrame(()=>renderTab(id));
+  try{history.replaceState(null,'','#'+id);}catch(e){}
+}
+$$('.tabbtn').forEach(b=>b.addEventListener('click',()=>{showTab(b.dataset.tab);}));
+let _rz; window.addEventListener('resize',()=>{clearTimeout(_rz);_rz=setTimeout(()=>renderTab(current),120);});
+
+/* ---------------- init ---------------- */
+geo.autoL();
+setMatrix(PRESETS[0].m,PRESETS[0].note);
+const h0=(location.hash||'').slice(1); showTab(['lab','gelfand','geom','map','inf','apps','theory'].includes(h0)?h0:'lab');
+</script>
+</body>
+</html>
