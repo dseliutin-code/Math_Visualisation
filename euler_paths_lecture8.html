@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Ойлерові шляхи і цикли</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: зелена "дошка" кафедри як головне полотно; праворуч — панель керування; вкладки в шапці */
+:root{
+  --bg:#edf1ee; --surface:#ffffff; --surface-2:#f5f8f6; --ink:#1d2d29; --muted:#566a64; --line:#d2dbd7;
+  --green:#345a53; --green-ink:#2b4b45; --gold:#ca9d48; --gold-ink:#86621f; --on-green:#ffffff;
+  --good:#2c7a57; --warn:#a85f1a; --bad:#ad3a3a; --good-bg:#e3f1ea; --warn-bg:#f8eedf; --bad-bg:#f7e5e4;
+  --board:#2f5049; --board-deep:#27453f; --chalk:#f3f0e6; --chalk-dim:rgba(243,240,230,.42); --chalk-gold:#e8c270;
+  --c1:#e8c270; --c2:#f2a6a0; --c3:#9fd2ef; --c4:#a9e3b7; --c5:#cdb6f3; --c6:#f6c597;
+  --f-display:"Alegreya", "PT Serif", Georgia, serif;
+  --f-body:"Alegreya Sans", "PT Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", "DejaVu Sans Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141f1c; --surface:#1c2b27; --surface-2:#22332f; --ink:#e5ebe8; --muted:#9bb0a9; --line:#30453f;
+  --green:#345a53; --green-ink:#9fcfc2; --gold:#ca9d48; --gold-ink:#e2bc6a;
+  --good:#6cc69a; --warn:#e5a65f; --bad:#ec8580; --good-bg:#1f3a2f; --warn-bg:#3a2e1d; --bad-bg:#3d2423;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#141f1c; --surface:#1c2b27; --surface-2:#22332f; --ink:#e5ebe8; --muted:#9bb0a9; --line:#30453f;
+  --green:#345a53; --green-ink:#9fcfc2; --gold:#ca9d48; --gold-ink:#e2bc6a;
+  --good:#6cc69a; --warn:#e5a65f; --bad:#ec8580; --good-bg:#1f3a2f; --warn-bg:#3a2e1d; --bad-bg:#3d2423;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--green)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- header ---------- */
+header.top{background:var(--green);color:var(--on-green)}
+header.top .wrap{display:flex;align-items:center;gap:18px;padding-block:18px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:16px;flex:1 1 420px;min-width:0}
+.brand img{width:68px;height:68px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+.brand .dept{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:#e9d2a2}
+.brand h1{font-size:clamp(26px,3.4vw,38px);font-weight:700;color:#fff}
+.brand .sub{font-size:15px;color:rgba(255,255,255,.78)}
+.brand .sub i{font-family:var(--f-display)}
+nav.tabs{display:flex;gap:4px;width:100%;overflow-x:auto;margin-top:14px;scrollbar-width:none}
+nav.tabs button{background:none;border:0;color:rgba(255,255,255,.75);padding:10px 16px 12px;font-size:16px;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs button:hover{color:#fff}
+nav.tabs button[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold)}
+
+main{padding-block:22px 48px}
+.panel{display:none}
+.panel.active{display:block}
+
+/* ---------- generic blocks ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h3{font-size:19px;margin-bottom:8px}
+.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:7px;cursor:pointer;font-size:15px;line-height:1.2}
+.btn:hover{border-color:var(--gold)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{background:#2a4b45}
+.btn[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+label.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
+select{max-width:100%}
+label.fld{min-width:0;max-width:100%}
+input[type=text],input[type=number],select,textarea{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:15px}
+textarea{font-family:var(--f-mono);font-size:14px;line-height:1.5;resize:vertical;width:100%}
+.mono{font-family:var(--f-mono)}
+.kbd{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface-2)}
+.muted{color:var(--muted)}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;font-size:13px;font-weight:700}
+.chip.even{background:var(--good-bg);color:var(--good)}
+.chip.odd{background:var(--warn-bg);color:var(--warn)}
+
+/* ---------- board ---------- */
+.board{position:relative;border-radius:12px;background:
+  radial-gradient(1200px 500px at 20% -10%,rgba(255,255,255,.06),transparent 60%),
+  radial-gradient(800px 400px at 110% 120%,rgba(0,0,0,.18),transparent 60%),var(--board);
+  border:6px solid var(--gold);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),inset 0 0 40px rgba(0,0,0,.25),0 6px 20px rgba(0,0,0,.12);overflow:hidden}
+.board svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+.board .cap{position:absolute;left:12px;top:10px;right:12px;color:var(--chalk-dim);font-size:13px;pointer-events:none;font-style:italic;font-family:var(--f-display)}
+.board .tray{position:absolute;left:0;right:0;bottom:0;height:8px;background:linear-gradient(#b48939,#8d6a2a)}
+svg text{font-family:var(--f-body)}
+.v-circle{fill:var(--board-deep);stroke:var(--chalk);stroke-width:2}
+.v-circle.odd{stroke:var(--chalk-gold);stroke-width:3}
+.v-circle.cur{fill:#4a6f67}
+.v-circle.sel{stroke:#9fd2ef;stroke-width:3.5}
+.v-label{fill:var(--chalk);font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.badge-c{fill:var(--chalk);stroke:var(--board);stroke-width:2}
+.badge-c.odd{fill:var(--chalk-gold)}
+.badge-t{fill:#1f3b35;font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-family:var(--f-mono)}
+.e-base{fill:none;stroke:var(--chalk-dim);stroke-width:2.6;stroke-linecap:round}
+.e-base.dup{stroke:var(--chalk-gold);stroke-dasharray:7 6;opacity:.85}
+.e-hit{fill:none;stroke:transparent;stroke-width:14;cursor:pointer}
+.e-num-c{stroke:var(--board);stroke-width:1.5}
+.e-num-t{fill:#1f3b35;font-size:10.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-mono)}
+.token{fill:#fff;stroke:var(--gold);stroke-width:3;filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
+
+/* ---------- lab layout ---------- */
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;align-items:start}
+.lab-left,.lab-right{display:flex;flex-direction:column;gap:14px;min-width:0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.toolbar .grp{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.player{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.player .prog{font-family:var(--f-mono);font-size:13px;color:var(--muted);min-width:70px}
+.player input[type=range]{accent-color:var(--gold);width:110px}
+.verdict{border-radius:10px;padding:14px 16px;border:1px solid var(--line);background:var(--surface)}
+.verdict .head{font-family:var(--f-display);font-size:21px;font-weight:700;margin-bottom:4px}
+.verdict.ok{background:var(--good-bg);border-color:transparent}
+.verdict.ok .head{color:var(--good)}
+.verdict.semi{background:var(--warn-bg);border-color:transparent}
+.verdict.semi .head{color:var(--warn)}
+.verdict.no{background:var(--bad-bg);border-color:transparent}
+.verdict.no .head{color:var(--bad)}
+.verdict p{margin:6px 0 0}
+.meaning{border-left:3px solid var(--gold);padding:2px 0 2px 14px}
+.meaning p{margin:6px 0 0}
+table.deg{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+table.deg th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line)}
+table.deg td{padding:4px 6px;border-bottom:1px solid var(--line)}
+table.deg tr.cur td{background:var(--warn-bg)}
+.tablebox{max-height:260px;overflow:auto}
+.log{max-height:230px;overflow:auto;font-size:14.5px;display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.log li{padding-left:12px;border-left:2px solid var(--line)}
+.log li.hl{border-left-color:var(--gold)}
+.log .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+.hint{font-size:14px;color:var(--muted)}
+.presets{display:flex;gap:6px;flex-wrap:wrap}
+.presets .btn{font-size:14px;padding:5px 10px}
+
+/* ---------- de Bruijn ---------- */
+.db{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.db-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.strip{display:flex;flex-wrap:wrap;gap:3px;font-family:var(--f-mono);font-size:16px}
+.strip span{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:30px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);font-weight:600}
+.strip span.wrapc{opacity:.45;border-style:dashed}
+.strip span.win{background:var(--gold);border-color:var(--gold);color:#1d2d29}
+.words{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--f-mono);font-size:13px}
+.words span{padding:2px 7px;border-radius:5px;border:1px solid var(--line);color:var(--muted)}
+.words span.seen{background:var(--good-bg);color:var(--good);border-color:transparent}
+.words span.now{background:var(--gold);color:#1d2d29;border-color:var(--gold)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat div{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.stat b{display:block;font-family:var(--f-display);font-size:26px;font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted);font-size:13px}
+
+/* ---------- prose ---------- */
+.prose{max-width:74ch}
+.prose p{margin:0 0 12px}
+.prose h2{font-size:28px;margin:30px 0 10px}
+.prose h2:first-child{margin-top:0}
+.prose h3{font-size:20px;margin:22px 0 8px}
+.apps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:28px;align-items:start}
+.aside-col{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px;min-width:0}
+.thm{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:12px 16px;margin:0 0 14px}
+.thm .t{font-family:var(--f-display);font-weight:700;color:var(--green-ink)}
+.thm .t i{font-weight:500}
+.thm p{margin:4px 0 0}
+.toc{display:flex;flex-direction:column;gap:4px;font-size:15px}
+.toc a{color:var(--green-ink);text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.genome-out{font-family:var(--f-mono);font-size:15px;word-break:break-all;background:var(--surface-2);border-radius:7px;padding:8px 10px}
+.genome-out .bad{color:var(--bad)}
+.reads{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--f-mono);font-size:13px}
+.reads span{padding:1px 6px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line)}
+.reads span.used{opacity:.35}
+footer{border-top:1px solid var(--line);padding-block:16px;color:var(--muted);font-size:14px}
+
+@media (max-width:980px){ .lab,.db,.apps{grid-template-columns:minmax(0,1fr)} .aside-col{position:static} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAABrPUlEQVR42u2dd5hdV3X2f2vvc26bKo16b5ab5N4bGLAB04uBEGISahIgJCSQ8AWYGQh8CRAChOAQSAjNFFM+io0r2Lj3Jhf13kaaPrees/f6/jjnjkayZMnSjIql/TxHmnbbPmvt9a72Lji2jq1j69g6to6tY+vYOraOrWPraFpybAtGd6nqjj3t6BA6gA6ATuhE9+U5OtqRDtrTbwA6NLlVycNFRI/t9DEFOMSCjnR0tEsi3510ANKJf+5HBc+x5SNl2qfX7ld7O6Yj+aquaCoiuz7JsXVMAUb3ZO/o6JDkMO9U2Y2wic3i40pLd/dyra55ICNh9qRy/8rmwW0r48AW2jKZxnMUV1BRFSficWBERUUR9YJ1QOy82xJVh54KMoW4MGGB5lonPW3Gt26fNOnFAVATsaXdKUiiGO2J0UmU4phCHFOAAxX4BLrsLPAW1TjoWvfQ7MGVt7W6aHCxG9w8uxZVppswe0Zc7lbvolBMON+7uEFdzWOMzYWCEa0DmR03QXf8TBWcVyLnvWBVgowKfrWq9tlcUxCE+R511QfDxlnbheDexgnzitPPvmqNDXK93lV3qxB0dOgx6HRMAfYNv6dC37kTnLGoxq3rH7h6xlDX6sVxaWCRi/rOUI2Pc646SWNtLGSMeI1QDyRwhCj2qO74XlG/R5AiO6EhERERFEUJrMEaQVVTIGWJgapjyAT52Igstbnm1TY77oFc84zVTW2zHp+06A2bREx5pN5q3UIcsw7HFGBvQq+q4YZHrpkzuOWxM6NSz/laKZ3t4qF56uPJoQUxios9XgWniXCbRHZ38hN2eTVRBAGMgGIQEp1QTcRddnIKJHV6U8knfbQKihdjRARPYC11dYlcEIvJbLbZwtNhdtztwYQF98+YdeFThVlnbBERP1IZ6NCjXhHk6BZ8kR2Oq6DqG9bc9YVTil3rXxzX+i6MK4OL1ddmZQNQ9TifwBPAJwK70/5J/R8RsAIiknyNQ43FqGBI4E7FKV4VxWLUkwnAik1/m5z8XgWvyWt7lBhDIsJafzlNX1TTDyUiiDVCYJPHRgSVwORXS378ky3NU2/NTT/njiknveIZEXHDWtbeLhylVkGOLqFH6GiXkU6squbW3Pml04a2rXpptdzzMqKh0wPxLSIO75TYCwpe0scnZ7SKoBgBa8CKYNKddCrUHFRipeSEUmwYqhmKkVJ1hmqsOFUumOZoCj2xFwID93eFbCtBQyhkLDQEnsYQCiHkrZIPIWc9oUmsgEcThVRwfjhAmnoRIOJV1YgIElpFjMFpADa3Ocy13ZtpnXljy3GX3Txl9gWrIN7hMxxlVkGOJsGXzk5fx/Q9q26avempmy6Nhja/1VV6zwuNa0WVODmZPQheEcWgIKHGiDUERgkFYgyV2NJXhe0l2Fo0bC4HbCs7+iuGwZpQckLVCbHzxKnKOYXQej53YY0ZjZ5qDPlQ+fyDWe7cGNCYUVBS5RKyVslZpTH0NOeE8Xlhci5iWoMysUEYn4PGwBGYBEZF6vFOcGk4VRKd1dTZFmuRwFqcWpzJLs/kJ9zcNOXU6+Zc+Od3iUh/XS7a29ulc3i/jinAkSn4qXmvC76qmvX3fO3kvg2PvbFW7f9jiYrHBQHEsR8W+uSUT/bFCIQGQqNEainWlPXFkLX9sG4QNg5ZukvKUGSIfILBDYKYFPqk9qKOjQzgFTLW84/nRkxvcKkCwL8/muWezZZCCKp18wQOg1cBTSyHpn60FaEh8LRmYWIjzG70zG7xzG2MGZdPFEfx1JwQ+51udqIQqhIESGhCKt5UwkzTw40TF3yn9fT3XD9hwrwNEB0ViiBHw4mvqmbN7V990dDWJe+ulrdcZoknCUoUgxe8qAh48QiBKKE1BAKlGDYWLct6Lct6lbUDAd1lpRoLKgZrlCCFQbLTdioj3VZGBD6dJlDmk+dFTG1w1FIF+MojOyvArjdIZOefafpcCQQSvFcC42nKGqY3OBa0eo4f75nT4hmXSeBa5JSaF+rei4p6UbBggsAQeYvJNCzNNU/79bj5r/3O1JMvX4K+sBXhBacA7e3tpnOE4K+47mMvKg5ueW9U7X9NxrhG52JiJyoJWDYpYiZrldDAUGRYMyA8sT3kmW7DuiFhKEqEJjAQGIbx/g4h3/fNfr4KsC/PKbLjfTgPsYdYhYxRJhZiFrYaFk+MOX6cZ0JeERy12ODUJ3ElqXveakIrWBMQS2ZTtmnWj8Yf/8pvTz3p1UteqBZBXjinvkpHh0hnJ15VzYrbP/+ioY0PvzeuDr0ma7Uxih0OSe54Go60Rslag3rPmiHLI10hD2+B9UOGqjNYEeohT9ER0OQANnv3CqCpAgTPWwF2e0MlUQr1hlg9kQMRpS2nLGrznDlZOX58TEsGYnVUXRJaNZJGuIBAMCYQYgqbsi3TfzTh5Fd9e+pxr16CRon9UH1BJNbkyBd8hA7ScKaw/ravH9fT9dA/RKVtb8mYSmMtFryqFzWiqHiBrIGsEbprwpPbhLs3hzzTZyhWFGMtGcNwxlZ1dDe77gN88rydfYD9tQDP/XpJuLRuISIPNScEAtMaYs6c7DhnKsxucVh1VFwSOk3kWlRQtQYTmoBIcpvCcbN+NOeUq/6nafZZT4JD29vNkR4+PaIVYCTcKa7//YxV917znkpx658EpjbPR+BVfHLaI6BkrGANbCwG3LMJ7t0UsLFoUYSsTZzW0Rb6Q6kAe4ZLStUbIgdNGceiNuXF0x0nt8VkA6USJ5YqSdZ5BaOBYKwN0LB5Q37Koi8svPTj3xeRnl3vwzEFOEhwp57EUtXc07/5+9eXelf9bUbKZ8Wxxzn1IKKi4hFy1mNEWN0fcNv6kAe2erorIRkDoa0HRXbO4h5cBRg9CLSv70TSAK9TqMaCMYbjWmNeMjPmzCmOpsBTjhNfwoqi6lXEqDVqlICgYdLd42Zf/OmZ5/zZzSLij9QcQnAknvppSl+fvu1fFz/y43f8oy/1vSWQWCqeJMYhGFUlY5RAhOV9ITevD3h4KwzWDDlraQxB9eAI/j6ezQc1QKwKLn3NfCiAY1lfwNJew/w1jpfMVs6fGtEYxpRjg2JEQGJn1BDhS5su2Pr0L35W6nrm2krX+s/lJs1c3tkpR5w1OGIsgIJ0tFN3cpuf+PkH/rQ6sOGvM9bNrdUiEOMVjE+jH1lrWDVguXG1cN8WSyk25AIwBjSN2R+KzT6UEOi5fIUkGpREuypOUO+Z3+q5Yk7MmVMdoSjVSDDiUTEo6q14YwOLZiYuGzfnwn+afe77figisbZj9t4bcUwBnhfkqZvW5Xd87eShdXd9lrj/deoh9t6TVBSLGE+jFbZWQm5cY/n9+oChmpALkhvndYQ6HYKPPhwFCjyfPC9maiE+4DDomLxPSd5r1SWlHae2OV4zP+LkCR7noOrBikc1qQmxxhsveZebuPB/57/kHz+Xz7euagfToYc/JDKHv/C3GxFRVbVP/+bv/7R/1S2/MXHP66JI1Xm8gFFVyQaCFctN67J85t4Mv1xpqHmhkDEYRgr/Cyr6O1aRNbxCziqFAJ7oNnz+wQzfekLYXhWaMjuKjxSM88ZrXLZR91PvXvqrD/1q02M/eXOnhF5EVNvbD2sZO6wlQdNw9sDGZyasuevz/6c2tPmvjKh1Hk+axBKBQgDL+kJ+sixkybYk0hPaev28HgYYfxcLMIZ5gFH1E9Lz0UoSCyrHMCGvvGG+48UzozShRpoZFBV1GgZivDQPNsw45UsLX/KJfxWRQW1vN3KY+gXB4XkCJUkt6bR+3d1fO2fZ7z/1eeMGX4T3uMQBNl4hF0DVG362POQ3qywlZyiE4DUpNT5yTns5DN+nDFdZ161nQ0YZrBn+Z4nhwS7lrScELGiKKUUOJyIiRmoOLww2FTfc1/70L/7q1KGeng4ZP/6xw7X/QA4/4U97OzA8dd1HrypvX/4Fq+VJUewULIoKAo2BsLTf8oOnLE/1hOSCpAbfqx7WYn44OsHPW1UFyhE0ZxxvWOh52UwH6qj55ObVrUE2ExjbMHPp5NP/+J0T5l1yX+KrHV4ZZHM4Cr+q5pf84i8+VOxa8u+ipUk15z2SZHLDNMLzmzUZ/uW+kGd6Q5pCn+L8Y11+BwGW4jVR2rIL+M4Sy388aumvGQqBQTUNRIsx1Zq62sDa49fd9ZUfbXzgu+82YUFFRNsPI78gOHyEv92IdHpVbXrsJ1d9xZV6/0y8I07aOoxTyAdCb2T44eMhd24yZAJDPiDtrDJHuFgdWcrrFYxR8la4d1OGNQOGd57sOHNizFCcetIGGzvxlqE5W5/51X+uuP4fxs992Se/KEm3jhwOluCwkBptJxH+7dr8xI//+N+l3PNn6iL1ioqIOIVCxrCq1/LP9+W5fXNIPjRpfb3ijyDh12HEL0c+iY+C90I+A9vLln97yPLzlRnyRpIm/iQfb5wX72sDwfZ1d392+c2fvlpVJyeRvUNvCcxhIfyd+A1LfnPaI7dcdY0r9b6z4lR9KiWKUgiFOzZY/u9DIRsHhaYgiUq8cADP4egEPx9rkDBXBGL44TOWry/JEHlL1iZRL8B4jIKGlW0Pvn/FTZ/5b1Wdklj8Q6sE5tAKf7uRTvyqP3zj3G2Pfu9HYdT9qli9NzhRtRKQ4P2fLsvyjcdCqj4gEypO5Zi4H3bWwOHEUggNf1hv+fxDAV3VgIYg6WSTtDirUq760tb7XrX0xk8dFkpgDq3wd/pVf/jGub1rbvhuEA0cX6k6l9Q0CKFJNvS/ngi5drklDCXJPg6zIhzpiF+PaB/g2Z9JQJNARCFjWdYd8oX7Apb1BzQGNgmlCiJiTLUW+WrXQ1csvfETh1wJDsmLtrezk/BbX1lY8uoRsU6FjFXKLuSrj2T43fqQhlATJsBjQZ4jwr6p9+Qz0FU2/OsDWR7ZJhRCM2y5EyXwvtr1yBXLD7ESmIMv/O2msxO/6sH/PrdvzU3fzbjKwqpTb9LkVjZQBmoBX34o4MGtAU0Zwasck/0jyBYo4L2SsYaSM3zlkQz3bLY0hTKcVBPBVGuxL3c9esXyGztHKMHBxbcHNQxaD3UODg5OXv6b918damlh2aszgvUesoHQWxG+/HCGlX2GpgyktW4v+FPzhfcZBY8jMAanlm88nnAsXTIjolhLmvRFrKnVIi9d91+x4pbPfEtV3y0iWw9miNQcPOFHRDr99u3avOo37/+8VHpPr8TeC1jnDZkAeiuGLz2UZ1W/kM8Izh8+dTyjKepKvSv5hWzXFDShdLGieDL81+MBf1gf0DgMhxTEmmotdpUt979q1a3/9zMpm5ceLEsQHBzh14R6QLXlsWv/5CtU+6+qqXgLxilkrWOgGvLlhzOsGVDyocV794I9+UeyOLxQnODnhESqZHDUTMi3nhCsRFw4I04tgULdMV5/xzvX3tW8XFW/REeHpl0KesQrACIIgS751V/9nVT73hm52BsQhyE0SikK+feHLSv7DPkMuBcw7KkTXokKR0tZdkLEogQS44zwzScCMlY5e4pjMLKE4sWrYLzL9K69858yTVNXT+vs/Km2Y/Z1qs5hC4G0vd0YsfrUdX99Vbln9V9FtVi9iigiIUqslv98POCp3pDCMOY/OqIlL2wf4NlK4DUprY7F8o3HLUt6MjSGHpcwUYjHeCq9ma1LfvbZ4ual50pnpx/rfgIz1sIvnZ1+7W3/dk5529IvWXHNPiniF1Ew1vCdJwMe7Ep6dPfm8CaViLLzdTDc011ecyeatgOzBYeVC/7szzn6r+UVQvFUXMDVjwasGwzJW02L6DAR4ol7Fq6672v/q6oLxloJxgwC1Z3eviW/XLDykR981WjcFnnvjZiksC0D1y7Ncvt6S1MmyRbubccVJY5jRlIQ2pQbf8zkSQTnYpzzwxz8IkIQBKP4mofGBzDG1Mtvcd7hYzc8hAMRrDEExoAkkw+86o7fH6ASZKzQVzFc/WjA35/tKYSe2IMRNXGkXvqWn7D0t5/8tKr+OSKDYxUZCsZK+FPnN/f4T97zmVCK51adehExTpVCRvjDupD/tzzF/PvmSBMGlonNLdTdY2MM/YNDVFyEHYOYiogQe8e4xmYaCwWcOowYKlFET18vRswBvOYhgjwCVgzee4rlEnEUE4QBjYUCjU1NZMIQVSWuxZQqFYaqZarVGiKQzWTJZjKJEB8gVHXqyYSGNQPKN5cEfPj0KMn0J32AJorV07Pkj1be/bXHFkj4L9qRauERYQE62kU6P+2X/PLDV8WlTVeq917FiCrkA2V5t+E7T2cwQTofRfdRGJ3nnz70ERbOnkvsHdkwwy9/fwud3/w6LQ1NOO9G9WN4r2SDkKs/8WnmTptGLY7IZbJ89lvf4Ec3XE9TUwF1/gBO/YPnA2hqLTVW+suDNOTynH3iIs5bfBqLj1vIjKlTGNfYTBgGqEIUxwwWi3T1bGfl+vU8uvRpHnr6KdZu3ZQwU+cLyeAOPZD99eQzhge2wrXLhHecWGMo9thkDo5E1SEdWnvPP3SvvGGVzHvZte3tnxp1ypVRV4D2FPcvv/0rF/Sv+f2nDGpdMgVRMkbprQX815KQqlNCu+/dT4GxdA8NcOPdd3LmSYuGf/7aS1/K9677JRu3bRs+vUZjWWPpGxrgystezvGzZxN7T2MYsrW3h1vuu4tcPot6HTXxHGsIFNiAUrFILp/nbS9/NW++7DIWzV/4nI9paWxkxuTJnHHiyVx5+SvoLxW5+5GHufbGG7hvyePksiHW2gNqRPJeaQgt162GWc2WS6Y7hiLBCgKBl2pP66ZHf/ZpVX+viKwfbd6hUXUuVFU6OztV+/rGDW2499MZqU6PPV4kpZs0Ad97yrBuMCBn5Xm1/sXqaM4V+M2df2DTti5UlVoc05DL8/pLL6NSrWBllD6OgFNHQzbH21/x6gQju2SKys9vvpGt3d1kA3t49y4Of5bk5B8YGuL0kxfxnc/8Cx1//gEWzV+IVyX2LrnciCt2RC65Yudw3hF7T0uhgVdeeDH/8+nP8tkPfZhMmKUaxxhzoPvusBZ+8LRl9UCQOsWKgql6vBtYc8LSmz/zUVUNoZPRTJKNqgJ0dIgYE+qS29o/QDTw0mqkXtIan0Io3Lgm4N5NAQ2hEuvzVS4Iw4Ce3h5+/rubhyNACrzu0pcxafwEojjxBQ789DcUS2UuOuMsTpq3IEnkhCFDxSK/uv135HO5NEt9QKGlg+ToJsL/ivMu4puf/AwnzZ2XOLya0EUKQiCWwI64AktokyuwCSAxqR/mvMer5/WXvoyr//FTFHI54tinvcD7e3AKoQj9UcB3n8xQ9RYRW98qieJYy1ufeP+Wp3/7ps5OPB0dh58C1IvcVt7+xfNqA6v+2ntVVSOqSi6AZ/osv1gOmSDYr4NTSBJkuXyeX912K/1DQwTW4uKYyePH88oLLmaoXEbsgX8kVQiN5e2vfE1yPnmHINxw9x2s2riBXDY7alBrTA9/I5TLVU6Yt4D/++GPkA1DnHNYY5HUp7Qmme6xfN06br73bq69+QauvflGrr/rDzyy9Bn6h4YwxmBMMt7PGoOIIYojTjv+RNrf/5dUa7UD1mef+odP9cAvloc0WEXVIKioGJW4P7P9yV9+VFWnSefoFc2Nig9QD1GpauGhH73946HGbTVVL4IBoewtP3g6oBgH5NNurv18HbKZDGs3b+b6O2/nj17xquFT+MpXvJKf/+5mYucO8MQ0FMtlzjl5EeecvDjtdgqI4pif3nwTmTCD6mgn68bGCZZknCof+ZN3kstmcd4NY/b6oL2f3XIDP//dLSxft5ZiuTScixEjZIOQiePbOOPEk3jTSy7j3MWnommILwxCYud4xfkX8+tzfs/v77uPxoaGA4oOeQ+5IOC3ax0ntoWcNqlGORKMYGJnvCmtP2PV7z77MVX9244OGRXHaVQsQEeHCGL0yd989I+lNPCqWpyku7wqudBw/cqAZ7otDYEHPTABVe/JZkKuvfkGqlFEYC3ee46bMYtLzjyLYrk8PDf3+Vxm+P8kRPj2V74aYwTnHCLCXY8+zOMrl1LIZfH+8D/9jQilaoXF847jwkWnoapYY4d9bqeOT/3HV/mHr3yJJ5evAKCpoZHWphZam5ppaWgkk8nQ3dfDr26/lXd96uN85ZrvDecN6pE5VHnrZa9KcwWj8b493ht+stQwEFkCk1LWC1KOYx3Y/MR7e9f+4RWdnYxKguyAn6AOfTY/9bM5ld61/2Cts6IJ/Us2EJb1GH67xpAPk4HSB9rA7lXJ53I8s3INv3/wfkSEKA1/vu0Vr0KASq1GLYqoRbUdV233VzW9yrUqtTiiZ6CPk+bO45Izz8Grpg6e8sMbfpMUOI5GLuZZQwhGPwokYqhFNRYvWIixZlhpnXMYI9x63738+MbrmdjWRi6fHQ5LOu/Sy6OqBEFAa2MTjY2N/PuPvscNd96RjFz1HiuCinD6CScyc9IkqlHtgHyBOhTKBZ6Vg5ZfrwjIWiFFO2IwStxb2PToLz+uqhPo7DzgqtHgwE//Tu3oUPvEte/+K+MH50UOr4IJ1BOr5SfLAsqxTelLRsfMqyoaCj/+7XVcfu75iS+gylknLeLy8y/kieXLyOdyw0RDw6dVCjdERv5PWqyXhD77S0X+9LVvJBuGRFFMGAY8unwp9z7xGA2FAt4dIVWb6WebOKFtp7xDfR9ue+h+TBig3j8nbFGF2HmsMWQzWX508/VcdsEFKb06eOdpyOWYN3MW67duIRtmDtg/cirkA+GWdYYzJ4WcOC6i5MAIJorFy9DqCzc+fM1VM5AvtXd0HFCC7IAUQNuTBpf1d3zt4mq5573GJ7xfXoXG0HDd2pAl2w0NIWmpwyiFW73SmM/y4NNLeODJJZy7+BSc94jA5//mo0RxnLDZM6JWaFgRdpaQ4RqY9DtFCYNkW0zqUF97w/VUakkSzI2J8zt2ibD6J9Ndxk32Dw5i2fdMtlclHwSs37IZ5z2ZIEwjZsnv582Yya333XPAFmAHFFKqseFnywwfO7s+iFwRMWhUZPvKW9+j6n8qIusOJDew/wqgCNKpqho89qOr3peVamPVG4+oyRrPlnKG61ZZQiujztimgFUhcjE/vvF6zl18CpLy22cCM3xzdve44cNCdwcbUmFJB0gYY1izeQO33n8PjYV8WqY9WvIuB8EICFu2d++sCOpBLONbWknasPftfagqag1DpRL/8JUv0ZDLJfdVkzzD02tWkc/lRq2aV9MOwSU9wh82hlw2O6IYpVbAiWbKW09cfefX/lpV/xZEOzsPsgXQjnYROv3T1/2fi6NK76uNpuPVFDKB4berDduKkpQ4j8Gh6bynMd/A7Q8/wNI1a1g4Z04a2zboCOjzbFQgO0GE3Zl8ERmOk//s1pvpHhpkfFMzzrlRkX00EaixTP4mwYIMDy99kti51CLu+OAvOfMcfnTDdSn0M3stdFPAIHjvueGuP+BTi5sMjEyic5lMZnTDw5r0Ff9mNZw+SWjO+DR/FBLHVR3c9PBVlErXSAMP7i8DdbCfJ7CkDkjw6A/e+t6sjZsqNfGgJmeF5f2W2zYG5EIzBiHDHctaQ/9AkR/feD2fev9fpuOOkjDdyg3rKJarmFSYNRU6j09HIynq6xlHJarVmDllKrOnTsf7xPnt7u/jN3+4jcZsfvROtnp2Z4zKjUdCllw2y9OrV/DbO//Aa150KbXUp/GqvPjsc7jqVa/lf6/7JdlMhmyYIbBBOipVRtTbJspkFHwyTZWmhgZ2defqeznalj4whk1F4eZ1Gd5+fIUoAiOxeKyn1tW26uH/eq+qPgyidB4sC9CeTGF/+rqPXRxHQ692KirppHXEcP1qS6lGynQ8dtNYvHc0FPLccO+dvPdNVzJ1wkTiOCYIAm6+5x4+/71v0drUhHN+56nWIybFJBM2oBpFfO+zX2D2tOlELiZrQn79h9vY2LWVcc0to3L618/fujLKGEaB6rAln8nxz//7LeZPn8FJC44jcg5rDEaET73/A5y1+BR+c9vvWbpmFd2DA8RxtNM9E4R8NjMs8KJJJefBWqpKzsJt6w0XTw+YXHBEXhFFomqsg5sffxOl7d+SBh7YHyuwPwogMuL0zxmaKrF6j5hcICztsTy0xZALBVU3pk3tqhCElu6eHn52y4188G3vGL5xb77sMn58428YKBXJhGFqtnZwc9ZvqDWGoWKRl5x3HmefvAjvPRkbUKpW+MWtN5HLZNEjtEutHsYsFku873PtfO4Df8MlZ569kz90xQUXc8UFF9M7MMCm7V0MlIo451IfSOgbGORz37qacq2GTWaDHdzPAAQG+itw4zrLu07y1JwiSbOwN5VtbWsfuebdqvog+9Ev8LyD8treLoCuuKXjojgqvrrmEgrbunTduNZS8gZzkCazeKfk83l+efvv6C8OYa0ldo4JreN55UUvYqhUTuLVuqOhw9fhj1d8ahzectkVw76FiHDr/feybO1q8tncQaBdH7sokPeeTDZkqFzmr7/4OT7zzatZumY11ShKQpk+YXMb19zMyfMWcP6iU7no1DO4+LQzuPCU03nRGWcP50IOVQuDV8iElns3BqwdMGTTOkRFpBZVdGDT428kis4QeN6Eu88/K9XZqYil1L3uTRkrTd6jHpW8haV9hke7DAU7No7vnk65bJhh3ebN/OaO25KZSqnAvvmyV9DS0ES8h9i9EaFcKXPKccdz0alnpGUPFq+en9x0I9aGKEd+j3ISwsxSrtW45vpf8x8/voat27qSpqI0C+590hVWrwiN4pjYOQaKQ4fFZ7Ci9NfgtvWWwNTnWiIeq1S7Jq657z9fC4aOjs6xswDt7e1GQNfe8fX5UXn7K72PUyihGBV+tz5LxdnUkTqYNzgpj/jZLTdSqyXlEc575k2fwYvOOoehcikp+trlzDViqMURb77s5QSBJY5jRIQHnniCR55ZQkM+N+pxf00joCI6Ak6MXT+AScfS9JeKvPbil/Drr1zNV//+H5k9bXrK4ObTjLdgzY6K0DAICKwlm80cFu36XiETwL2bDRuKIRlbh7NCHFcY7Hr6DapuejpGV8ZEAUjd7KHtj7wqMG5+FKOaRn5WDlke2ZpU9B1sMitNyyOeWrWK3z+UlEfUozZvf8UVZILgWTBGRCjFVeZNn8nLz78orZVJtuOaG69PaoBSp2+0wU49AjrmDf0iRKp47+j8iw/yL3/9tyyYNRtF8T4J81prE0tYrdE3OMi23l62dG9n87ZtdPV0s2X7NtTrsP90CD0aQoGeqnDXBiU0hrSZ0MSxUS13Ld702E/fBGlt2mg7wWlo3W/b9nTT2t9+/PVhggkVFTEW7t1oGYyEhgxp3cnBVoKk1/WaG67jsnPPxxiD88qpJ5zIuSct5q4nHqWxIT9cyiDGUBmq8vpLX0ZjoUAUx4RBwNK1q7jr4QdpyBdGL/H1LMGsD8iQsZYZvPN84cN/x+XnX0jkXdIvIYIxhu39ffy/W2/m3iceZWt3N8VqmTh2wwmuJB+iVKMaBnPIS8AVyBjhns0hl892FEJNKFWMUdyg9G24+wpV/aaIlPe1iX7fo0AdySHQ9eD/vELi6OJIPaoioVG6SwH3brFkjKRtggffaHrvacjnePCpJ3jgqSc5d9FiqnFMNgh4yyuv4M7HH6HuqYsIURwxua2NN1z6suHTEuDHN97AYLlEa1PzqPcYs9MpOrZ7ZI2lb3CAv3rbOxLhTxW8fvI/vnQpH/7Xf2HD1s2EYQJ7jJjdUs0YYzgcRjKoQmhhc1F4uMvw0lk+yQ7jpRoLfmDzxd2bHrkIuBk69slo7TMEkk5UVW2td+vrw1ADj3hBJbSGh7qErrIQWj20ZlIEH3t+eMN1iXanGc4XnXkOJ89bSKVcQ4xgxTBUKvOKCy5m0vjxxC6pk9/SvZ2b7rlrmAHiSF0iQjWqMWPyFN7xqtcNO/f1DHlv/wAf++q/0tW9jbZxrTTlC2TDzDDut7tcu1cws8vfmVFojdy3A8QY5a7NAVWXFDR6MQLijRss9C275eVICNK5T6K4T+84neqnWx/4n9m+1n9RHHsEj2CInPLAFnOwOvz2bgUKBe546AGWrlmFNQbnHJkg4E0vu4xKVMWKIfaOpoYGrrz8lenjEjDy89/dQldvN2EQji3gHeHzquz4drS20BihVKtyzuLFtDQ1joAzSYj3F7+7mRUb1tHc1EAcRcOlz3u6dqdgg+USfQOD9A320zvYT+/AIMVSadSK4fZsBYScMSzvDVjZZ9Ny6TSrEUeUupe/VH1tQhIM3Lvd2kcI1AkIPevvfx1am+k8qmpMJlBW9AWs6AvJHSY94tYKvaUyP7npRj75vr/ApDmAV118Cd/+5U/p7u+nVKnwigsvZuHMWcTOEwaW/mKRX//+Vgq5HN7HBwnRjqEV8J7502ftJMR1cPPo8mfI2CDJkO+ndXnLZa/kpNnziNK9CmzA6o0b+NFN1xEG4Zj5CyqKiFKrwX1bA04e7+o5a1OLVTOVvsXdy256FfCdtHdYD0gBUmfCq/rCwz/4o9eFFql4vCISGHh4a0ApVhpCk3D8HAZWoDGf54Z77uDdb3gz0yZOpBbHNDc08toXv4yv/ej75DNZ/viVr07/3hHYkJvuvoNVmzYwrrn5gNsq9xoFGnHii+5Ig43m7olCIZfb6USuf12qlNPy4uf/3kWVwAT82evewOwp03b6/R0PP8R3fv2LtG10bGRBFLwmpMpPbBN65xvygUvmkIlR64ds/+bHXq6q3xeRepZW9x8CpR34a27/wqlxVDktij2qiBVlsCo8uk0JzMFPkT/XwZoJArr6evj5rTelNy6Jub/pZZeTz2ZYvHAhZ554cso2V+/3vZFMGI45Oe+OPMDYTgdQgVK1+qxwMUBbUwsx7nnDVmMM5ajGcTNmMqVtInHscM5Ri2rEzvHEimU49WMPg0g4pbYU4ZleQ8Ym5esYoRZHlLpXXwjMTf70uRkk9qoAHSn8GexZ++KcqbY4n5QLZqywasCwqTjiDRwe8p9YgWyeX91+K/3FQYIgwDnH1LYJXHb+hbz64hcnTHNx0u9758MP8/jKFQn8eYFMmxeErdu6doJb9U/20nPOx8cek3AW7JPvYUQQYyhVyvzxq15LNgyTHmprCYOQwFqWLF+KtcFBC5c6FR7rYseQdBVx3hCVts/sXX7LuQfsBCdEV3hVn3HFrotEksnHyYbAo10BVWcOO2Jvr0omk2HN5s1c/4fbU+yb+AIfece7eMWFL0ryBtaiwI9u/M1BG5VzMPoBNLWCT6xakYQ9TdL5Va/7f9n5F/D6l1xGV/d2LIkQ14lyd73q0Z5YPVu7t/NHr3g1r3nRpXhVrDX4tDJ0w9YtPLL0GRqyuYNSPKgKgTU83RPSV00K5hQVFetDHZLu9Q9egITIXqJB5rnRT2I+uh7+3iznqoucS7lkBIYiYWmPEJrDc9BP0hCS5dpbbqIa1VL+G2FKWxvNDQWceowRHlv2DPc++RiFQu6AE1+6j8kt3RG13Uel0Z2ef2877r0nk8vx9KoVLFm+DEmZLoYVUITP/OWHedcbryRyjr6BforlMlEU4+pMcLGjWqsxUCzSNzBAQybLx/7k3Xz6/R9KYVzaYZayZv/wxuvoGejHhuagyEOSFFO2l4RVfUFSGqHJnsYupjqw4Vz1tTb2Eg0K9gZ/OoHtmx87H41nxi7h7g0trOk3bCqSKMBhCBucKg3ZHM+sWsFtD9zPyy+4KIn3G5O0T6Z/95MbrqNSrZELs7j9vnXJzofpLNcIs0e3a9j5rTvDks7YfQ7FUUwi+hrjkZRr8rm9ZiNCHDmu/umPufof2yGNBtWpTLJhyD+++/28+aWXc8M9d/Hw00vYvK2LcqUyzMLX0tjEnGkzOOekxbzk3HOZMmHijgk3JIIWBAGPLlvKD397HU0NDfsVWToAW0pVlSd7DGdNTo8IRWIPVPpO7t+05EzgpudKigV7iX4qWGqDW8/LBEn0BxUTGOWZXksptjRkPIdjubwAXhzGGH5442+57LwLMEaG0/vWGFZv2sgtD95P4wGUPRiBciycNN7x7sWOUhX+4zFLdzXAmufnG8kezXTixP/pSTHHjVd+s9Lyuw0hhXDPVbfeexobGvj9gw/wXz/9Ce9781vwaby/nrByPub4OXM5fs5cAAaKQxQrlSSQkAlpKjSQCYKdnrPOEOecJ7ABa7ds4uNf+kLyfWAPImdScpSERljaayhGhgCXuPYqauLB3OCGB05HzE3PVSFqnjP8Caoat+LjM+q4zqDU1LK8J42uHMY+o3dKvlDg4Sef4IGnngCFWhSlQzbgp7fcSN/AQDLs4kBeB2i0ypyWmOnNSeCt6uoJNtlrWE92mxlIbrAHaipEXpjZqpwy0TGhAPvCzuK8o6kxz5d/+F2++f9+OkxxmJQ9+5QELCl/VlWaGxqZ2jaBqRMm0NbcQiYIcN4Tu6Q+SIE4JQqz1nLfksd5T+cn2NDdRTabOeiEYapKYIStQ7ClZAlsWiZtjIqPKfevO1e9k+eqEA32gv91zd1fnatReUGcBK9FjGGw4lk7GBBaDvvhhgaIfMw1N1zHuYtOJZOefoOlEr+54zYa8wfGZKBAgKG7qty5RilGnoJR5jQ6aqr0VGU/m4ME8BQCoRDExJHy+BZDsRKzYRACs4+5Y6805PN86TvfZsnyZfzlW97G8bPnjcgNACk3kO7BItV7BupOy7bebr79q59zzW+vH67EPRSz3RSw4hmMLWv6Yxa0CDhFBXEuojKw6WRgJrBuTzAo2Bv+L3atOhWNJziXIMjQetYNZeivKNYc/pNunfcU8nnue/xR/uMnP6SpoYCI8OTKFfT09ZLL7T/PvwCBQE08rVnhtKmGLUPQkKlx3gzh4a2GLz8omMDu8yCQ+hOHogzVhNfMq/Lm4xyPbkl+ccJEy5LuRPiTLLd/TuXSNGTS1NTALffcxd2PPsqFp53GK86/iNNOOIkpEybsUw2Pc45n1qzmhrvv4Po7bmdj11YaGxuHmSIOKdxVz7J+y6XEw53MsSpUizMGu56clSjA83SCpRMVExK76OzAOpxPhhcHIqwbgKpTGqzgjwSKfJLpMl+95rvDCbvQBhTy+QMacuEVhmrCUJzEpDNWkpM59VAFKHkhiBPsHBoddo712ZgnjdAk9KklNZRiCETIhobQJKddc0YIjVKsJQ8OjCGQvachvfM0NDTgvOfGe+7kxnvupK21lTlTpzF76nSmTZ7E5JY2mhoaCDMZUChVSmzr7WH1xo08vXoFKzdsYKhcopDL09Kc0MQcDtl/I4YNA55KLPVGI/FqFV/KD25+6nTgTvbgBwR7iLGKCOpdLXz4B289zo6IXsTesnrApPTaR9ZqbWoetuuqekAnl1OhKfS8ZGYV5y2VyHHPBs9gBL0VIURYMwQnjXM05gzbSjGbi3anDPCOMOiO6jiv0JQRpjV6SjXH9rLjwY3Cyj5FsZSdMlAVXjLL0xzAkl7YVjYE+5BZ9t4jQHNDIwoUK1UeWbaUB596MonkpVAnsSzpHqWZ3TAMyYYZxjW3JByi7vColvVpifS2kmV7xTK14IkciIgGWjOlvtUn16fP77sF6GgX6NSNz/xynvHu+MgpqiJWhGIkbBqqJx6OrLU/9f3DYiUmyQFqQtPnHIzPOf5sEYRS5e71hlOnQV9F2NAH586MKWwVTp9kOH0y/HKF8PUnLA3B7tziJAxqDdQcnDol4q9Pj1hXFNb2CKdNdWQwqPUsmuiIvGXRRM+EJs+/3ptlc9GQzYC6xKOuz+TdnWtdh4WJ9RDCXC6dyDV8Mux4RNq4IymRgFc9bAR/5LKiDKVyObMx2UMBvIuISr2nA3mguLsmmecMf5TWLxkXxZU2m8wHITCwpQw9lYQT8gVSNbBXnK8IlTiZahOapAe57IRSJGwZTJSjryYMVJShChQjoa8iFGshRePZVorpq+UoR0mWujHctfhNcUApTkK0JQcDVRisKiVvKNWEoipBbChGlmpN6Com72so9gzVUkIwgThl5MgHqYl5Lra3ekYaPeLvklPPhiE4f8SNc6pIuWc8MAlY/Tx8gAQvqXdnhdbn4yhhSrIC3SWlGFuyVkeN7flwXl4MsYOXzIhY0BKzvM/SllMKGc/GgYBl3Y5sIHQVleW9UKkJ20uepdsN6wcUK0qohv6y5+LpMY0ZWNefKJMMm3GhYD1nTXHkjccqPN6l9FWhqyQ8ZYUNA4KRZM83DSkeQ1cRxoWeq06sYEXYVDTMaYroqwX8bkOATyasHPQe7YO/kk+4ZcjiNUoIDzziFExtaHax68njEwV4diToOS1AdWjN+IxYE+E8qIiBrSVLrJDlhS/89TCqV89FU5VL50TcshIWtHmmNHvuWAvHtQnNYQIJz5pu6CsrG/qV82Yqj2xRMsZw8kTFWs+s1hqzmgxXP2ypOE1KkgUihYl5x3sWRxRC4eHNwqmThf6asqrHceEs5cktoEZZNDGBKAvbHM05CI3h3OkJ9eMDm4WLZnk2DNa4Y72lwtGykuTellKSfxFJ8ieC4KKKHexeY59XFChtfwwe//E7Z8e4JFuTDnXYVLIcXSsZ6bFiQGjekmHtIMRe6SoK6/qT6pxCYNgy6FnRrQzUhG1D8Mz2gHWDnoyBjDFsHPQ4byhWhN5qGi0aAbNqsbCyx9AQxmwqWsb1wmCkbCk6Vm0P2DiYQJoGA11FIWegMfRsGvAsySTwZ8Og4cntlq1FcCI7iEhf8PIvGKP0VZXByNKSccQqoogG1ExtYON5YK/bXZtk8GxcOOwo5L2PTzXD3USWSB3d5aSMVo8W8VchsPCzFZafLAtpyjrefQKUI6XqhUrssUDVWUqxJpczDMWeciTEBgYiKEaWwcgT1oSaT1s0dIQCYOipxNRiYagq9FSVUs1Sqob0VjwDteRmdUdQjmEgEmIMRbUMRjE5K9zbFfLDlYasSdkSjpK75AELFCPorwnjs57YWxA0EMRXilPZQ05+jxBo29M3NLpqMSdpTNuIoxpbeisGY/ToOFl2gkIWjyErjtOmOsbnPDUfcMJEaAg9VWc4Y2pMd8myLiOcN90RiiW0sHiiUo09s1thRqvn4S12p1IGD+St5+xpknTWGTh7qmegCoVe5fyZnkIoKIZTpzqi2HJcm2N8NplhdsZUKATKr9dA5IWMObruTT2kXImhpyLMTzPCSbjaUy1151UjKyJ+HxQgcRSieHCRWLsgqjnAijXKQE0ZqCXC8EKgDHx+KNODKBUPd24wNIaWFf2GiIjQCqv7hCAMGKwo3WUlGxpW9iihFcoRrOgzDMXK1iFDdwXMiDCyASoOntiaRIjW9ApZkyTCNvULD4SGdb3g8URqWdUH1djSlFGW9ydJs1yQnH6BmFSljjIFAJwaeiuSDuzziBjiuEYYV84CJgObdg2F7tECVAa3ZLx3YT2SbASKsVBxgkE4ajDQiGi6EaUUG/5rSYaKM8xvjDljYlKoJkbJGCU0kkR+BKwINo1TBwIBQoBPRF4Z7sZKem0FrxbFJc5xnS5CEvOOAeOT505sspILhFWDAT9cbsgHCRtEaP0RkZ0fm3uk9FcYjnzV5/14V80BGdhR47ZnBehIFWDrSo+LtB5LFkkwVs0JgbhhoTgaT5qCNXgRWrJJtCb2jkoMJ09MSMIKoeGUyQ6nQi6AE9o8RWeY3aLMbBT+sJkUo9f9DMhaZfFkT2NGqTnh1CmOwaohawynTomT0mpvWTzFMVALOXF8xPQm4c6NnsBkyAdK7AUlBsxRqQBC4hulDcJph4zBxRW/J7MYPFv+kx5gyeROsEZt7JIeYCPCUC2hGwwCOSqSYHtaMWDV0xtZfrrUUY6FvnKS5BqsKn0lj1PL2r4kebi9GLC0G7YXlbV5YXtR00RicqOMKJVYuWezpdk6lvdEqVMN24ZiFMumfkdkhIGKsGQ7PN2ToS3nWVM0WJOMDlIU1HA0r2ItgUIkpfqCMfhq2Vb61wV7CnPvrACdKAQYG5wQhoZUjZInj5MUu3B0L9WkE25bCb7/dIb/fTpHd1U4sQ2mNSmTGmFuq2NigzKtQZnT6pnYCDOalVktnnwmoZAcrj4gKUuY1eCZ1axMarDMbFFmNnna8oY5rZ5JTZbJBcf8CYqEnmueCfnWU1me6bZkj5Ks/F4DFQLF2CTWNW20cM7jiSdXKv2nJBBoH6NA7NRAkASaKtEOU7OvSjBytM5+hHeHm8gPx2UFstmErKk5a5je4om84L0wq9WztSQ0WWFWi2NVP0xtFGY1Kg2B4jCAG24qCg3MaBaas44NA5YZzZ5iTSjWlBktykAlOeVntxraspZ8BpozSenDzuOWjt5lgWpMmmUXFBH1qmFgM+LdpH2CQPXlouou4xSFWqzEmtSr+JHe4Ui3Ypf2prrge3gW+1OdI2cnh2Kn6Wz7mcvRXZ5H9vCzUXCMfZp5XDUA337M0Ff1DEXC8r6ArUNgA+XerZa1/cIT25XWQFgxIFwwM63j12QecX9V+MkzSkMmy9p+WNlvibzSVTGsGnBsLQnOWx7bDku2g0WpOZ6bj2lfP+eue38oIgyyH/d0JP5PB3dXnKLOYMzOHd66h2mNwZ5eLSptx6boxyBEznHeNFjYVn1erGJ73dtDvfn7KzQ7OV9C5Eli/UYwQKyeWc0Jq7JXYU6zEqng8bxlvDC54JPJNcaAxlw+J6CrnNT2z21NFAsRThRPpIZZzcmbcjjmtBjeuLA2+kMGnuv5ns9rjfI9HQbhsg/Q1DJiQMveocMeFcBplITf0ieJFNoKMZMb5KDtxeGmG3uTHCO7Gp14mJJ9B51J4kfVXAKABI9TYXqTY05LDMN/NfLfnfdCcakvdgz47O5OJJZx3+gmg73GlUZ8GTlDdRTw5u4E+8gR9t19HmH3x4LsJLYqBkm9VWNG/rVQc0olNsPMQj6lQkEUUUHTXoT63x99ufh9N2D2eQTC9qwA3j8LgGetkBkFHtAXmgIkUF53Dq5pnUWgHp60O8azagKXPBZRjxclHwjW1JNfOkzyhFq8JIkyRBN2ZE2/P7aedSM8SsX5fQ6c7BsfiCphYLlvs2HJdjPMwvWclkOfS1ieQwH24Ezv8Wd7s146dkI/8tiJEaxPklCS0Cdh0PQk9xgVnCTNpaFRXj5PGRc6Ygyhcdy61rJyICRvPEnkX3GS+AdKiCXCEaS3OGlRIp3qPiox0P2hp36+jznQeyLP/aLeKw1Z4VVzHTmJk/3bPwVIZkjh6hEcIRRleZ/hV6sCmjJ7G4P63DuzLzI+urs+dnFUAxSdcP5kx5uPE9YOeAZqllMnxjy1TchnPLOa4fGtwowmz/iC4xfLQ/rKERMzSqQQecOWsuW8SRFeDMu6lVMmKd0Vx9Yhy6mTqyztDgDP8RMcN6wRblqXoSHQXe7D7o6UQ79Ho3vq6B5/U3NJL/UrZ8eo3bdk7R4tgA0L4Pp22s6mMGnYbgj3ZQ6wjPFGjOXf7zuUsyK4CGY1ey6eETOh29Bdcpw7HVBPcxaOmwCRUxaMUyY3wQOb6oAp8R28ChOzjjOnKU5jAoGzpyWET+uyjnOnC6F4AlHOnK4s7xXyVpIKUdXDeo8O1r0XkghQc8Zjn0fSaY8WIMy3Elc3p+Y1uVGBSSIY9etoX0Y9KmBV6Cp67tlo2DQIgzXFGFjeK+QCpa8CK3qhWBPG98P2cjKorn6aWREGa8qDm0DEsLJfCQ30lmF7RclZYVVfCrXUsmlAERziSdlIzVF/L0QSt9Uag5UEtexKC79PCjAcZ7AZ3fW0ywXHMo5Q5wOF0yd4/uSEGn2RsKzb4CUZ3BCYZGpJRix5A/lQyRhLJnAUApMOFIl3mrxoxFIIFMWTFSEbKtlYCWqQDZOpj8bEGIFJDcr/ObvG5ILjFyuz3L7BUAj3jS7xhev+JodBaASxgnqHYIYTtnsa9hfsKZSEhL6egVBVvAj50B8xaHEsQ21OoeaFwMC8CUqx4inXDIsnGtZnle1F5cSJwmDkacoaFo6HvrJj9jhheqOjaUNSaVLv2PJAYygcPyEmRih5OLlN2VI05AycNNFTjWMyVlg0QekuCwtaPVObDLk1UPVCZrhz72i+N0JDEBMCtWQehIZWJHb0WPJLgOFq5z0qQMcwoYRbH7t6JE8QDw1BUv9yNC8r0Bg48oFhKPLcuUYo+oANfR6H0FcSBmtQccKqFAJtHlSWdlu6yp7lWUNXUXYwR2sSt+6uem5fZwlEWdsPcWzor0JPGSI1rO5LokVby4al3Y7uqjC+R9heUibmY3JWGYoDnOcoYYLYXbDSk8+AMR6cIEZVEJEgN1CYfNyG3cj/bhSgvZ3Ozk7iaumxyKkXEaOaFC82ZiCwR2floZEkwzij0fF3Z0UEeB7ZApOaDVY9UU1YME7ZEiRCe1wbVCKlIYS542CwCjObYXKD8MDWBK/WG2K8QkMIx49PyKcqDhaOh21FIWeVBeOVSgxZC/PGOfpKhnktSlPoOWMivONkRyHwfP0xeKLbkrNy1MKhplB3np2gioShkPYV7S6K9ywTANDYNstbG2gdFKlCYwA5o0dZSXTySSOftC0KQltOac0pDRnD1IJjYoOnJSdMycP4fBL5mVhQmnPQnIcJDUJTqLTkYUIhJhfsDCO9QmiU8Q1Ka15oDKGtkDy2MQOTGjytOaUla5jSoIzLQVuDZ1Kj0JQVxmWVCTkQI5ScIfJHp/ArhpasDneC1W1hYDNmT+hwj2HQQst812vu8MRVK4kiUQg9uYwwVE5a8174zkAyk9arZVIhIitCxjru2yCIWFb0K5E3GBHW9yVHem8loK+SlOSu7ovJBobusrC8V+mvCmtzlu2lpImlvn/GKANVw73rE/Krdf0Wazw9ZaG3rHgyrO3zZEzCC7q0JyHlzQTCit4k/p2x4J1jYUty/G0tZxKW3aMJnqKMyyaVykniXDHWYCS3FNgO0NHRoZ2dnc+lAB0KnUS55qdU3cowsCfUnNcYI4XA05pzbC1ZwqPCHRY8BqMxf74oZsE45a51MLtVKWSgHCsntAkYT+yEkyYKXcWYrpLllCkO1YDGUJnfppRjYVYTTGv0PLEtTrC61C2A0JyBUyY7YlVU4ORJStegsrFoOG1yhMGSscqCCcJQTZk3HpoynmpkOX58oqgX1TznzCjRWwn49L2GQWcI8EeFP+AVMsYzLgea1t4rniAIsfmWlSLhEPAsbtA9BpCnL7ikz+aaSyL1CsaE4aAtq3hvjhrOGdKKzaxNw5kBtOaViXlPPhQyNmmGD0QIjSMQQygJO7QxHpNONg/UJwEEY9DhSjgdJp9VkgZ6wWJIKBWTSwjSBvtQDCHJa2VMQq6VCT3jCzA+n4RLs2FILnSIOESPjnrRJAQq5ENhfDZJLBp82k8iZBpaM+yhLOK5aoFqxuQ2KP6Mup4YgcmFZCDBUeMBqMcZy/eeUZpCS3dZuGNTah3U4XyMU8u6fkdgobeiDFQ9Xgxr+hwZk/RSP9Zj+O6ykLxNirUune1xaRNHzsLqAfjtnQ2IiZnf4slbR1dR6K86rAkSCGQT6LOyHyqxUshY7t9iuG2TkBPorQr3bPVUXZayT9is/dGgAgLOC02ZJBPsfVJ5izrxGmALEzcmNVXPdgSenQgT0fZ2jIhUn/j5Bx4TG76W2NUdaqY0OMQEcNRkBJLG9Sd6QtRrWrGZ0KOcPslz3gwoRTGhsZw7w7N5UNhahHOnQ2NgyQbCKRMjtlVz/HadUrCWXCCYtFdANY0wacDWiidWywVTYy6a7VjRY+gaEs6f6cgHQj4wnNDmiFSYP16Y1OC4pyvk7g0BDZnEmvi+BFtlrRw1VjqZ8qS05ROi4thrOhVaxUmoDc3THwAP2i670iPu1i7UY6X51plDLuk5TUZJqTKpoGStHlWhUFGlYKEhFLIWCqFQCNOKTTUghsh5uitJuHOoZuitJCOOBmvK9kpIySUZ3ozRnWaGyYh4RSiGrFVqztBTNslzRZ6+smGwljx3b1moxorRhP3A4GkIkxxN1mjy3gKOIoha9wES2QxHTOYUPDZoKOUnzh/YWbL3CoHagU6sZO+PY8rWkPc+mYk8Pic0ZxIiUnsU8WONrH2KFUKBNcWAf7o3puICJmehIVuluyj01YSmbmHVoHDruoBMoFTjxBo43bHpux4isSqFAO7YFPBQl6UcKxdOdbRmPRsHhTDl01rSE/DrNdAYwqZKQGiU2O/+OY8eP02Z2ThS8UUDiwS5ltW5xilPjTDn++wD0Dzvgm19G+/t97UoT0q32JpVJuZhW/no5gcSgSgSVkYZBmtw3Jwql84RVvR4uoZiLpplMAZ+tiJLxifdXFZ2kAnsucdVqHmIasJQJMxtdVwyWwksFALH6ZNhRT/csC5DUyahWN9fKlAjBkmbcJKmnaQLpz5NnnQqjB7mN9kDYZAkKf2I8TYiAZmGth5gaI97sNufdnQowPhZ56wSm3s6CJJMgGpiZuc0+6NiOMa+KEHWKA2BZyCClT3KxoGATUMZnuk2bCwmkSErMqJRe98wrZEkrNdVEpZuh01DwsZBy/KegP4qFEIla/dP+K0xiAilSpne/n56B/oZLA5RLJcZKpXoHxqid6Cf/qEharUIIwZrDs+KUyEZ+TQ+GzO5IbGEie46giBDrmHS/cYEpXbY7ZywYM9PCzbMl5/42fvWx/1d1I2LosxsUYwcnfUmu3ORFSjHhq1DnsGa4+erAn64NIcaRjDA7Udc2wrXr7ZctzpEiHnbcTFbizFDUW739nxvJz5JGHaoVMYaw+IFx3HWiSczf9Zsxje1IMYQO0exUmLL9u0sW7uGJ1cuZ83mTagqTYUCPpmrdNhAXxGInTCzQWnKGOJ0EKBXlVhyPjd+1mpVN1zis08KIIJqO0Y6K17C7H2KvQqNRBC8d8xuMhTCkNiNnHR49C7vYXJeuWQ2bBqEn6w0DMZCMApi4knKrAMNOG2KY/Ek5alej/P2+Qu/CIPFIpecfjYf+uN3sGjeAkhP0D2d8MVKmQeefIKf3HQjtz90H/lMNqVyOXxgkVeY1SpkTUyU0MmoFS+EDUMt8y58KEU1sK8KMNIRbp6w+NGt25b1WxO1OI/WvJEpeWVaPmbFYEheDh1R+rNu2p56TvdLSRXn963cw1hhc8lw8+qQnqoQeYMVz2gFIq0K3ij3bw7YMghrBpOGm+enAYahUpF3ve4NfPSd72HpurX8/Ze/wJOrVjBULpMJQhbMmMUfv/q1XHjq6dSiCGMsDbk8Lz7zHF585jn87OYb+cy3v0FwGAm/omQE5rY4fMpgKKhaK5IrTFoRhs2r9uQAP7cCdHQonZ00n/0ny7et+O0a0eqpXlGnIo2BMnccLOv3yCEYF1kPHRZLxURI9wDhduoIGv6R7AHI7Pw4ESWfa9grxvYKWSMs6wt46mGTTI+3FjuKI6QVRbzlmqUGjyEjkAuS7Py+yb6hVK5w1kmL+eg738P1d/6Bj/7bvxB7TzbMYFKmj/VbN3P7Iw/wV299B++/8m0Jr2Yd8qjypstezubt2/n3n3yf1sbm/Ro7O7rwJ8H8rXlhbpOj5kw6KBusDck2zVxiw/y253qOPU+KT2sgmmC7zbY+Kq7v1FqsKT2H54Txyi1rDYesRUbgkrPOpbGQx9e5iob/GaEA9Vm3ww8zz9KT4fLZEXhOvHLXo48wWC4mBAF7EdHAQMYkfpFHU2pVHVWVzwZp65+aEZTF+/boKIp440svx3nPl6/5LoGxNDc2EY+Y+5vLZFHv+eL3/4fBcpG/u+rdOOdSBUkGbb/iwov431/9/JALfz34GTlhTmvMuKwQOQ9iUB+L2iYaJy+818cVVNvN7qbD7DUMqu2IiPHLbu64f2ho3TvBiYin5pT5LZ5xOc9gTQ56PsCrEhpL+/s+wOS2tjF7ndd95IP0Dg2QtXavjqwqKeHtcwv+DkNUd5+FkZPi9+wLpARZKfX380F1qmADy7RJk4ido1wuE2ZCYhfvZLydS5y68c3j+K+f/YRsJsuH3vYOnHpi58gEwU6sU4dDLYAKnDTeE1pP1QkCakVFMi39LfPOe3SffKM9w6B2QBk/adHDntyASXn+YhUm5mLmtrhk4NshcIRFDKVahTiOieKI2MX7f8Uxzjm8T260855ytYr3++Pd6N5/K/vL2bB/Q62ThnFPd18vmSBg7vQZFCtVrLG71RbvHeOaW/j6T37Al3/wHdQr2TBERPjZTTdSrCZRpEMt/N4bmkLlhHGJ8yuSdK4EgSFonPBwGDY/lgqy7p8CpA9sO+WNT2XyrY9nbPoKCtYqp07wBz8akGqbNYbmhkaCICAMQgIb7P8VBFhrEZM0rFtjdmJtGHX/Res9wSOpE8eWRkZR7n7sUUSED/7Rn1DIZKnUagTWPOtz1uFOU6GR//zpj/jTT/0DV1/7Iz7yr//M93/7axryBZw/tAWRIlD1yuymmGkNScNScsc8gc3TNPGER0SCou6mBHqfIdCOwrhgYNn1H72tUt56EUTD2OukNk9LNpnOd7CsgGgCBxDh6VWraGtpxntNBFZ2xocqu56g8mz8j+C9p621lUnjxu8MSl4gWW7nHY35AjfefQfvuOI1nHPyIr7ytx/nY//xZfoH+mluKBA59ywlUFWaG5t4dNkz3PvkE4TG0lgoHBaZ4Xpt2qkTlXzgGaol4XvxaqKgsTZ+9rm3g9ttAdw+KwBAB+100kl+6qm39m9b+jeGWoMX0dghkxuU41tj7u8KyAcHR2AUxYqhUqvx4X/+zDDX5u4OUElPvp1N3s5/aK2he3CAD731j/nw26/CeU9g7fBrjcXJLCOwOQcAbZ5XKNUayuUqn/jav/HN9n/iorPO4ruf/hzt//FV7n9mCeOampPzc5eomveeQjZPIV9I4ZE/TIQ/6f9dNNEl+aj0wLYWyTXPWFaYcMJ9O1BM5376APVwKDDjtLc9nMm3Ph4mTpCqQijK6VNiFMPzd80ORAnSUKVN4Iq1FmNMeu34WoyM+HlyDRfPjLisyLMiPUkkZ/Q/0U4B14PoO3mvFPJZlqxcwUe++M8MFodYMHMW3+r4J9712jdRLJeo1eJh5d856ODxqY90OAi/Rak6w4JxnlmNfhj/q3qCME9j2wl/ALr2Bn/2SQFEJCmRkmAg2zj1VkyQAlhD1SmntCmT856a53nVu4ymQO18yusBnsu7/OwFlOl23tPc2Mg9jz3Ch/7ls3T395PP5fj4u97L1z72CSaOH0fv4MBwrdDhiQAVLxaPcO7kmKwkcxYS6mxnNGiOxi+85AYRUbR9r3dv3/KJ7e0CjqaZ594Q+WDACqLi1XmlLa+cPjGm5o7syiARed4Rnf12gp+F2sbaCR4Z6oxpaWrivice572f+STrtmwB4NJzzuOa//tFXnPJS+gvDqHOY605DJVAiLwyOVfj5IlKxSdJSxXR0BjNjpu7pDBu3n17i/48PwVIYdC0Ra99OCy03RsEFqOimvYKnzvVJVQfL6TSaB27pp9D4QOMfPXYOVqaGlm6eiXv6vw4T69JqgXGt4zji3/zUT77gb8mzIaUiiWCwB5e98UIkVNOm+SZnHdp9EdQF0mQy0nz1MU/F7FdqnuHP/usADuiQabcOPG4/5ckfLyIQC2GBeOUE8c5qnG9PPdYhdzhvmLnaGxopKu7h7/4zKdYsmI5VoTYxbzppZfzvc98nlMXnkBff38KiQ6Tc8kruQAumK7D5F+qqBUnmp26beopV96YdAi079M73ueSqg6SpNj0M/74FmNb1lurdUJessZx4fSEKVmPyF5hfRYE2juv8Gg6wXLQDw1JG15yuSwbt2/nrf/wEe565GFAqEURC2bO4n86P8efvOp1DAwNgQpGDm1PgJFkDOqJbTHHtUTDB66gmsnmaZ500q3AQ8nH6/SjqgDS2ekVJNs8Y0WmZdKPk8b4RHCqMZw2yTGnyaXO8JEm/rsRvyOgE2p/lzUG5zx9Q4N457nk1DN452teTxgGBNaSCUOcc2QzGT7x3r+g/f1/SRzViL075Eogolw6w2FN3UkXRSNxQUutdd7FvxIRr+3t+yyBz+/TtLeLiOi4ha/4qUp+UFADorEqzRnHJTMVd8SRUianr+wmG3qwY1kHR/gtA8USuWyG977+zXz/nz7Pf3/6c3zsne/m+Dlzue7O21mzeRPWWpz3xN7xtle8mn/5279HvcN73UPAYOxP/4oTFo6H0yY6KlHCm6SgQWCkMH7hEy3TTv/tSJ91X1bwvN5FWiI9ZeHlT/Qs+eXtOlh6dcl5FRGpxnDe1Jhb1hq2li2hHJyuISMHhk9tvfRh14pPPZjMF2MPgephzf6hAV5+wSX89TuuYu7U6QA8svRp/veXP+fBp5bQ1d3H8XPn8O2Of2LCuPFoOiP68nMvIP7g3/D3//YFcoX8IUC5SYXtS2ZGZC0UvWBR1DsxuWba5lzwCzFB3746v/ulACKi2t5uRKS05sHvfKPnyQ0vM1rLekFjj4zLKZfOivnBU4ZsqLgx7hsWoFQtEzk/oljs+a3AWvqGitRq8bNhkY7Ne1Y4qGNORRLygmq1zN+989285/VvBpJSgm9c+yOu/umPqMURhVyOCW2tLF+/ln/89y/z9U90YEQIjCF2MVdc9CKeXrOab/70x7Q2N+OcO0iHHFScYUFrzFmTY0qxYsTjxfrAxCZonb+qbeFl1yRcqO0CnWNkAVIroJ2dwplX3TKw5q5bKK57dSXGiyBR5Lh4muG2dRGby1myxo/ZKCVJIxZnnnAyk1rHEWsSD94fCzBYLLNg1uwdziE7uHpeCPEsBSrVEp/58w/zhpddThTHhEHA1378fb58zXeY0DyOfC6Hd54oihjX1MxtD93Pt3/1c977hivx3mNNAok+cOUfcddDD7Jy4zrymSzxQTKToo5XzPE0BEoxEiSt+8/kGpk495LviglWJ6d/5/NKVwf7IXh1K1BZ8+DXv7H9ya0vEypZRTRSI63ZmMvmZPjfJQ61ts5UOiYKUKnWeP+b38YFp542apJiR4x7fyG4wNZY+gcH+chVf8obXnY5lVqNXCbDHQ8/yNU/+SGTWsbjVPEjiuGcdzQ1NvKtn/+Uy867gNlTp6PqUZRcNsv7rnwbf/uFz0E2N+bJn/o4qpPHw9mTYsqRRcSB4AMw0jp/1cQTX/W9/Tn9n78TPNIKgMw+8y9uCfOTb8kGCBgVUSqxcvH0mAWtnlrsxzR+LJI0bUdxTKVWI4rj/bpqcZTUuYwYubsjmCujfhqLsEupwdg4wcYYBktFLj7jLN73xrfgnCMTJBGeq3/6I6zYhEp8FyFWVcIgoH9wgO/86hfJXnjFmqQx6GXnns+JC46jWC2nZeNjtzzJNJ1Xz4vIBA6fFj545yXINTJh3ou/KyZYparP+/TfbwUQEU0jQpW22Rd+w7lcxaoTQJ0KhcDxmvl+zOn5EqqOBsIgIJfJEAbBfl2ZIHyWEzxMFDUWPoAyJoV2z9ofr2SDkA++/e3DamaM8MiyZ3hsxVIKhdweC9xi72nMF7j5vrvZsn07Nu2K85pUy15+/kUJZ9AY8gUZgXIknDfJcepERzlKapQQfGCchK3Hr5o8fPp37Nd2Bvv97uq+wDlX3dK96b5bbP/KV3uX+ALlSDhrcszZk+CeLQGFUFIiLR1V4Q+DgNseuZ9tvd1Ezu3XaSRGqNUiFs9bwAnz5ieCKSPY0o5QJ8CkLBAvOuNsTl1wAs7v4Im+5/FHcdUIyeX3fE9UsWHA9p5e7nzkYd582eWo98M+0rknLyafzY1ZY4yQ0Ei2ZmJevcDj6gPVMHjnJFsYx4SFl/+PGJue/uIPqgKM9AU2PHHtN7Y8svVyiQdDL0YBcXjecFzME30BcWQR40b1QFVVspksP/jVL6n6GOv3QPiwtw0wlu0D/fzjn/0FJ8ybj9exn7pb19OxhM8ignOOS885b/jF6qf1stWrMNbu/fVTqsQHljzGmy+7PKFNTN/8zGnTaGttpae/nyAIRjVpKAhilEpNeN1Cx9zmiGKUND0J6q1Vk5twygMTF1z636g/oCMqOKB32tGh2tEp8OabB9Y/fE116yN/qh6PIFEMs1s8r5kdc81SocE8uznlgPGhKvl8jkKKp/dnJ6y16fNkdg/Yj9DlnKMhl2fx/AXDWieSFC9u7tmODexeP6CqEoYhyzesI3KOcAQ5QHNDI63NLXT19BAGwahulYinElsWtlR5+ZyYsgODRcWrd06Chqlu0ulv/DcR2fJcjA9j5wSP9AU62kVEqjPOef8XJDNhizHeeFSNJFMSXzbHccL4mEqso14iUeeFd87jncft5xV79yxh0DGi/9P0HxnDXgMRIfaOlqZmJk+YyEhfvlKtUiwVsWL2agEUCK2lp7+PvoGBnfYmMIZcmEkUYpQdYQ9kcFx5vKcQerwHFY94o/lApHXWBbe0TDz514kb1XFAt+mArb10dvr29nbTOnnhU82zTv8yYr2kWMSpkLeetx3vyJqxT4wdqNl9tqAeuSbAqachn6chl9/p8znviJ17VmvoniyAEaFcqzJULu0IDqSWxPnhVqzRC9sKlCLhxbPrju9whbFaXxHbcnzf7Av//HMiMpQevodWARIk1KHe1Zh70Ue+kWma/0AYqAA+qd5TTmqLuGKBpxJrOmj7MGyz2NU8jSUB7EEo/lTqZSI70wGIJFWdz+csUu93YPw0LlCp1RgsFUcUpY2G5TJUnLCg2fPGBRHVeETdkcYaFFql7cRXfwO4Q1VFOjsP2AM3o/PGRdsTh7hv+mlv+icNWorg04HlhkrN8Jq5NU5piynGMuax4/2Vyd2JkRy0Vx/dV7II1TgiiqOdfp4NM2SzWdw+JCjrcTtr7AiigGR19Wynu6+XwI6iA6ye0MA7TqrRmFG8Hx544UMrpjD13Hsnn3D5lw701B91BahbAVVk3LwXX9807exvhmEgKpoGEz2B8bzz5JjxGZ908RxmOiC7cVDGDAE9K+81+okwK4ah4hD9g8Xhz6JAGAS0tjThnNt7VacIXj3ZXI6GfGGHZVTlmRUrGRgsYoNgFNQ/gVolp7xxfo2T2zzlSBEDilE0lqBp7sDsSz7QLiJdqeOrh5UCJG9IERG/4NK/+6Jpmv9AaL0R1CNCFCszmpR3nBSDP7wGOMvI2OSRHwBCVbHWMjBUZH3XlmHsXk96zZ0yPVGAfbA6ceyY2DqOlsamYQglItz80L1pwaCOwuFjKEeec6Yor5xXL3Wu+2GxZnMtMvnk116dzY2/KUEanaOWfBjVkPeI3MDGWWdc9Y9kJvYKkaCoiKEUOS6YFvHKuVCKPEbqHJn7+eZ3Q3uy+0ue87LGYMXs5vgfSzXQMYVAxhhqUY1Hn3mKnUwAcPrCk3ZmzN7Tc4gQxRELZ8wmsIY4jhER1m7exB8eeoBCIbdPUGpvEata7JjWCO86MUJxOBlmdPKhVVOYccHdE0+44ove1ejo6BjVmzLqOR/p7PTa3m7Gzb3g5pZ5L/rnINssKkkez0gy4fDNC2ucORlKsSPcn7eQOtKlUpViqUSpVKJYLjGUXsX0+/pVKpcplSuUyhWKlZ2vUrnMULlEXJ8yN6IZUpWDhNVGX9nUezKZDLfcfw+Rc0h6EACcf+oZTBrXRhTHe9QBSe+XAc47/YzhyJKI8I2f/pjBoSKBsQf0tuvjjfIW3neKozUXEzsweByBGh+Z7IQTB+e/6COfEpHtqmpGE//DgSbC9uwQqHZ2ytxz3/efz/SsP41tD/xRHHuviHHphMX3Lor55wdC1g958takqe59DxTbIOTsU04kY0zCYS/s4MsfbmbZMc5HhyM76e/SvxUj9A8NMXn8uJ3DoXULcFCw0OhbAK9KPpdjycoV/O7++3j5+RckZQuqTG4bz2suehHf/OVPmdA6jiiOd3v6V6tVZk+bwYvOPIvIObJhht89eB+/vP13NDc0jEoZROyF9y2OOH58TLGWhEEFUeMjzTROrE49/V2dwO8OpNzhoCvACCg0oKqfeuIXHzhV+pafpBp4I2Ji72jNeP78VOXzD4QMRSQjQHXvc8eSJE9MS66Rf//Y/6Gx7pyNInQYiaWP5IYARcmZkK/+6Lucf8qpNBYSUlujynve9BZ+/9B9rO/aSlOhYSclEBHEGgYHynzyyrfRXGgAYPXGjXR8/euEYXjA54KRpK7/rcdHXDw9ZqiWtDiCQb3z2ULeTjz5bd+dMPf8f3VRWcaqP3vMyl6ks9On3vqKWWe+58MmN3HIqjOaqDJlB3ObY95/qiMQR6TB8+o1VaBUqRA7N0xvvtvL1y//rMvv5TrSl/dKJh+yet06Pnn1vyNI0uvrHONbWvj83/w94xqb6BnoT/IDqc8UuZiu7h7e+do38LpLLgVg/dYtfOifP03PYB/ZA6z9MQLFGlw+O+L182PKkU/zQ4Kqd5nQ2MKsF98+ZfHrOl1Urhco6hGlAMlJ0ulVkZZZp986cdEbO8g2VIUYRdQKFCM4fUKNdy+KUB/j2PdZAwK0FBoIrB2mN9/tZeqXeda1O4e5zjOaz+U40vmNBIi9o7mxiRvvuoOPffkLVKtVgiAgimMWLziO//70P/OiM87GOcdgqUixXKa10MjH3/U+PvGeP8cYwyNPP817Oj/B6i2bachnidTt9zsKRBmM4IJpnj85yVFzHh3uwhMNcTY/7ZzN8y/660+IyKaxwP1j7wPs9JkVQTBB/l+X3dpZGFh926ddHHsvBitIMYKLZ8SUneE7SwLEGvZWNick7ZB/ePhBmhsak+kpuxbEjRj4vPPPZCfKT5ERPP1pWt9aQ9/g0PDIzTEMvh6E7RdidbQ2NnLd7b9n7dbNfOyqd3HWSYsAWDhzFv/1yU+zfP06NnZtoanQyKIFx5ENQ3qHBrnmut/w7V/+lDiOaczlk5FJ+/nerSiDkXDWpJj3nBIjPka1PtdLVHxNwgknbpp7ycfeKyJ3psLvx/qQOBhxaUkas7Vx1e/++bvFTXe9vlatOZVkRIlXpZARrl8V8r2nMsksrL3ERQQo12o74tC7ToiUPXzQXUoDlF3qgOo+sAhZO8pVjoBTyFnPJ8+LmNrgqMWQD5WvPJLlns0BhXBsEnCCEpiAYrmCCQwvOv1sXn7+hZw4fz4Txo+nKfWlSpUyT69exW0P3M9N993Fmo0baS40Yix7GEi4b69uBIqRcsoEz4dPr5K1fsdQa1B1VfLj5umCF//DnxYmHve9BD53jjkODQ7KKSSSQn8ZVNW/XH7jpzJsefiKqos8GJMUXClXzHNAje8/HRAEllAdfg+t6QoUsrmdBV3Zr3Ci7llxeaEsRah5Ry6fRVW56b67uOneO2lpTMqac9kscRzTPzhI79AAtSgin80xrqmZWP0BCD8p7BEWTfR8+LQK2QBiV288Mqo+Itc0RSad9adfzE9Y8GNtbzd74/U/ohRgFyXYrKrvfvIXH/zvcHDlFVGMT6JuQrnmuWJu4iR972lJRhbJDg7IZ4f6/Aujc/0gUSMm5ePJodrc0IACkXNs2b4NVZ+c1NaSz+ZoyBXwWi8VP5BoDwxEcOakiL84zZG1UHNCIIIi6rVKtmGCTD79HV+cPOeifxSRKJWTg3JnDyrPXaIE7UZEtpz8hq+92+Rm/DawagBXRyflyPPKuTHvWxyBKjUvGFH0EFPyjb6872q6Dq4m16NgRoQwDMlmsmQzGYK06cV5d8AW0IpSjJQLpjo+eHpMzjhipwTi8Vj1WiWTHy+TF7/1i5OPv+L/HGzhP+gKsCMylCjB4rd88y/DxjkPZAKspvwpIlCsKZfOiPjg6RFZ66l6IUyiRxxbow2NSJvdk2s0YF/dng1FwuWzYv7ytCoZEhiVYH5RfIUw1yZTTnz9F6csfsMhEf5DogDDSpAkytac/OqvvJPCzJtDa0xdCYzAUARnT4n42FkRE3JQig3W6DGJPdyNmwheoeLgyoU1/mxRjPckx5cAGFVfI8xPkKknX/nFKWe8/ZAJ/yFTANjRSSa53NOnvPm/rjJNM68PA2sYoQSlGhzXGvPxs2ucMM5TrMqzpkEewcfuQfcBxhrVGSPELil9//NTalx5XEzNOXSYNF/Uu4hMoU0mnfLWL0457cpDKvwAh3T8x+233576BJcOXv3jB3/Xt/HRk6j2LHQudogVESR20JiFc6Z5ijVhea+mc3yPTCFRIDDKi2YoTRmP8xBa5b4tlg1DhtAemQqQcPgoUxrgQ6dHnD05phjV8yyAiFdXkVzTJJl8xju+OPWk1x1y4T+oUaB98QlU9d0rbv2n/2br/VfUSjXUGMUikfNkjPLuUzyzmgJ+skyoOsjZpBDuiARG4tlBkXtkWgBBETF4PKXIc9YU5V0nxYzPOYYiHS5vAPG4qimMm8fkM/7sixPnXXhYCP8hhUB7UoIFL/3Eu5umv/gHYq2zzgmoN5I02Fcj5ZVzHR89q8b0Bs9QREr3cQx7H5r7ZqjFgApvO97z4dNrNGUcpRisCGBQ1AcamdyEE7fMe/HH/+JwEv7DwgKMVIK0r3iLqr7L5Fof719x82el2hM4rBfUIFCqeU4YD584t8IPl2W4fX2AFUMY8Kwhz8fWWJ76ylDNM7dFecdJEae0JbTlisGIR1TU4TQbGJOfev6GeS/6+/eHucbrYbgy4LC4WYdVcL2zc1gJavMu/uDnp5317r+yDVM3WeOMJhRgKgbKsSMTGv58UYUPnB7RlnOUapoyHhwpjvCRB3sMihhLxQsaK1fM9XzinAqLxjuKUaIeFo9K4L13UijkTeuCl9+88PJPvz7MNV6v7e3mcBJ+Dtc7UK8dAtFS/5YL1v3hC/9Z6n1qcRzFoFaNqHgVPNAQKlsrhv+3LODOjQEeIWuT3x1uvD57rgUirQWyY1YLNBpOrlOh5Azzm2u89fiY0yc6ohgi3dHDq+ADnDG5tmjyyW/99pRTX98hIpu1vd2MBo3JCxYC7QyHkrKJjg4xhZbJd6vq61fe/sXOgbV3v12jklEVL6LGAqUIxoeO952inDlZ+cWygBUDQs4K1siOLrFja78FX4FSDI1BzJULHK+c62kMHaUogUMmmdauRmMNAzHhuBM3zjjzff+3bd45/+FqJQ5GVecLSgHqSgDUO8tWqep7Nj7xk7t6nr7xM764cULNq5JsvsQqxBGcNdlx/HjPLesCbllj2VYW8mHSZqcvkIEXB2//UwKsOOneOn9KzKvnK8e1JFydCWPbcM2uF62ZMNckTTMvunfeJX/7ERG5B5C0meWw7S4KDvsbsaOzrAr2P0sD655Yd+d/fEa3LbnUuTLqrU/ohJFS5MkIvHGB57wpwm9XB9y5KaAUQTY0BPjDiJ7x8MT/YhJHtxIbxHuOH6+8an7EaRNBNEqwvkjC2aOiqNPQYsLGuQMTTnr91ZNPetW/isi29nZMR4fq4YT3j5y7sAe/IG1uUVUdt/GB7/1V9+rffZDK1gnl2BMgXlOn3itkbELgurLP8Nu1AQ9uFSqRJWuTiSOHwiLs7APETG2IDxsfwKSTO6pecKrMb/G8fLZy7hRHzjqKsSC4tPFIVEU1cJEJ8600TDntnlkXfqgzLEy8EY04XPH+EWkBdoFEpNagFwk7a/1rfrf6nm/8Xbz5sVcZyjZ2eI8RI0jkhZpT5jR7PnBKxLJ+y61rhIe2wlBNyAZCYBIl8GqQtPPg4BXc6S5f66E5/dIuuHKUkN4uaPG8dFbM2VM8TaGjFCulyGCMQzAoeNXIZI2VcMKJPRMXvvKbE0+64ksi0qVJU+9hDXmOWAXYoQidftgaNE+/Q1Xv2/rMr/9s2zM3fcj3rznZuCoe40HECFJzHsWwsKXKwtMiVvdb7thguX9ryPYyBAayNhF7r4ZD4ykcvJCoAFY8XgzOGaqxJxMop05yvGiG54yJEdnAUo0dQynOF+NBjHc+JiNiKEzWlpnn/mrORR/6nAmy96urMdzBdYRlJY84BdjJGqQ5A+Abqvqb9fdc/ZHejQ/+qZS3jK9FMR7jJQmoSslZrDpmN8H8kz0vn+d4cIvl3o2G1YOWSCFrlNDUIdcLy2muO7VelVJs8QjjczEXTfRcMM1x/DhHYJRKLJQij63DIsHjFUNkcoUWsm2LH5u06M2fb5l28i9FpHgkOLovOAXY2UFW6egQEZGNYnN/Wx3Y8uM19/z7u+PNT1wZ+P5xtZqCMV4QUbFSc0rNeSZklNfMc7xkprC0W7h/a8iS7ZbtZUEFQiOJMiSUp4xtknn0IdBwz40kKcRqLMQKDQGc3BZzziTH4smeKQWPV6UWQ80lER+bNCB59Y4Ab2yugbD1+JXjF17+vcnHvfTbIrJuBxzt9HIE16IER/7JloZL0+RZpqH1fgny9/evffD7XU/+/CODXc9cYXx3JkotApLQu0YKtVpyw0+brJw+uca2smVJt/B4l7CsL6CvrMRiCYyQEb/TbK/DzTrU687qgcnYQxSDYmgIPAtbHYsmOk6dCLObYrI2YekuRTKsLKlLpF6VgNiE2QZM67yVrXMu/v60Ra//noisrFteOjr0SD31j8go0L5Hi9qNSGddKXKDmx59xZanfvWW4tall1nfPyGKqji1KiKqqIjW43SaCLpVYjV0l4WlfYant1uW9xm2l6DoLAZPYAyBYaeyC01pFPfGZHGgrBBJxFdTYa9P4gGnivPJ1yGelpwwq9lz4njHSW3K9CalEDi8g6oDhyQ1O0nBmgqqeG8ygSDZRmzz3JXjZ1/0/SmLXv89EbMSlCMltHlUK8CwQI4IxdlMAwObHj9ny5O/ec/QtqdeR3HzJO8qxM6gRn3i6qnU+1SEpGY/Y0HV0B8ZNg0ZVvbByn7LpkHYXg4ouXTer4AxEMgO6CG7ATkJGWyiAJ/YRQG+OlIB9nBjVJPB0eoFp/WchpCxnnGhY1KDMLfFM3+cMqfZ0ZZTMsYT+6S3ug7jTJ2HCquqDkPNhEEGF47z+XGzbxs354LrJp/4ml+LmOXDgk87R0po85gCDAuMCnQMTxA3YR5XK52y/r7/fvngtqfeUe1df0pAkSiu4bzxIqYeFxTVHUFRI0poEyaDSA1DEWwrCZuHlPWDlk3FgK6yYbDqKcdK1ZtEOFUxkoizkUTNvCr5wNNxfo2pDX5YAb70cI67NwXkw6QxtD7BXdMZKYbEQc8EQmMIE3OeKQ3KzCbH9EbPpILQnFMKxqPqqanBOcWP8AcUUUk6gEHVBEYIMnnITuxvmnTi/eMWXPrtlmmn/1pEhgDawdDeTucLUPCPCgXYkyKkP5uyddVdLx1ce8erSttXXGKi3ukuGqLmklCJmDAdmZ0QVowk7g2MYo1gTZ1+UKhE0F8T+qqG3qrQW4H+ijAQCYM1GIwNceyJXMKr9uGzIqYWalRdQC7wfOvxDI9tMzRlhcAIBas05JTmUGnOKK05aMt6xuU8zRmlECZwzUgySij2CX2MT4n/ZbgZhUQV1WPUG2vBhjnUNLvMuFlLWiYvunbq4itvJQwfE5HyLhj/BV89ctS1kqi2m46OTjo7Sa1CAVcrLt665OevGdz85EsrPavPdHFfi8RFYpfgaozx9XNU6vPjR+B9EcGiycANSQc6y47WX+clEVBviDW1AjbhxDTqEVHKLsQrhMZjjBCKEho/DKeShF06nVEV79OK113CnDtOeVDvxYoXayEICkS2EOeaZy5tmnDC7S1zzru5afJJ94rIlpF7A0eH4B+1CrCTVejo2GnSoKoWolL3KT3L77qwf/uSy6P+DYuics80q0PgYiLncJqwOUrqhKoaQTwJ57XfKZOsw26r1mPqKc9dgsfrWF9JFCeJ0+9QrBGDGXdygpP/tU6zsGMCglcxgljrCGyI2kY0bOrPNE9eW2g77s5x0864uWnaafeJyWxGk+F5qWObWIqjSPCPegXYVRE62GEV0p/ngVm9a+84Z3Dz05dU+tbNr5S6ToyKPZMz1omPyoj3RE4TbUBUEK8iKQ8qaaCpPlm0bhN2v/H6rNuSCiWyQ6dU04CvCt4YwRMECVCzNouTDBoUhrL5SetzLZOeyk88/r62uRffGebHrxCb3YavDb+Aarscbaf9MQXYR1+Bjk5khDJgs2hcyQNze9bcdmp5+7rFxf5NZ0Tl7hmu3DPH14p5fMUExqHOEce19Lg3iIBzivOJjRi2AcP01ImvrVqX8x2TaawRMaZuCXxC3R5k8GpwGqjJNNbC3LjVNtfSlS9MuD/fNmd944wzHsg3T18PbNxFuI8J/TEF2A9lAOp5hZHbpupzQHM81HfywPbluWrf2hOiStdJtVJfi6+WTo9r/ZnYVdVHNbyrTclYn3XeIT6J66hqQoGUkEXtoEoUgxED1hD5sM8GuT4TZCQICyKZhqWZXNPabMPk3kzDlLtzE+YWG9vmPQX0igSllGFyeCXwpp1jQn9MAUZVIUY60TuvANXIAlOpcy6Vywz0L1sclwenR5Uhh6uAj4irZY9hHCbTID7ehAnBhtgwRxgWMGFBsuMnP5Vvmr2WHfxN20UyxSRI6naFUEJ7u9ABCbMyHBP6Y2tMFSK9jGq7aW/H7N9EsefHS6BJdZKotpvktZP3ceyOHLMAh5GlgI6OjuG97eiAa699Sq688qThE/naa5+SJ5+8VumEDm1/jmfs0PpzdXQcgzLH1rF1bB1bx9axdWwdW8fWAa//D0BvjLb3g/qDAAAAAElFTkSuQmCC" alt="Логотип кафедри фундаментальної математики">
+      <div style="min-width:0">
+        <div class="dept">Кафедра фундаментальної математики · ХНУ імені В. Н. Каразіна</div>
+        <h1>Ойлерові шляхи і цикли</h1>
+        <div class="sub">Теорія графів · Лекція 8 · <i>обійти кожне ребро рівно один раз</i></div>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Розділи">
+      <button role="tab" data-tab="lab" aria-selected="true">Лабораторія</button>
+      <button role="tab" data-tab="debruijn" aria-selected="false">Послідовності де Брьойна</button>
+      <button role="tab" data-tab="apps" aria-selected="false">Прикладні задачі</button>
+      <button role="tab" data-tab="theory" aria-selected="false">Теоретична довідка</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- =================== LAB =================== -->
+<section class="panel active" id="panel-lab" role="tabpanel">
+  <div class="lab">
+    <div class="lab-left">
+      <div class="toolbar">
+        <div class="grp" role="group" aria-label="Режим редагування">
+          <button class="btn" data-edit="move" aria-pressed="true" title="Перетягуйте вершини">Рухати</button>
+          <button class="btn" data-edit="vertex" aria-pressed="false" title="Клік по порожньому місцю дошки">+ Вершина</button>
+          <button class="btn" data-edit="edge" aria-pressed="false" title="Клік по двох вершинах; двічі по одній — петля">+ Ребро</button>
+          <button class="btn" data-edit="delete" aria-pressed="false" title="Клік по вершині або ребру">Видалити</button>
+        </div>
+        <div class="grp">
+          <button class="btn" id="btnLayout" title="Автоматичне розташування">Розкласти</button>
+          <button class="btn" id="btnClear">Очистити</button>
+        </div>
+      </div>
+      <div class="board" id="labBoard">
+        <svg id="labSvg" viewBox="0 0 800 520" aria-label="Граф на дошці"></svg>
+        <div class="cap" id="labCap"></div>
+        <div class="tray"></div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;gap:12px">
+          <label class="fld">Що будуємо
+            <select id="mode">
+              <option value="euler">Ойлерів цикл / ланцюг (алгоритм Гірхольцера)</option>
+              <option value="fleury">Ойлерів цикл / ланцюг (алгоритм Флері)</option>
+              <option value="chains">Найменше покриття ланцюгами (Лістинг–Люка)</option>
+              <option value="postman">Найкоротший замкнений обхід (китайський листоноша)</option>
+            </select>
+          </label>
+          <label class="fld">Старт
+            <select id="startV"></select>
+          </label>
+        </div>
+        <div class="player" style="margin-top:12px">
+          <button class="btn primary" id="pPlay">▶ Запустити</button>
+          <button class="btn" id="pBack" title="Крок назад">◀︎</button>
+          <button class="btn" id="pFwd" title="Крок уперед">▶︎</button>
+          <button class="btn" id="pReset">Скинути</button>
+          <span class="prog" id="pProg">0 / 0</span>
+          <label class="row hint" style="gap:6px">швидкість <input type="range" id="pSpeed" min="0.3" max="4" step="0.1" value="1.2"></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Журнал алгоритму</div>
+        <ul class="log" id="labLog" style="margin-top:8px"></ul>
+      </div>
+    </div>
+
+    <div class="lab-right">
+      <div class="card">
+        <div class="eyebrow">Граф з клавіатури</div>
+        <textarea id="edgeInput" rows="7" spellcheck="false" aria-label="Список ребер"></textarea>
+        <div class="row" style="margin-top:8px;justify-content:space-between">
+          <button class="btn primary" id="btnBuild">Побудувати</button>
+          <span class="hint"><span class="kbd">Ctrl</span>+<span class="kbd">Enter</span></span>
+        </div>
+        <p class="hint" style="margin:8px 0 0">Кожен рядок — ребро: <span class="mono">A B</span>. Повтор рядка дає кратне ребро, <span class="mono">A A</span> — петлю, <span class="mono">A B C A</span> — ланцюжок ребер A–B, B–C, C–A, одна назва в рядку — ізольована вершина. Рядки можна розділяти також <span class="mono">;</span> або <span class="mono">,</span>.</p>
+        <div class="eyebrow" style="margin-top:12px">Готові приклади</div>
+        <div class="presets" id="presets" style="margin-top:6px"></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="card meaning" id="meaning"></div>
+      <div class="card">
+        <div class="eyebrow">Степені вершин</div>
+        <div class="tablebox"><table class="deg" id="degTable"></table></div>
+        <p class="hint" style="margin:8px 0 0">Стовпчик «залишок» — степінь у ще не пройденій частині графа. Під час обходу непарним він буває лише в стартовій і поточній вершинах: це лема 1.5 у дії.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== DE BRUIJN =================== -->
+<section class="panel" id="panel-debruijn" role="tabpanel">
+  <div class="db">
+    <div class="db-col">
+      <div class="card">
+        <div class="row" style="gap:12px;align-items:flex-end">
+          <label class="fld">Алфавіт Σ (символи підряд)
+            <input type="text" id="dbAlpha" value="01" maxlength="10" style="width:150px" class="mono">
+          </label>
+          <label class="fld">Довжина слова n
+            <input type="number" id="dbN" value="3" min="2" max="8" style="width:90px">
+          </label>
+          <button class="btn primary" id="dbBuild">Побудувати</button>
+        </div>
+        <p class="hint" style="margin:8px 0 0" id="dbInfo"></p>
+      </div>
+      <div class="board">
+        <svg id="dbSvg" viewBox="0 0 600 600" aria-label="Граф де Брьойна"></svg>
+        <div class="cap" id="dbCap"></div>
+        <div class="tray"></div>
+      </div>
+      <div class="player">
+        <button class="btn primary" id="dPlay">▶ Запустити</button>
+        <button class="btn" id="dBack">◀︎</button>
+        <button class="btn" id="dFwd">▶︎</button>
+        <button class="btn" id="dReset">Скинути</button>
+        <span class="prog" id="dProg">0 / 0</span>
+        <label class="row hint" style="gap:6px">швидкість <input type="range" id="dSpeed" min="0.3" max="6" step="0.1" value="1.5"></label>
+      </div>
+    </div>
+    <div class="db-col">
+      <div class="card">
+        <div class="eyebrow">Циклічна послідовність</div>
+        <div class="strip" id="dbStrip" style="margin-top:8px"></div>
+        <p class="hint" style="margin:8px 0 0">Золоте вікно ширини n — слово, що відповідає поточній дузі ойлерового циклу. Пунктирні клітинки повторюють початок: послідовність замкнена в кільце.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Усі слова довжини n</div>
+        <div class="words" id="dbWords" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Кодовий замок</div>
+        <div class="stat" id="dbLock" style="margin-top:8px"></div>
+        <p class="hint" style="margin:8px 0 0" id="dbLockText"></p>
+      </div>
+      <div class="card prose">
+        <h3 style="margin-top:0">Як читати малюнок</h3>
+        <p>Вершини — слова довжини n−1, дуги — слова довжини n: дуга з a₁…aₙ₋₁ у a₂…aₙ означає «зсунути вікно на один символ і дописати aₙ». З кожної вершини виходить і в кожну входить рівно q дуг, тому за теоремою 5.2 ойлерів цикл існує. Дописуючи останні символи вершин уздовж цього циклу, отримуємо слово довжини qⁿ, у якому кожне n-символьне слово трапляється як фрагмент рівно один раз.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== APPLICATIONS =================== -->
+<section class="panel" id="panel-apps" role="tabpanel">
+  <div class="apps">
+    <div class="prose">
+      <h2>Де «обійти кожне ребро» трапляється в житті</h2>
+      <p>Гамільтонова задача відвідує місця, ойлерова проходить зв’язки між ними. Тому ойлерова постановка виникає скрізь, де робота виконується вздовж ліній: вулиць, труб, дротів, контурів, переходів між станами. Математично важливо те, що для неї є повний і швидко перевірюваний критерій, а побудова обходу займає лінійний час. Більшість прикладних задач нижче зводяться до одного спостереження: у вершину треба стільки ж разів увійти, скільки вийти, тож усе вирішує парність степенів.</p>
+
+      <h3>Листоноша, снігоочисник, сміттєвоз</h3>
+      <p>Місто — це мультиграф: перехрестя є вершинами, відрізки вулиць ребрами. Снігоочисник чи машина розмітки мають пройти кожну вулицю й повернутися в депо. Якщо всі перехрестя мають парну кількість вулиць, маршрут без жодного повтору існує за теоремою Ойлера. Інакше кожне перехрестя з непарним степенем змушує деяку вулицю пройти двічі: прибувши туди вчетверте, машина вже не має «пари» для виїзду. Мінімальні повтори знаходять так: обчислюють найкоротші відстані між непарними перехрестями і шукають парування найменшої ваги, тобто розбивають непарні вершини на пари так, щоб сумарна довжина сполучних шляхів була найменшою. Продубльовані шляхи роблять усі степені парними, після чого залишається побудувати ойлерів цикл. Це задача китайського листоноші (Гуань Мейгу, 1962), і вона розв’язується за поліноміальний час, на відміну від задачі комівояжера.</p>
+      <p>У лабораторії режим «китайський листоноша» робить саме це: пунктирні золоті ребра — вулиці, які доведеться пройти вдруге, а журнал показує, які непарні перехрестя спарено.</p>
+      <p><button class="btn primary" data-open="grid">Відкрити сітку вулиць у лабораторії</button></p>
+      <p>Так само плануються обходи ліній електропередач дронами, перевірка трубопроводів, маршрути роботів-пилососів по коридорах складу. У зважених графах замість кількості ребер беруть довжину чи час проїзду, але схема розв’язання та сама.</p>
+
+      <h3>Плотер, лазер, вишивальна машина: «не відриваючи олівця»</h3>
+      <p>Коли верстат вирізає чи малює контур, кожен відрив інструмента означає холостий перехід, а на виробництві це час і зношення. Креслення є графом, і питання «скільки разів доведеться відірвати перо» має точну відповідь за теоремою Лістинга–Люка: якщо в зв’язному кресленні 2k вершин непарного степеня, то потрібно рівно k неперервних ліній, тобто k−1 відривів. Класичний «конверт» має дві непарні вершини і малюється однією лінією, але лише якщо почати в одній із них. Граф K₃,₃ має шість непарних вершин, і його не намалювати менш ніж трьома лініями.</p>
+      <p><button class="btn" data-open="house">Конверт однією лінією</button> <button class="btn" data-open="k33">K₃,₃ трьома лініями</button></p>
+
+      <h3>Збирання геному</h3>
+      <p>Секвенатор не читає ДНК цілком: він видає мільйони коротких фрагментів, а їхній порядок невідомий. Якщо зробити кожен фрагмент вершиною і шукати шлях через усі вершини, отримаємо гамільтонову, тобто NP-складну, задачу. Підхід Певзнера, Танга і Вотермана (2001) перевертає постановку: кожен k-мер стає дугою з префікса довжини k−1 у суфікс довжини k−1. Тепер відновлений геном є ойлеровим шляхом у графі де Брьойна, який знаходиться за лінійний час. Повтори в геномі дають кілька різних ойлерових шляхів, і це реальне джерело неоднозначності збирання: збільшення k розриває повтори. Спробуйте на прикладі праворуч.</p>
+
+      <h3>Кодові замки, сканування структурованим світлом, кодування положення</h3>
+      <p>Замок з q кнопками, що відкривається, як тільки останні n натиснутих цифр утворюють код, можна зламати за qⁿ+n−1 натискань замість n·qⁿ, якщо набирати послідовність де Брьойна: кожне натискання одночасно завершує одну спробу і починає наступну. Для 10 цифр і коду довжини 4 це 10 003 натискання замість 40 000. Та сама властивість «будь-яке вікно довжини n унікальне» використовується в комп’ютерному зорі: проектор кидає на об’єкт смуги, кольори яких утворюють послідовність де Брьойна, і камера за n сусідніми смугами однозначно визначає, яка це смуга, а отже глибину точки. Аналогічно влаштовані абсолютні енкодери положення та пасивні мітки для навігації.</p>
+      <p><button class="btn" data-goto="debruijn">До графа де Брьойна</button></p>
+
+      <h3>Тестування програм і мереж</h3>
+      <p>Протокол чи інтерфейс описується скінченним автоматом: стани є вершинами, переходи дугами. Тест, що перевіряє кожен перехід рівно раз і повертається в початковий стан, є орієнтованим ойлеровим циклом. Він існує, якщо в кожен стан входить стільки ж переходів, скільки виходить (теорема 5.2). Якщо ні, мінімальний набір повторних переходів шукається так само, як для листоноші, тільки з потоками замість парувань.</p>
+    </div>
+
+    <div class="aside-col">
+      <div class="card">
+        <div class="eyebrow">Інтерактив · збирання геному</div>
+        <div class="row" style="margin-top:8px;align-items:flex-end">
+          <label class="fld" style="flex:1 1 200px">Послідовність ДНК (A, C, G, T)
+            <input type="text" id="gSeq" value="TAATGCCATGGGATGTT" class="mono" style="width:100%">
+          </label>
+          <label class="fld">k
+            <input type="number" id="gK" value="3" min="2" max="10" style="width:70px">
+          </label>
+          <button class="btn primary" id="gBuild">Зібрати</button>
+        </div>
+        <div class="eyebrow" style="margin-top:12px">Фрагменти-прочитання (порядок невідомий)</div>
+        <div class="reads" id="gReads" style="margin-top:6px"></div>
+      </div>
+      <div class="board">
+        <svg id="gSvg" viewBox="0 0 400 300" aria-label="Граф де Брьойна для k-мерів"></svg>
+        <div class="tray"></div>
+      </div>
+      <div class="player">
+        <button class="btn primary" id="gPlay">▶ Збирати</button>
+        <button class="btn" id="gFwd">▶︎</button>
+        <button class="btn" id="gReset">Скинути</button>
+        <span class="prog" id="gProg">0 / 0</span>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Зібрано ойлеровим шляхом</div>
+        <div class="genome-out" id="gOut" style="margin-top:6px"></div>
+        <p class="hint" id="gNote" style="margin:8px 0 0"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== THEORY =================== -->
+<section class="panel" id="panel-theory" role="tabpanel">
+  <div class="apps">
+    <div class="prose">
+      <h2 id="t1">1. Мультиграфи, маршрути і ланцюги</h2>
+      <p>Природне середовище задачі — мультиграф G = (V, E, ψ), у якому дозволено петлі та кратні ребра. Степінь deg v — кількість інцидентних ребер, причому петля рахується двічі. Лема про рукостискання зберігається: Σ deg v = 2m, тому вершин непарного степеня завжди парна кількість.</p>
+      <p>Маршрут v₀e₁v₁…eₖvₖ, у якому всі ребра різні, називається ланцюгом; замкнений ланцюг — циклом (вершини можуть повторюватися, ребра ні). Ойлерів цикл містить кожне ребро рівно один раз; ойлерів ланцюг — те саме, але незамкнений. Ізольовані вершини на обхід не впливають, тому використовують поняття зв’язності за ребрами: усі ребра лежать в одній компоненті.</p>
+      <div class="thm"><div class="t">Лема 1.5 <i>(парність уздовж ланцюга)</i></div><p>Для ланцюга W степінь deg<sub>W</sub> v парний для всіх v, якщо W замкнений; якщо W незамкнений, непарними є рівно степені його кінців. Причина: кожне внутрішнє входження вершини дає одне ребро «на вхід» і одне «на вихід».</p></div>
+      <div class="thm"><div class="t">Лема 1.6</div><p>Якщо всі степені не менші за 2, мультиграф містить простий цикл (петлю, пару кратних ребер або цикл, замкнений з кінця найдовшого шляху).</p></div>
+
+      <h2 id="t2">2. Теорема Ойлера. Розклад на цикли</h2>
+      <div class="thm"><div class="t">Теорема 2.1 <i>(Ойлер, 1736; Гірхольцер, 1873)</i></div><p>Мультиграф з m ≥ 1 ребрами має ойлерів цикл тоді й лише тоді, коли він зв’язний за ребрами і всі степені парні.</p></div>
+      <p>Необхідність випливає з леми 1.5. Для достатності беруть найдовший ланцюг W. Усі ребра при його кінці вже в W, тож кінцевий степінь парний, і W замкнений. Якщо якесь ребро f поза W, зв’язність дає ребро, що торкається W у вершині vᵢ; «розрізавши» замкнений W у vᵢ і дописавши f, отримуємо довший ланцюг, що суперечить вибору.</p>
+      <p>Задача про сім кенігсберзьких мостів має степені 5, 3, 3, 3: усі непарні, тому обходу немає ні замкненого, ні незамкненого.</p>
+      <div class="thm"><div class="t">Теорема 2.4 <i>(Веблен, 1912)</i></div><p>Множину ребер можна розбити на прості цикли тоді й лише тоді, коли всі степені парні.</p></div>
+      <p>Доведення індукцією: за лемою 1.6 знаходимо простий цикл, вилучаємо його, парність зберігається. Звідси друге доведення теореми Ойлера: цикли розкладу послідовно «зшиваються» в спільних вершинах. Ця ідея і є алгоритмом Гірхольцера.</p>
+
+      <h2 id="t3">3. Напівойлерові графи. Покриття ланцюгами</h2>
+      <div class="thm"><div class="t">Наслідок 3.1</div><p>Ойлерів ланцюг існує тоді й лише тоді, коли граф зв’язний за ребрами і має рівно дві вершини непарного степеня; ланцюг починається в одній з них і закінчується в іншій.</p></div>
+      <p>Доводиться додаванням фіктивного ребра між непарними вершинами: отримуємо ойлерів граф, а розрізавши цикл по цьому ребру, маємо ланцюг.</p>
+      <div class="thm"><div class="t">Теорема 3.2 <i>(Лістинг, 1847; Люка, 1882)</i></div><p>Якщо зв’язний за ребрами мультиграф має 2k ≥ 2 непарних вершин, то його ребра можна розбити на k ланцюгів і не можна на меншу кількість.</p></div>
+      <p>Оцінка знизу: кожна непарна вершина є кінцем хоча б одного ланцюга, а ланцюг має два кінці. Побудова: додаємо нову вершину w, сполучену з усіма 2k непарними вершинами, будуємо ойлерів цикл і розрізаємо його по k входженнях w. Якщо ж повторення ребер дозволено, мінімальний замкнений обхід — це задача китайського листоноші, що зводиться до парування найменшої ваги між непарними вершинами (Едмондс–Джонсон, 1973).</p>
+
+      <h2 id="t4">4. Алгоритми</h2>
+      <div class="thm"><div class="t">Алгоритм Флері (1883)</div><p>Стартуємо в будь-якій вершині (або в непарній, якщо їх дві) і щоразу йдемо невикористаним ребром, вибираючи міст поточного графа лише тоді, коли інших ребер немає. Коректність тримається на лемі 4.2: у зв’язному графі з парними степенями (або з двома непарними, одна з яких поточна) при вершині степеня ≥ 2 завжди є ребро, що не є мостом. Перевірка мостів на кожному кроці дає час O(m²).</p></div>
+      <div class="thm"><div class="t">Алгоритм Гірхольцера</div><p>Ідемо невикористаними ребрами, доки не застрягнемо: при парних степенях застрягти можна лише у вихідній вершині. Потім знаходимо на побудованому циклі вершину з вільними ребрами, будуємо з неї новий цикл і вставляємо його. Зі стеком алгоритм працює за час O(n + m).</p></div>
+
+      <h2 id="t5">5. Орієнтовані графи і послідовності де Брьойна</h2>
+      <div class="thm"><div class="t">Теорема 5.2</div><p>Орієнтований мультиграф з |A| ≥ 1 має орієнтований ойлерів цикл тоді й лише тоді, коли він зв’язний за дугами і deg⁺ v = deg⁻ v для кожної вершини. Незамкнений ланцюг з u у v існує, коли в u виходить на одну дугу більше, ніж входить, у v навпаки, а в решті вершин півстепені рівні.</p></div>
+      <div class="thm"><div class="t">Теорема 5.3 <i>(де Брьойн, 1946; Гуд, 1946)</i></div><p>Для будь-яких q ≥ 2, n ≥ 2 існує циклічна послідовність довжини qⁿ над алфавітом з q символів, у якій кожне слово довжини n трапляється рівно один раз. Вона читається з ойлерового циклу графа B(q, n): вершини — слова довжини n−1, дуги — слова довжини n, deg⁺ = deg⁻ = q, і граф сильно зв’язний.</p></div>
+      <p>Приклад: для q = 2, n = 3 отримуємо 00010111, циклічні фрагменти якої 000, 001, 010, 101, 011, 111, 110, 100.</p>
+      <div class="thm"><div class="t">Твердження 5.6</div><p>Якщо простий граф G ойлерів, то його реберний граф L(G) гамільтонів: послідовні ребра ойлерового циклу мають спільні кінці. Обернене хибне: L(K₁,₃) = K₃ гамільтонів, хоча K₁,₃ не ойлерів.</p></div>
+      <h3>Контраст із лекціями 6–7</h3>
+      <p>Для гамільтонових циклів маємо лише достатні умови (Оре, Дірак, Хватал, Хватал–Ердеш), а розпізнавання NP-повне. Для ойлерових є повний критерій, перевірка якого вимагає лише порахувати степені й перевірити зв’язність.</p>
+    </div>
+    <div class="aside-col">
+      <div class="card">
+        <div class="eyebrow">Зміст</div>
+        <nav class="toc" style="margin-top:6px">
+          <a href="#t1">1. Мультиграфи, маршрути, ланцюги</a>
+          <a href="#t2">2. Теорема Ойлера, розклад Веблена</a>
+          <a href="#t3">3. Напівойлерові графи, покриття</a>
+          <a href="#t4">4. Алгоритми Флері та Гірхольцера</a>
+          <a href="#t5">5. Орієнтовані графи, де Брьойн</a>
+        </nav>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Критерій одним поглядом</div>
+        <table class="deg" style="margin-top:6px">
+          <tr><th>Непарних вершин</th><th>Висновок</th></tr>
+          <tr><td>0</td><td>ойлерів цикл (т. 2.1)</td></tr>
+          <tr><td>2</td><td>ойлерів ланцюг між ними (н. 3.1)</td></tr>
+          <tr><td>2k, k ≥ 2</td><td>рівно k ланцюгів (т. 3.2)</td></tr>
+        </table>
+        <p class="hint" style="margin:8px 0 0">Усюди передбачено зв’язність за ребрами.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Вправи лекції</div>
+        <ol style="margin:6px 0 0;padding-left:20px;font-size:15px">
+          <li>Коли ойлерові Kₙ і K<sub>m,n</sub>? Коли K<sub>m,n</sub> має ойлерів ланцюг?</li>
+          <li>Зв’язний граф з парними степенями не має мостів.</li>
+          <li>Ойлеровість ⇔ кожен розріз містить парну кількість ребер.</li>
+          <li>Критерій незамкненого орієнтованого ланцюга.</li>
+          <li>Послідовність де Брьойна з B(2, 4); кількість петель у B(q, n).</li>
+          <li>Збалансована орієнтація графа з парними степенями.</li>
+          <li>L(G) ойлерів і гамільтонів для ойлерового простого G.</li>
+        </ol>
+        <p class="hint" style="margin:8px 0 0">Вправи 1, 5 зручно перевіряти в лабораторії та на вкладці де Брьойна.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer><div class="wrap">Кафедра фундаментальної математики ХНУ імені В. Н. Каразіна · Теорія графів, лекція 8 · Інтерактивний посібник</div></footer>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const NS='http://www.w3.org/2000/svg';
+function S(tag,attrs,parent){const e=document.createElementNS(NS,tag);if(attrs)for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const PAL=['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)'];
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function pl(n,a,b,c){const m=Math.abs(n)%100,k=m%10;return n+' '+(m>10&&m<20?c:k===1?a:k>=2&&k<=4?b:c);}
+const RB=n=>pl(n,'ребро','ребра','ребер');
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ================= tabs ================= */
+function showTab(name){
+  $$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name));
+  $$('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name));
+  try{localStorage.setItem('euler-tab',name)}catch(e){}
+  if(name==='debruijn'&&!DB.built)DB.build();
+  if(name==='apps'&&!GN.built)GN.build();
+}
+$$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{showTab(b.dataset.tab);try{history.replaceState(null,'','#'+b.dataset.tab)}catch(e){}}));
+
+/* ================= geometry ================= */
+function geom(pos,edges,directed,loopBase){
+  let cx=0,cy=0,n=0;for(const k in pos){cx+=pos[k].x;cy+=pos[k].y;n++;} if(n){cx/=n;cy/=n;}
+  const groups=new Map();
+  edges.forEach((e,i)=>{let k; if(e.u===e.v)k='L\u0001'+e.u; else if(directed)k=e.u+'\u0001'+e.v; else k=[e.u,e.v].sort().join('\u0001');
+    if(!groups.has(k))groups.set(k,[]);groups.get(k).push(i);});
+  const out=new Array(edges.length);
+  for(const [k,idx] of groups){
+    const c=idx.length;
+    idx.forEach((i,j)=>{
+      const e=edges[i];
+      if(e.u===e.v){
+        const P=pos[e.u];let a=Math.atan2(P.y-cy,P.x-cx);if(Math.abs(P.x-cx)<1&&Math.abs(P.y-cy)<1)a=-Math.PI/2;
+        a+= (j-(c-1)/2)*0.85; const s=(loopBase||34)+j*4;
+        const c1x=P.x+s*1.7*Math.cos(a-0.5),c1y=P.y+s*1.7*Math.sin(a-0.5),c2x=P.x+s*1.7*Math.cos(a+0.5),c2y=P.y+s*1.7*Math.sin(a+0.5);
+        out[i]={d:`M${P.x},${P.y} C${c1x},${c1y} ${c2x},${c2y} ${P.x},${P.y}`,from:e.u};
+      }else{
+        let a=e.u,b=e.v; if(!directed&&a>b){a=e.v;b=e.u;}
+        const A=pos[a],B=pos[b];const dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy)||1;const nx=-dy/L,ny=dx/L;
+        const off=directed?(14+j*16):(j-(c-1)/2)*30;
+        const mx=(A.x+B.x)/2+nx*off*2,my=(A.y+B.y)/2+ny*off*2;
+        out[i]={d:`M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}`,from:a};
+      }
+    });
+  }
+  return out;
+}
+function arrowAt(path,frac,size,parent,cls,style){
+  const L=path.getTotalLength();const p=path.getPointAtLength(L*frac),q=path.getPointAtLength(Math.min(L,L*frac+1));
+  const a=Math.atan2(q.y-p.y,q.x-p.x);const s=size;
+  const pts=[[p.x+s*Math.cos(a),p.y+s*Math.sin(a)],[p.x+s*Math.cos(a+2.5),p.y+s*Math.sin(a+2.5)],[p.x+s*Math.cos(a-2.5),p.y+s*Math.sin(a-2.5)]];
+  const pg=S('polygon',{points:pts.map(t=>t.join(',')).join(' '),class:cls||''},parent);if(style)pg.setAttribute('style',style);return pg;
+}
+
+/* ================= tracer & player ================= */
+function startTrace(layer,basePath,reversed,color,width){
+  const p=S('path',{d:basePath.getAttribute('d'),fill:'none','stroke-linecap':'round'},layer);
+  p.style.stroke=color;p.style.strokeWidth=width||4.2;const L=p.getTotalLength()||1;p.__L=L;p.__rev=reversed;
+  p.style.strokeDasharray=`${L} ${L}`;setTrace(p,0);return p;
+}
+function setTrace(p,t,token){
+  const L=p.__L;p.style.strokeDashoffset=p.__rev?-(L-t*L):(L-t*L);
+  if(token){const pt=p.getPointAtLength(p.__rev?L-t*L:t*L);token.setAttribute('cx',pt.x);token.setAttribute('cy',pt.y);token.style.display='';}
+}
+class Player{
+  constructor(cb,speedEl){this.cb=cb;this.steps=[];this.i=0;this.playing=false;this.inStep=false;this.speedEl=speedEl;}
+  load(steps){this.halt();this.steps=steps;this.i=0;this.cb.reset();this.ui();}
+  speed(){return this.speedEl?+this.speedEl.value:1}
+  dur(s){return (s.type==='edge'?(s.dur||650):260)/this.speed()}
+  ui(){this.cb.ui&&this.cb.ui(this)}
+  play(){if(!this.steps.length)return; if(this.playing){this.pause();return;} if(this.i>=this.steps.length){this.cb.reset();this.i=0;} this.playing=true;this.ui();this.run();}
+  run(){
+    if(!this.playing)return;
+    if(this.i>=this.steps.length){this.playing=false;this.ui();return;}
+    const s=this.steps[this.i],idx=this.i,d=this.dur(s),t0=performance.now();
+    this.inStep=true;this.cb.begin(s,idx);
+    const tick=now=>{
+      if(!this.playing||!this.inStep)return;
+      const t=REDUCED?1:Math.min(1,(now-t0)/d);this.cb.frame&&this.cb.frame(s,t,idx);
+      if(t<1){this.raf=requestAnimationFrame(tick);}
+      else{this.inStep=false;this.cb.apply(s,idx);this.i++;this.ui();this.to=setTimeout(()=>this.run(),REDUCED?150:40);}
+    };
+    this.raf=requestAnimationFrame(tick);
+  }
+  halt(){this.playing=false;cancelAnimationFrame(this.raf);clearTimeout(this.to);if(this.inStep){this.inStep=false;}}
+  pause(){const was=this.inStep;this.halt();if(was){this.cb.apply(this.steps[this.i],this.i);this.i++;}this.ui();}
+  fwd(){this.pause();if(this.i<this.steps.length){const s=this.steps[this.i];this.cb.begin(s,this.i);this.cb.apply(s,this.i);this.i++;}this.ui();}
+  back(){this.pause();const tg=Math.max(0,this.i-1);this.cb.reset();for(let k=0;k<tg;k++){this.cb.begin(this.steps[k],k);this.cb.apply(this.steps[k],k);}this.i=tg;this.ui();}
+  reset(){this.halt();this.cb.reset();this.i=0;this.ui();}
+  toEnd(){this.halt();this.cb.reset();for(let k=0;k<this.steps.length;k++){this.cb.begin(this.steps[k],k);this.cb.apply(this.steps[k],k);}this.i=this.steps.length;this.ui();}
+}
+
+/* ================= graph algorithms ================= */
+function hierholzer(names,edges,start){
+  const adj=new Map(names.map(n=>[n,[]]));
+  edges.forEach((e,i)=>{adj.get(e.u).push(i);if(e.u!==e.v)adj.get(e.v).push(i);});
+  const used=new Array(edges.length).fill(false),ptr=new Map(names.map(n=>[n,0]));
+  const next=v=>{const L=adj.get(v);let p=ptr.get(v);while(p<L.length&&used[L[p]])p++;ptr.set(v,p);return p<L.length?L[p]:-1;};
+  const walk=from=>{const seq=[];let cur=from;for(;;){const e=next(cur);if(e<0)break;used[e]=true;const E=edges[e];const to=E.u===cur?E.v:E.u;seq.push({e,from:cur,to});cur=to;}return seq;};
+  const circuit=walk(start);const subs=[{at:start,steps:circuit.slice()}];
+  for(;;){
+    let pos=-1,vtx=null;
+    for(let j=0;j<=circuit.length;j++){const v=j===0?start:circuit[j-1].to;if(next(v)>=0){pos=j;vtx=v;break;}}
+    if(pos<0)break;
+    const sub=walk(vtx);subs.push({at:vtx,steps:sub});circuit.splice(pos,0,...sub);
+  }
+  return {circuit,subs};
+}
+function analyze(names,edges){
+  const deg=new Map(names.map(n=>[n,0]));
+  edges.forEach(e=>{deg.set(e.u,deg.get(e.u)+1);deg.set(e.v,deg.get(e.v)+1);});
+  const par=new Map(names.map(n=>[n,n]));const f=x=>{while(par.get(x)!==x){par.set(x,par.get(par.get(x)));x=par.get(x);}return x;};
+  edges.forEach(e=>par.set(f(e.u),f(e.v)));
+  const comps=new Set();names.forEach(n=>{if(deg.get(n)>0)comps.add(f(n));});
+  const odd=names.filter(n=>deg.get(n)%2===1);
+  return {deg,odd,m:edges.length,n:names.length,edgeConnected:edges.length>0&&comps.size===1,edgeComps:comps.size,isolated:names.filter(n=>deg.get(n)===0)};
+}
+function reachable(names,edges,alive,from,skip){
+  const adj=new Map(names.map(n=>[n,[]]));
+  edges.forEach((e,i)=>{if(!alive[i]||i===skip||e.u===e.v)return;adj.get(e.u).push(e.v);adj.get(e.v).push(e.u);});
+  const seen=new Set([from]);const st=[from];while(st.length){const x=st.pop();for(const y of adj.get(x))if(!seen.has(y)){seen.add(y);st.push(y);}}return seen;
+}
+function fleury(names,edges,start){
+  const alive=new Array(edges.length).fill(true);const steps=[];let cur=start,k=0;
+  for(;;){
+    const inc=[];edges.forEach((e,i)=>{if(alive[i]&&(e.u===cur||e.v===cur))inc.push(i);});
+    if(!inc.length)break;
+    let chosen=-1;const rejected=[];let note='';
+    if(inc.length===1){chosen=inc[0];const E=edges[chosen];if(E.u!==E.v){const o=E.u===cur?E.v:E.u;if(!reachable(names,edges,alive,cur,chosen).has(o))note=' Це міст, але інших ребер при '+cur+' немає, тож його дозволено взяти.';}}
+    else{for(const i of inc){const E=edges[i];if(E.u===E.v){chosen=i;break;}const o=E.u===cur?E.v:E.u;if(reachable(names,edges,alive,cur,i).has(o)){chosen=i;break;}rejected.push(i);}if(chosen<0)chosen=inc[0];}
+    const E=edges[chosen],to=E.u===cur?E.v:E.u;alive[chosen]=false;k++;
+    let log=`Крок ${k}: ${cur} → ${to}.`;
+    if(rejected.length)log+=' Ребро '+rejected.map(i=>edges[i].u+'–'+edges[i].v).join(', ')+' зараз є мостом поточного графа, його відкладаємо.';
+    steps.push({e:chosen,from:cur,to,log:log+note});cur=to;
+  }
+  return steps;
+}
+function postmanPairs(names,edges,odd){
+  const adj=new Map(names.map(n=>[n,[]]));edges.forEach((e,i)=>{if(e.u===e.v)return;adj.get(e.u).push([e.v,i]);adj.get(e.v).push([e.u,i]);});
+  const bfs=src=>{const dist=new Map([[src,0]]),pe=new Map(),pv=new Map();const q=[src];for(let h=0;h<q.length;h++){const x=q[h];for(const [y,i] of adj.get(x))if(!dist.has(y)){dist.set(y,dist.get(x)+1);pe.set(y,i);pv.set(y,x);q.push(y);}}return {dist,pe,pv};};
+  const B=odd.map(bfs);const k=odd.length;const INF=1e9;
+  const D=odd.map((a,i)=>odd.map(b=>B[i].dist.has(b)?B[i].dist.get(b):INF));
+  const full=(1<<k)-1;const dp=new Float64Array(1<<k).fill(INF);const ch=new Int32Array(1<<k).fill(-1);dp[0]=0;
+  for(let mask=0;mask<full;mask++){if(dp[mask]>=INF)continue;let i=0;while(mask>>i&1)i++;for(let j=i+1;j<k;j++){if(mask>>j&1)continue;const nm=mask|1<<i|1<<j;const c=dp[mask]+D[i][j];if(c<dp[nm]){dp[nm]=c;ch[nm]=i*64+j;}}}
+  const pairs=[];let mask=full;
+  while(mask){const c=ch[mask];const i=Math.floor(c/64),j=c%64;const path=[];let y=odd[j];while(y!==odd[i]){path.push(B[i].pe.get(y));y=B[i].pv.get(y);}pairs.push({a:odd[i],b:odd[j],len:D[i][j],path});mask&=~(1<<i|1<<j);}
+  return {pairs,extra:dp[full]};
+}
+
+/* ================= LAB ================= */
+const PRESETS={
+  konig:{label:'Кенігсберзькі мости',note:'A — північний берег, B — острів Кнайпгоф, C — південний берег, D — острів Ломзе; ребра — сім мостів',
+    pos:{A:[400,80],B:[300,262],C:[400,445],D:[640,262]},text:'A B\nA B\nB C\nB C\nB D\nA D\nC D'},
+  house:{label:'Конверт',note:'«Будиночок»: намалюйте однією лінією, не відриваючи олівця',
+    pos:{1:[260,440],2:[540,440],3:[540,220],4:[260,220],5:[400,70]},text:'1 2\n2 3\n3 4\n4 1\n1 3\n2 4\n3 5\n4 5'},
+  butterfly:{label:'Метелик',note:'Ойлерів граф; у Флері на третьому кроці з’являється міст',
+    pos:{A:[180,110],B:[180,420],C:[400,265],D:[620,110],E:[620,420]},text:'A B C A\nC D E C'},
+  octa:{label:'Октаедр',note:'4-регулярний граф: усі степені парні',
+    pos:{A:[400,60],B:[180,190],C:[400,215],D:[400,460],E:[620,330],F:[400,315]},text:'A B\nA C\nA E\nA F\nB C\nC E\nE F\nF B\nD B\nD C\nD E\nD F'},
+  k5:{label:'K₅',note:'Повний граф K₅: кожна вершина має степінь 4',
+    pos:{a:[400,70],b:[610,220],c:[530,450],d:[270,450],e:[190,220]},text:'a b\na c\na d\na e\nb c\nb d\nb e\nc d\nc e\nd e'},
+  k33:{label:'K₃,₃',note:'Шість вершин степеня 3: потрібно щонайменше три ланцюги',
+    pos:{x1:[220,110],x2:[220,265],x3:[220,420],y1:[580,110],y2:[580,265],y3:[580,420]},text:'x1 y1\nx1 y2\nx1 y3\nx2 y1\nx2 y2\nx2 y3\nx3 y1\nx3 y2\nx3 y3'},
+  multi:{label:'Петлі й кратні ребра',note:'Мультиграф: петля додає 2 до степеня',
+    pos:{A:[250,280],B:[540,140],C:[540,400]},text:'A A\nA B\nA B\nB C\nB C\nC A\nC A\nC C'},
+  grid:{label:'Сітка вулиць 3×3',note:'Квартал: перехрестя — вершини, вулиці — ребра; депо в куті a1',
+    pos:{a1:[220,90],a2:[400,90],a3:[580,90],b1:[220,262],b2:[400,262],b3:[580,262],c1:[220,435],c2:[400,435],c3:[580,435]},
+    text:'a1 a2 a3\nb1 b2 b3\nc1 c2 c3\na1 b1 c1\na2 b2 c2\na3 b3 c3',mode:'postman',start:'a1'}
+};
+const LAB={V:[],E:[],pos:{},D:[],plan:[],editMode:'move',sel:null,rem:new Map(),cur:null,start:null};
+const labSvg=$('#labSvg');
+const L_base=S('g',null,labSvg),L_trace=S('g',null,labSvg),L_nums=S('g',null,labSvg),L_verts=S('g',null,labSvg);
+const L_token=S('circle',{r:8,class:'token'},labSvg);L_token.style.display='none';
+let L_paths=[],L_vEls=new Map(),L_traces=new Map();
+
+function parseEdges(text){
+  const names=[],seen=new Set(),edges=[];const add=n=>{if(!seen.has(n)){seen.add(n);names.push(n);}};
+  text.split(/[\n;,]+/).forEach(line=>{const t=line.trim().split(/[\s\-–—]+/).filter(Boolean);if(!t.length)return;t.forEach(add);for(let i=0;i+1<t.length;i++)edges.push({u:t[i],v:t[i+1]});});
+  return {names,edges};
+}
+function serialize(){
+  const lines=LAB.E.map(e=>e.u+' '+e.v);const a=analyze(LAB.V,LAB.E);a.isolated.forEach(n=>lines.push(n));return lines.join('\n');
+}
+function forceLayout(names,edges,keep){
+  const W=800,H=520,P={};const n=names.length;
+  names.forEach((nm,i)=>{if(keep&&keep[nm])P[nm]={x:keep[nm].x,y:keep[nm].y};else{const a=2*Math.PI*i/n-Math.PI/2;P[nm]={x:W/2+190*Math.cos(a)+Math.random()*4,y:H/2+190*Math.sin(a)+Math.random()*4};}});
+  if(n<2)return P;
+  const k=Math.sqrt(W*H/n)*0.62;let temp=60;
+  const pairs=new Set();const E=edges.filter(e=>e.u!==e.v&&!pairs.has([e.u,e.v].sort().join('|'))&&pairs.add([e.u,e.v].sort().join('|')));
+  for(let it=0;it<320;it++){
+    const disp={};names.forEach(a=>disp[a]={x:0,y:0});
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const a=P[names[i]],b=P[names[j]];let dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy)||0.01;const f=k*k/d;dx/=d;dy/=d;disp[names[i]].x+=dx*f;disp[names[i]].y+=dy*f;disp[names[j]].x-=dx*f;disp[names[j]].y-=dy*f;}
+    E.forEach(e=>{const a=P[e.u],b=P[e.v];let dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy)||0.01;const f=d*d/k;dx/=d;dy/=d;disp[e.u].x-=dx*f;disp[e.u].y-=dy*f;disp[e.v].x+=dx*f;disp[e.v].y+=dy*f;});
+    names.forEach(a=>{const d=disp[a];const l=Math.hypot(d.x,d.y)||1;P[a].x+=d.x/l*Math.min(l,temp);P[a].y+=d.y/l*Math.min(l,temp);P[a].x+=(W/2-P[a].x)*0.01;P[a].y+=(H/2-P[a].y)*0.01;});
+    temp=Math.max(2,temp*0.985);
+  }
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;names.forEach(a=>{x0=Math.min(x0,P[a].x);x1=Math.max(x1,P[a].x);y0=Math.min(y0,P[a].y);y1=Math.max(y1,P[a].y);});
+  const sx=(W-160)/Math.max(1,x1-x0),sy=(H-150)/Math.max(1,y1-y0),s=Math.min(sx,sy,2.2);
+  const ox=(W-(x1-x0)*s)/2,oy=(H-(y1-y0)*s)/2+10;
+  names.forEach(a=>{P[a]={x:Math.round(ox+(P[a].x-x0)*s),y:Math.round(oy+(P[a].y-y0)*s)};});
+  return P;
+}
+function setGraph(names,edges,pos,cap){
+  LAB.V=names;LAB.E=edges;LAB.pos=pos;$('#labCap').textContent=cap||'';
+  $('#edgeInput').value=serialize();rebuild();
+}
+function loadPreset(key){
+  const p=PRESETS[key];const {names,edges}=parseEdges(p.text);const pos={};for(const n of names)pos[n]={x:p.pos[n][0],y:p.pos[n][1]};
+  if(p.mode)$('#mode').value=p.mode;LAB.startPref=p.start||null;
+  setGraph(names,edges,pos,p.note);
+}
+function buildFromText(){
+  const {names,edges}=parseEdges($('#edgeInput').value);
+  const keep={};let allKnown=true;names.forEach(n=>{if(LAB.pos[n])keep[n]=LAB.pos[n];else allKnown=false;});
+  const pos=allKnown?keep:forceLayout(names,edges,Object.keys(keep).length>=names.length*0.5?keep:null);
+  LAB.V=names;LAB.E=edges;LAB.pos=pos;$('#labCap').textContent='';rebuild();
+}
+
+function svgPoint(evt){const pt=labSvg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;return pt.matrixTransform(labSvg.getScreenCTM().inverse());}
+function nextName(){const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ';for(const c of A)if(!LAB.V.includes(c))return c;let i=1;while(LAB.V.includes('v'+i))i++;return 'v'+i;}
+
+function renderLab(){
+  [L_base,L_trace,L_nums,L_verts].forEach(g=>g.replaceChildren());L_traces=new Map();
+  const G=geom(LAB.pos,LAB.D,false,40);
+  L_paths=LAB.D.map((e,i)=>{const p=S('path',{d:G[i].d,class:'e-base'+(e.dup?' dup':'')},L_base);p.__from=G[i].from;return p;});
+  LAB.D.forEach((e,i)=>{if(e.dup)return;const h=S('path',{d:G[i].d,class:'e-hit'},L_base);h.addEventListener('click',ev=>{if(LAB.editMode==='delete'){ev.stopPropagation();LAB.E.splice(e.src,1);syncAfterEdit();}});});
+  L_vEls=new Map();
+  LAB.V.forEach(n=>{
+    const P=LAB.pos[n];const g=S('g',{transform:`translate(${P.x},${P.y})`,style:'cursor:pointer'},L_verts);
+    const c=S('circle',{r:18,class:'v-circle'},g);S('text',{class:'v-label'},g).textContent=n;
+    const bc=S('circle',{cx:17,cy:-17,r:9,class:'badge-c'},g);const bt=S('text',{x:17,y:-17,class:'badge-t'},g);
+    L_vEls.set(n,{g,c,bc,bt});
+    g.addEventListener('pointerdown',ev=>vertexDown(ev,n));
+  });
+  updateBadges();
+}
+function updateBadges(){
+  const dDeg=analyze(LAB.V,LAB.D).deg;
+  L_vEls.forEach((o,n)=>{
+    const r=LAB.rem.has(n)?LAB.rem.get(n):dDeg.get(n);
+    o.bt.textContent=r;o.bc.classList.toggle('odd',r%2===1);
+    o.c.classList.toggle('odd',dDeg.get(n)%2===1);o.c.classList.toggle('cur',LAB.cur===n);o.c.classList.toggle('sel',LAB.sel===n);
+  });
+  renderTable();
+}
+function renderTable(){
+  const A=analyze(LAB.V,LAB.E),dD=analyze(LAB.V,LAB.D).deg;const dup=LAB.D.length>LAB.E.length;
+  let h='<tr><th>Вершина</th><th>deg</th><th>Парність</th>'+(dup?'<th>з повтор.</th>':'')+'<th>Залишок</th></tr>';
+  LAB.V.forEach(n=>{const d=A.deg.get(n);const r=LAB.rem.has(n)?LAB.rem.get(n):dD.get(n);
+    h+=`<tr class="${LAB.cur===n?'cur':''}"><td class="mono">${esc(n)}</td><td>${d}</td><td><span class="chip ${d%2?'odd':'even'}">${d%2?'непарна':'парна'}</span></td>${dup?`<td>${dD.get(n)}</td>`:''}<td>${r}${r%2?' <span class="chip odd">непарн.</span>':''}</td></tr>`;});
+  $('#degTable').innerHTML=h;
+}
+let drag=null;
+function vertexDown(ev,n){
+  ev.stopPropagation();
+  const m=LAB.editMode;
+  if(m==='delete'){LAB.V=LAB.V.filter(x=>x!==n);LAB.E=LAB.E.filter(e=>e.u!==n&&e.v!==n);delete LAB.pos[n];syncAfterEdit();return;}
+  if(m==='edge'){if(LAB.sel==null){LAB.sel=n;updateBadges();}else{LAB.E.push({u:LAB.sel,v:n});LAB.sel=null;syncAfterEdit();}return;}
+  const p=svgPoint(ev);drag={n,dx:LAB.pos[n].x-p.x,dy:LAB.pos[n].y-p.y,moved:false};labSvg.setPointerCapture&&labSvg.setPointerCapture(ev.pointerId);
+}
+labSvg.addEventListener('pointermove',ev=>{if(!drag)return;const p=svgPoint(ev);LAB.pos[drag.n]={x:Math.max(20,Math.min(780,p.x+drag.dx)),y:Math.max(30,Math.min(500,p.y+drag.dy))};drag.moved=true;
+  const prog=labPlayer.i;const wasEnd=prog;renderLab();for(let k=0;k<wasEnd;k++){labCb.begin(labPlayer.steps[k],k,true);labCb.apply(labPlayer.steps[k],k,true);} });
+labSvg.addEventListener('pointerup',()=>{drag=null;});
+labSvg.addEventListener('pointerdown',ev=>{
+  if(LAB.editMode==='vertex'){const p=svgPoint(ev);const n=nextName();LAB.V.push(n);LAB.pos[n]={x:Math.round(p.x),y:Math.round(p.y)};syncAfterEdit();}
+  else if(LAB.editMode==='edge'&&LAB.sel){LAB.sel=null;updateBadges();}
+});
+function syncAfterEdit(){$('#edgeInput').value=serialize();$('#labCap').textContent='';rebuild();}
+
+function logLine(html,color){const li=document.createElement('li');li.innerHTML=(color?`<span class="sw" style="background:${color}"></span>`:'')+html;$('#labLog').appendChild(li);li.classList.add('hl');const prev=li.previousElementSibling;if(prev)prev.classList.remove('hl');$('#labLog').scrollTop=1e6;}
+
+function rebuild(){
+  const A=analyze(LAB.V,LAB.E);
+  const sel=$('#startV');const prev=LAB.startPref||sel.value;LAB.startPref=null;
+  const cand=LAB.V.filter(n=>A.deg.get(n)>0);
+  sel.innerHTML=cand.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  if(cand.includes(prev))sel.value=prev;else if(A.odd.length&&cand.length)sel.value=A.odd[0];
+  const mode=$('#mode').value;let plan=[];LAB.D=LAB.E.map((e,i)=>({u:e.u,v:e.v,src:i}));
+  const pre=[];
+  const ok=A.edgeConnected;let start=sel.value;
+  const pathStr=steps=>steps.length?[steps[0].from,...steps.map(s=>s.to)].join(' → '):'';
+  if(!A.m){pre.push('Додайте ребра: у графі поки немає що обходити.');}
+  else if(!ok){pre.push(`Ребра розподілені між ${pl(A.edgeComps,'компонентою','компонентами','компонентами')}. Обхід ланцюгами можливий лише в межах однієї компоненти: з’єднайте частини графа.`);}
+  else if(mode==='euler'||mode==='fleury'){
+    if(A.odd.length>2){pre.push(`Непарних вершин ${A.odd.length}, тож ні ойлерового циклу, ні ойлерового ланцюга немає. Оберіть режим «покриття ланцюгами» або «китайський листоноша».`);}
+    else{
+      if(A.odd.length===2&&!A.odd.includes(start)){pre.push(`Ойлерів ланцюг може стартувати лише в непарній вершині, тому старт перенесено з ${start} у ${A.odd[0]}.`);start=A.odd[0];sel.value=start;}
+      if(mode==='euler'){
+        const r=hierholzer(LAB.V,LAB.D,start);const semi=A.odd.length===2;
+        r.subs.forEach((sc,k)=>{const col=PAL[k%PAL.length];
+          sc.steps.forEach((s,j)=>{const st={type:'edge',e:s.e,from:s.from,to:s.to,color:col,label:j+1};
+            if(j===0)st.log=k===0?(semi?`Ланцюг 1 з ${sc.at}: ідемо вільними ребрами, доки не застрягнемо. Застрягли в ${sc.steps[sc.steps.length-1].to}, другій непарній вершині (${RB(sc.steps.length)}).`:`Цикл 1 з ${sc.at}: ідемо вільними ребрами, доки не застрягнемо. Застрягти можна лише у вихідній вершині, бо всі степені парні (${RB(sc.steps.length)}).`)
+              :`Вершина ${sc.at} на вже побудованому обході ще має вільні ребра. Будуємо з неї цикл ${k+1} (${RB(sc.steps.length)}) і вставляємо його в ${sc.at}.`;
+            st.logColor=col;plan.push(st);});});
+        if(r.subs.length>1){plan.push({type:'clear',log:`Зшиваємо ${r.subs.length} цикли розкладу в один обхід (зауваження 2.5) і проходимо його цілком.`});
+          r.circuit.forEach((s,i)=>plan.push({type:'edge',e:s.e,from:s.from,to:s.to,color:'var(--c1)',label:i+1,dur:420}));}
+        plan.push({type:'note',log:`<b>Готово:</b> ${semi?'ойлерів ланцюг':'ойлерів цикл'} ${pathStr(r.circuit)}.`});
+      }else{
+        const st=fleury(LAB.V,LAB.D,start);
+        st.forEach((s,i)=>plan.push({type:'edge',e:s.e,from:s.from,to:s.to,color:'var(--c1)',label:i+1,log:s.log}));
+        plan.push({type:'note',log:`<b>Готово:</b> ${A.odd.length?'ойлерів ланцюг':'ойлерів цикл'} ${pathStr(st)}.`});
+      }
+    }
+  }else if(mode==='chains'){
+    let ch;
+    if(!A.odd.length){ch=[hierholzer(LAB.V,LAB.D,start).circuit];pre.push('Усі степені парні, тому вистачає одного ланцюга, і він замкнений: ойлерів цикл.');}
+    else{
+      const W='w*';const ext=LAB.D.map(e=>({...e}));A.odd.forEach(o=>ext.push({u:W,v:o,virt:true}));
+      const r=hierholzer([...LAB.V,W],ext,W);ch=[];let cur=[];
+      r.circuit.forEach(s=>{if(ext[s.e].virt){if(cur.length){ch.push(cur);cur=[];}}else cur.push(s);});if(cur.length)ch.push(cur);
+      pre.push(`Непарних вершин 2k = ${A.odd.length} (${A.odd.join(', ')}). Додаємо допоміжну вершину w, сполучену з ними, будуємо ойлерів цикл і розрізаємо його в w. Виходить k = ${pl(ch.length,'ланцюг','ланцюги','ланцюгів')}, і менше не можна (теорема 3.2).`);
+    }
+    ch.forEach((c,k)=>{const col=PAL[k%PAL.length];c.forEach((s,j)=>{const st={type:'edge',e:s.e,from:s.from,to:s.to,color:col,label:j+1};if(j===0){st.log=`Ланцюг ${k+1}: ${pathStr(c)} (${RB(c.length)}).`;st.logColor=col;}plan.push(st);});});
+    plan.push({type:'note',log:`<b>Готово:</b> ${pl(ch.length,'ланцюг','ланцюги','ланцюгів')}, тобто ${pl(ch.length-1,'відрив','відриви','відривів')} олівця.`});
+  }else if(mode==='postman'){
+    if(!A.odd.length)pre.push('Усі степені парні: найкоротший замкнений обхід — ойлерів цикл, жодне ребро не повторюється.');
+    else if(A.odd.length>16)pre.push('Забагато непарних вершин для точного парування в браузері (понад 16).');
+    if(A.odd.length<=16){
+      if(A.odd.length){const pr=postmanPairs(LAB.V,LAB.E,A.odd);
+        pr.pairs.forEach(p=>p.path.forEach(i=>LAB.D.push({u:LAB.E[i].u,v:LAB.E[i].v,dup:true,src:i})));
+        pre.push(`Непарні вершини: ${A.odd.join(', ')}. Найдешевше парування: ${pr.pairs.map(p=>`${p.a}–${p.b} (${p.len})`).join(', ')}. Дублюємо ці найкоротші шляхи (золотий пунктир): +${RB(pr.extra)}, і всі степені стають парними.`);}
+      const r=hierholzer(LAB.V,LAB.D,start);
+      r.circuit.forEach((s,i)=>plan.push({type:'edge',e:s.e,from:s.from,to:s.to,color:LAB.D[s.e].dup?'var(--c2)':'var(--c4)',label:i+1,dur:520}));
+      plan.push({type:'note',log:`<b>Готово:</b> замкнений маршрут з ${start} довжини ${r.circuit.length} = ${pl(A.m,'вулиця','вулиці','вулиць')} + ${pl(r.circuit.length-A.m,'повтор','повтори','повторів')}. Рожевим позначено повторні проходи.`});
+    }
+  }
+  LAB.plan=plan;LAB.pre=pre;
+  renderLab();labPlayer.load(plan);renderVerdict(A);
+}
+function renderVerdict(A){
+  const v=$('#verdict'),m=$('#meaning');let cls='no',head='',body='',mean='';
+  const oddList=A.odd.map(esc).join(', ');
+  if(!A.m){head='Порожній граф';body='Введіть ребра або оберіть приклад.';mean='<p class="muted">Тут з’явиться пояснення, що означає результат для «олівця» чи «листоноші».</p>';}
+  else if(!A.edgeConnected){head='Не зв’язний за ребрами';body=`Ребра розпадаються на ${pl(A.edgeComps,'компоненту','компоненти','компонент')}. Одним ланцюгом їх не обійти.`;mean='<p>Фізично: частини креслення не торкаються одна одної, тож олівець мусить «перелетіти» між ними.</p>';}
+  else if(!A.odd.length){cls='ok';head='Ойлерів граф';body=`Зв’язний за ребрами, усі ${A.n} степенів парні. За теоремою 2.1 існує ойлерів цикл з будь-якої неізольованої вершини.`;
+    mean='<div class="eyebrow">Фізичний і геометричний зміст</div><p>Уявіть олівець, що обводить кожну лінію рівно раз і повертається в точку старту. У кожній вершині ребра розбиваються на пари «увійшов — вийшов», і парний степінь означає, що пари вистачає всім. Запустіть анімацію і стежте за бейджами залишку: в усіх вершинах, крім поточної і стартової, вони лишаються парними.</p>';}
+  else if(A.odd.length===2){cls='semi';head='Напівойлерів граф';body=`Рівно дві непарні вершини: ${oddList}. За наслідком 3.1 є ойлерів ланцюг, і він обов’язково з’єднує саме їх. Замкненого обходу немає.`;
+    mean=`<div class="eyebrow">Фізичний і геометричний зміст</div><p>Почати можна лише в ${esc(A.odd[0])} і закінчити лише в ${esc(A.odd[1])} (або навпаки): у цих двох вершинах одне ребро лишається без пари, тож воно або перше, або останнє в обході. Якщо почати деінде, на якомусь кроці олівець застрягне.</p>`;}
+  else{const k=A.odd.length/2;let ex='';try{ex=postmanPairs(LAB.V,LAB.E,A.odd).extra;}catch(e){}
+    head='Ні циклу, ні ланцюга';body=`Непарних вершин ${A.odd.length}: ${oddList}. Ребра можна розбити щонайменше на k = ${pl(k,'ланцюг','ланцюги','ланцюгів')} (теорема 3.2).`;
+    mean=`<div class="eyebrow">Фізичний і геометричний зміст</div><p>Кожна непарна вершина мусить бути кінцем якоїсь лінії, а лінія має два кінці. Тому олівець доведеться відірвати щонайменше ${pl(k-1,'раз','рази','разів')}. Якщо ж маршрут має бути неперервним і замкненим, як у снігоочисника, деякі ребра доведеться пройти повторно; мінімум повторів тут ${ex}.</p>`;}
+  v.className='verdict '+cls;v.innerHTML=`<div class="head">${head}</div><div>n = ${A.n}, m = ${A.m}, Σ deg = ${2*A.m}</div><p>${body}</p>`;
+  m.innerHTML=mean;
+}
+const labCb={
+  reset(){L_trace.replaceChildren();L_nums.replaceChildren();L_traces=new Map();L_token.style.display='none';LAB.rem=new Map();LAB.cur=null;
+    $('#labLog').innerHTML='';LAB.pre&&LAB.pre.forEach(t=>logLine(t));updateBadges();},
+  begin(s,i,silent){
+    if(s.log&&!silent)logLine(s.log,s.logColor);
+    if(s.type==='edge'){const bp=L_paths[s.e];const rev=s.from!==bp.__from;const tr=startTrace(L_trace,bp,rev,s.color,LAB.D[s.e].dup?4.6:4.2);L_traces.set(i,tr);
+      if(LAB.rem.size===0){analyze(LAB.V,LAB.D).deg.forEach((d,n)=>LAB.rem.set(n,d));}
+      LAB.cur=s.from;}
+  },
+  frame(s,t,i){if(s.type==='edge'){const tr=L_traces.get(i);if(tr)setTrace(tr,t,L_token);}},
+  apply(s,i,silent){
+    if(s.type==='edge'){const tr=L_traces.get(i);if(tr)setTrace(tr,1,L_token);
+      const bp=L_paths[s.e];const Lh=bp.getTotalLength();const p=bp.getPointAtLength(Lh/2);
+      const c=S('circle',{cx:p.x,cy:p.y,r:9.5,class:'e-num-c'},L_nums);c.style.fill=s.color;S('text',{x:p.x,y:p.y,class:'e-num-t'},L_nums).textContent=s.label;
+      LAB.rem.set(s.from,LAB.rem.get(s.from)-1);LAB.rem.set(s.to,LAB.rem.get(s.to)-1);LAB.cur=s.to;updateBadges();}
+    else if(s.type==='clear'){L_trace.replaceChildren();L_nums.replaceChildren();L_traces=new Map();LAB.rem=new Map();LAB.cur=null;L_token.style.display='none';updateBadges();}
+  },
+  ui(p){$('#pProg').textContent=`${p.i} / ${p.steps.length}`;$('#pPlay').textContent=p.playing?'❚❚ Пауза':(p.i>=p.steps.length&&p.steps.length?'↻ Ще раз':'▶ Запустити');
+    $('#pPlay').disabled=!p.steps.length;$('#pFwd').disabled=p.i>=p.steps.length;$('#pBack').disabled=p.i===0;}
+};
+const labPlayer=new Player(labCb,$('#pSpeed'));
+$('#pPlay').onclick=()=>labPlayer.play();$('#pFwd').onclick=()=>labPlayer.fwd();$('#pBack').onclick=()=>labPlayer.back();$('#pReset').onclick=()=>labPlayer.reset();
+$('#mode').onchange=rebuild;$('#startV').onchange=rebuild;
+$('#btnBuild').onclick=buildFromText;
+$('#edgeInput').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();buildFromText();}});
+$('#btnLayout').onclick=()=>{LAB.pos=forceLayout(LAB.V,LAB.E,null);rebuild();};
+$('#btnClear').onclick=()=>{setGraph([],[],{},'');};
+$$('[data-edit]').forEach(b=>b.onclick=()=>{LAB.editMode=b.dataset.edit;LAB.sel=null;$$('[data-edit]').forEach(x=>x.setAttribute('aria-pressed',x===b));updateBadges();
+  const hints={move:'',vertex:'Клікніть по порожньому місцю дошки, щоб додати вершину',edge:'Клікніть по двох вершинах; двічі по одній — петля',delete:'Клікніть по вершині або ребру, щоб видалити'};if(hints[b.dataset.edit])$('#labCap').textContent=hints[b.dataset.edit];});
+const presetBox=$('#presets');
+Object.entries(PRESETS).forEach(([k,p])=>{const b=document.createElement('button');b.className='btn';b.textContent=p.label;b.onclick=()=>{if(!p.mode)$('#mode').value='euler';loadPreset(k);};presetBox.appendChild(b);});
+$$('[data-open]').forEach(b=>b.onclick=()=>{const k=b.dataset.open;$('#mode').value=k==='grid'?'postman':(k==='k33'?'chains':'euler');loadPreset(k);showTab('lab');window.scrollTo({top:0,behavior:'smooth'});});
+$$('[data-goto]').forEach(b=>b.onclick=()=>{showTab(b.dataset.goto);window.scrollTo({top:0,behavior:'smooth'});});
+
+/* ================= DE BRUIJN ================= */
+const DB={built:false};
+const dbSvg=$('#dbSvg');const D_base=S('g',null,dbSvg),D_trace=S('g',null,dbSvg),D_verts=S('g',null,dbSvg);const D_token=S('circle',{r:7,class:'token'},dbSvg);D_token.style.display='none';
+function words(alpha,len){let w=[''];for(let i=0;i<len;i++){const nw=[];w.forEach(x=>alpha.forEach(c=>nw.push(x+c)));w=nw;}return w;}
+function eulerDirected(nV,arcs,start){
+  const out=Array.from({length:nV},()=>[]);arcs.forEach((a,i)=>out[a.u].push(i));const ptr=new Array(nV).fill(0);
+  const st=[{v:start,a:-1}],res=[];while(st.length){const t=st[st.length-1];if(ptr[t.v]<out[t.v].length){const a=out[t.v][ptr[t.v]++];st.push({v:arcs[a].v,a});}else{const x=st.pop();if(x.a>=0)res.push(x.a);}}
+  return res.reverse();
+}
+DB.build=function(){
+  DB.built=true;
+  const alpha=[...new Set([...$('#dbAlpha').value.replace(/\s/g,'')])];let n=Math.round(+$('#dbN').value)||3;
+  const info=$('#dbInfo');
+  if(alpha.length<2){info.textContent='Потрібно щонайменше два різні символи алфавіту.';return;}
+  n=Math.max(2,Math.min(8,n));$('#dbN').value=n;const q=alpha.length;const L=Math.pow(q,n);
+  if(L>4096){info.textContent=`qⁿ = ${L}: це забагато для наочного показу. Зменште q або n (до 4096 слів).`;return;}
+  const V=words(alpha,n-1),W=words(alpha,n);const vid=new Map(V.map((w,i)=>[w,i]));
+  const arcs=W.map(w=>({u:vid.get(w.slice(0,-1)),v:vid.get(w.slice(1)),w}));
+  const seq=eulerDirected(V.length,arcs,0);
+  const last=seq.map(a=>arcs[a].w.slice(-1));
+  // rotate so it starts with w0 = V[0]
+  const r=[...V[0],...last.slice(0,L-(n-1))];
+  DB.alpha=alpha;DB.n=n;DB.q=q;DB.L=L;DB.V=V;DB.arcs=arcs;DB.seq=seq;DB.r=r;
+  // check
+  const cyc=r.concat(r.slice(0,n-1)).join('');const got=new Set();for(let i=0;i<L;i++)got.add(cyc.slice(i,i+n));
+  info.innerHTML=`B(${q}, ${n}): ${pl(V.length,'вершина','вершини','вершин')}, ${pl(L,'дуга','дуги','дуг')}, у кожній вершині deg⁺ = deg⁻ = ${q}. Перевірка: різних фрагментів ${got.size} з ${L} ${got.size===L?'— кожне слово рівно один раз ✓':'✗'}`;
+  // strip
+  const strip=$('#dbStrip');strip.innerHTML='';DB.cells=[];
+  r.forEach(c=>{const s=document.createElement('span');s.textContent=c;strip.appendChild(s);DB.cells.push(s);});
+  DB.wrap=[];r.slice(0,n-1).forEach(c=>{const s=document.createElement('span');s.textContent=c;s.className='wrapc';strip.appendChild(s);DB.wrap.push(s);});
+  const fs=L>256?11:L>64?13:16;strip.style.fontSize=fs+'px';DB.cells.concat(DB.wrap).forEach(s=>{s.style.minWidth=(fs+6)+'px';s.style.height=(fs+12)+'px';});
+  // words
+  const wb=$('#dbWords');wb.innerHTML='';DB.wordEls=new Map();W.forEach(w=>{const s=document.createElement('span');s.textContent=w;wb.appendChild(s);DB.wordEls.set(w,s);});
+  // lock
+  const naive=n*L,smart=L+n-1;
+  $('#dbLock').innerHTML=`<div><b>${naive.toLocaleString('uk-UA')}</b><small>натискань, якщо пробувати коди окремо (n·qⁿ)</small></div><div><b>${smart.toLocaleString('uk-UA')}</b><small>натискань з послідовністю де Брьойна (qⁿ+n−1)</small></div><div><b>${Math.round(100*(1-smart/naive))}%</b><small>економії</small></div>`;
+  $('#dbLockText').textContent=`Замок з ${q} кнопками (${alpha.join(', ')}) і кодом довжини ${n} відкривається, щойно останні ${n} натиснуті символи збігаються з кодом. Наберіть рядок вище, дописавши в кінці його перші ${n-1} символи, і ви перевірите всі ${L} кодів.`;
+  // graph
+  [D_base,D_trace,D_verts].forEach(g=>g.replaceChildren());D_token.style.display='none';
+  const draw=V.length<=32;DB.draw=draw;
+  if(draw){
+    const pos={};const R=V.length<=4?190:V.length<=9?220:235;const nm=V.map(String);
+    V.forEach((w,i)=>{const a=2*Math.PI*i/V.length-Math.PI/2;pos[w]={x:300+R*Math.cos(a),y:300+R*Math.sin(a)};});
+    if(V.length===2){pos[V[0]]={x:170,y:300};pos[V[1]]={x:430,y:300};}
+    const G=geom(pos,arcs.map(a=>({u:V[a.u],v:V[a.v]})),true,V.length>16?34:46);
+    DB.paths=arcs.map((a,i)=>{const p=S('path',{d:G[i].d,class:'e-base'},D_base);p.__from=G[i].from;return p;});
+    DB.paths.forEach(p=>arrowAt(p,0.58,8,D_base,'',`fill:var(--chalk-dim)`));
+    DB.vEls=V.map(w=>{const P=pos[w];const g=S('g',{transform:`translate(${P.x},${P.y})`},D_verts);const rr=V.length>16?16:20;const c=S('circle',{r:rr+(n>4?6:0),class:'v-circle'},g);const t=S('text',{class:'v-label'},g);t.textContent=w;if(n>3)t.style.fontSize=(n>5?10:12)+'px';return c;});
+    $('#dbCap').textContent=`B(${q}, ${n})`;
+  }else{$('#dbCap').textContent=`Граф B(${q}, ${n}) має ${pl(V.length,'вершину','вершини','вершин')} — для малюнка забагато, але послідовність праворуч побудована тим самим ойлеровим циклом.`;}
+  const steps=seq.map((a,k)=>({type:'edge',a,k,dur:draw?520:160}));
+  dbPlayer.load(steps);
+};
+const dbCb={
+  reset(){D_trace.replaceChildren();D_token.style.display='none';DB.traces=new Map();(DB.cells||[]).concat(DB.wrap||[]).forEach(c=>c.classList.remove('win'));DB.wordEls&&DB.wordEls.forEach(e=>e.className='');(DB.vEls||[]).forEach(c=>c.classList.remove('cur'));},
+  begin(s,i){if(DB.draw){const bp=DB.paths[s.a];const tr=startTrace(D_trace,bp,false,'var(--c1)',3.4);DB.traces.set(i,tr);DB.vEls.forEach(c=>c.classList.remove('cur'));DB.vEls[DB.arcs[s.a].u].classList.add('cur');}
+    const L=DB.L,n=DB.n;DB.cells.concat(DB.wrap).forEach(c=>c.classList.remove('win'));
+    for(let t=0;t<n;t++){const idx=s.k+t;if(idx<L)DB.cells[idx].classList.add('win');else DB.wrap[idx-L].classList.add('win');}
+    DB.wordEls.forEach(e=>{if(e.className==='now')e.className='seen';});const we=DB.wordEls.get(DB.arcs[s.a].w);we.className='now';},
+  frame(s,t,i){if(DB.draw){const tr=DB.traces.get(i);if(tr)setTrace(tr,t,D_token);}},
+  apply(s,i){if(DB.draw){const tr=DB.traces.get(i);if(tr)setTrace(tr,1,D_token);DB.vEls.forEach(c=>c.classList.remove('cur'));DB.vEls[DB.arcs[s.a].v].classList.add('cur');}},
+  ui(p){$('#dProg').textContent=`${p.i} / ${p.steps.length}`;$('#dPlay').textContent=p.playing?'❚❚ Пауза':(p.i>=p.steps.length&&p.steps.length?'↻ Ще раз':'▶ Запустити');}
+};
+const dbPlayer=new Player(dbCb,$('#dSpeed'));
+$('#dPlay').onclick=()=>dbPlayer.play();$('#dFwd').onclick=()=>dbPlayer.fwd();$('#dBack').onclick=()=>dbPlayer.back();$('#dReset').onclick=()=>dbPlayer.reset();
+$('#dbBuild').onclick=()=>DB.build();
+['#dbAlpha','#dbN'].forEach(s=>$(s).addEventListener('keydown',e=>{if(e.key==='Enter')DB.build();}));
+
+/* ================= GENOME ================= */
+const GN={built:false};
+const gSvg=$('#gSvg');const G_base=S('g',null,gSvg),G_trace=S('g',null,gSvg),G_verts=S('g',null,gSvg);const G_token=S('circle',{r:6,class:'token'},gSvg);G_token.style.display='none';
+GN.build=function(){
+  GN.built=true;
+  const seq=$('#gSeq').value.toUpperCase().replace(/[^ACGT]/g,'');$('#gSeq').value=seq;
+  let k=Math.round(+$('#gK').value)||3;k=Math.max(2,Math.min(10,k));$('#gK').value=k;
+  if(seq.length<k+1){$('#gOut').textContent='Послідовність має бути довшою за k.';$('#gReads').innerHTML='';[G_base,G_trace,G_verts].forEach(g=>g.replaceChildren());gnPlayer.load([]);return;}
+  const kmers=[];for(let i=0;i+k<=seq.length;i++)kmers.push(seq.slice(i,i+k));
+  const reads=kmers.map((w,i)=>({w,i})).sort((a,b)=>a.w<b.w?-1:a.w>b.w?1:a.i-b.i);
+  const order=[],vid=new Map();const addV=w=>{if(!vid.has(w)){vid.set(w,order.length);order.push(w);}};
+  kmers.forEach(w=>{addV(w.slice(0,-1));addV(w.slice(1));});
+  const arcs=reads.map(r=>({u:vid.get(r.w.slice(0,-1)),v:vid.get(r.w.slice(1)),w:r.w}));
+  const bal=new Array(order.length).fill(0);arcs.forEach(a=>{bal[a.u]++;bal[a.v]--;});
+  let st=bal.findIndex(b=>b===1);if(st<0)st=0;
+  const path=eulerDirected(order.length,arcs,st);
+  const asm=order[st]+path.map(a=>arcs[a].w.slice(-1)).join('');
+  GN.arcs=arcs;GN.path=path;GN.order=order;GN.asm=asm;GN.seq=seq;GN.start=order[st];
+  $('#gReads').innerHTML=reads.map((r,i)=>`<span data-r="${i}">${r.w}</span>`).join('');GN.readEls=[...$('#gReads').children];
+  // layout serpentine by first appearance
+  const nV=order.length,cols=Math.min(nV,nV<=8?4:5),rows=Math.ceil(nV/cols);const W=400,H=Math.max(200,rows*104+30);
+  gSvg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const pos={};order.forEach((w,i)=>{const r=Math.floor(i/cols);let c=i%cols;if(r%2)c=cols-1-c;pos[w]={x:50+c*((W-100)/Math.max(1,cols-1)),y:52+r*104};});
+  [G_base,G_trace,G_verts].forEach(g=>g.replaceChildren());G_token.style.display='none';
+  const G=geom(pos,arcs.map(a=>({u:order[a.u],v:order[a.v]})),true,36);
+  GN.paths=arcs.map((a,i)=>{const p=S('path',{d:G[i].d,class:'e-base'},G_base);return p;});
+  GN.paths.forEach(p=>arrowAt(p,0.58,7,G_base,'','fill:var(--chalk-dim)'));
+  GN.vEls=order.map(w=>{const P=pos[w];const g=S('g',{transform:`translate(${P.x},${P.y})`},G_verts);const c=S('circle',{r:k>4?24:19,class:'v-circle'},g);const t=S('text',{class:'v-label'},g);t.textContent=w;t.style.fontSize=(k>5?9:k>4?10.5:12)+'px';t.style.fontFamily='var(--f-mono)';return c;});
+  gnPlayer.load(path.map((a,i)=>({type:'edge',a,i,dur:480})));
+};
+function gnShow(n){
+  const out=GN.start+GN.path.slice(0,n).map(a=>GN.arcs[a].w.slice(-1)).join('');
+  if(n<GN.path.length){$('#gOut').innerHTML=esc(out)+'<span class="muted">…</span>';$('#gNote').textContent=`Пройдено ${n} з ${GN.path.length} дуг. Кожна дуга — одне прочитання; вона додає до збірки один символ.`;return;}
+  if(GN.asm===GN.seq){$('#gOut').innerHTML=esc(GN.asm);$('#gNote').textContent='Збірка збігається з вихідною послідовністю. Збільште або зменште k, щоб побачити, коли з’являється неоднозначність.';}
+  else{let h='';for(let i=0;i<GN.asm.length;i++){const c=GN.asm[i];h+=c===GN.seq[i]?esc(c):`<span class="bad">${esc(c)}</span>`;}
+    $('#gOut').innerHTML=h+`<div class="muted" style="margin-top:4px">оригінал: ${esc(GN.seq)}</div>`;
+    $('#gNote').textContent=`Знайдено інший ойлерів шлях: він використовує ті самі ${GN.path.length} прочитань, але дає іншу послідовність. Причина — повтори довжини ≥ k−1, через які в графі є вершини з кількома виходами. Збільште k, і граф розплутається.`;}
+}
+const gnCb={
+  reset(){G_trace.replaceChildren();G_token.style.display='none';GN.traces=new Map();(GN.readEls||[]).forEach(e=>e.classList.remove('used'));(GN.vEls||[]).forEach(c=>c.classList.remove('cur'));if(GN.path)gnShow(0);},
+  begin(s,i){const tr=startTrace(G_trace,GN.paths[s.a],false,PAL[0],3.2);GN.traces.set(i,tr);},
+  frame(s,t,i){const tr=GN.traces.get(i);if(tr)setTrace(tr,t,G_token);},
+  apply(s,i){const tr=GN.traces.get(i);if(tr)setTrace(tr,1,G_token);GN.readEls[s.a].classList.add('used');GN.vEls.forEach(c=>c.classList.remove('cur'));GN.vEls[GN.arcs[s.a].v].classList.add('cur');gnShow(i+1);},
+  ui(p){$('#gProg').textContent=`${p.i} / ${p.steps.length}`;$('#gPlay').textContent=p.playing?'❚❚ Пауза':(p.i>=p.steps.length&&p.steps.length?'↻ Ще раз':'▶ Збирати');}
+};
+const gnPlayer=new Player(gnCb,null);
+$('#gPlay').onclick=()=>gnPlayer.play();$('#gFwd').onclick=()=>gnPlayer.fwd();$('#gReset').onclick=()=>gnPlayer.reset();$('#gBuild').onclick=()=>GN.build();
+['#gSeq','#gK'].forEach(s=>$(s).addEventListener('keydown',e=>{if(e.key==='Enter')GN.build();}));
+
+/* ================= init ================= */
+loadPreset('konig');
+(function(){let t=(location.hash||'').slice(1);if(!['lab','debruijn','apps','theory'].includes(t)){try{t=localStorage.getItem('euler-tab')||'lab'}catch(e){t='lab'}}
+  if(!['lab','debruijn','apps','theory'].includes(t))t='lab';showTab(t);})();
+</script>
+
+</body>
+</html>
