@@ -1,0 +1,1514 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Пряма на площині</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false },
+  startup: { typeset: true }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" defer></script>
+<style>
+/* Layout: зелена «дошка» кафедри як шапка, вкладки, у кожній — ліворуч введення й формули, праворуч крейдяна дошка з рисунком */
+:root{
+  --bg:#f1f4f2; --surface:#ffffff; --surface-2:#e8eeeb; --ink:#1b2a27; --muted:#55675f; --rule:#d2dcd7;
+  --band:#345a53; --band-ink:#ffffff; --gold:#ca9d48; --gold-ink:#86601b; --accent:#345a53; --accent-soft:#dfe9e5;
+  --ok:#2c7651; --ok-soft:#dcefe4; --bad:#b0452c; --bad-soft:#f6e1da;
+  --board:#345a53; --board-grid:rgba(255,255,255,.08); --board-axis:rgba(255,255,255,.66);
+  --chalk:#f7f4ea; --chalk-faint:rgba(247,244,234,.42);
+  --c-gold:#ebbd63; --c-coral:#f5937a; --c-sky:#95d1ec; --c-mint:#a3e4ba; --c-lilac:#d2b4f3;
+  --f-display:'Spectral', Georgia, 'Times New Roman', serif;
+  --f-body:'Commissioner', 'Segoe UI', system-ui, sans-serif;
+  --f-mono:'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111917; --surface:#18221f; --surface-2:#1f2c29; --ink:#e5ebe8; --muted:#9aaea7; --rule:#2c3b37;
+    --band:#1f3a35; --band-ink:#f3f1ea; --gold:#d6ab57; --gold-ink:#e3bb6c; --accent:#8fc2b6; --accent-soft:#213430;
+    --ok:#86d3a6; --ok-soft:#1b3328; --bad:#f39a83; --bad-soft:#3a221c;
+    --board:#21403a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111917; --surface:#18221f; --surface-2:#1f2c29; --ink:#e5ebe8; --muted:#9aaea7; --rule:#2c3b37;
+  --band:#1f3a35; --band-ink:#f3f1ea; --gold:#d6ab57; --gold-ink:#e3bb6c; --accent:#8fc2b6; --accent-soft:#213430;
+  --ok:#86d3a6; --ok-soft:#1b3328; --bad:#f39a83; --bad-soft:#3a221c;
+  --board:#21403a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55; margin:0}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--bg)}
+.wrap{max-width:1320px; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display); text-wrap:balance; margin:0; line-height:1.15}
+p{margin:0}
+a{color:var(--accent)}
+
+/* шапка */
+.band{background:var(--band); color:var(--band-ink)}
+.band .wrap{display:flex; align-items:center; gap:22px; padding-block:22px 24px}
+.band img{width:84px; height:84px; flex:none; filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+.eyebrow{font-size:12px; letter-spacing:.09em; text-transform:uppercase; color:var(--gold); font-weight:600}
+.band h1{font-size:clamp(30px,4.4vw,48px); font-weight:600; letter-spacing:-.005em; margin-block:4px 4px}
+.band .sub{opacity:.86; font-size:15px}
+.band .sub b{font-weight:500; color:var(--gold)}
+@media (max-width:560px){ .band img{width:60px;height:60px} .band .wrap{gap:14px} }
+
+/* вкладки */
+.tabsbar{position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--bg); border-bottom:1px solid var(--rule)}
+.tabs{display:flex; gap:4px; overflow-x:auto; scrollbar-width:thin; padding-block:8px}
+.tab{appearance:none; border:0; background:transparent; color:var(--muted); font:500 14px/1 var(--f-body); padding:10px 14px; border-radius:8px; white-space:nowrap; cursor:pointer}
+.tab:hover{color:var(--ink); background:var(--surface-2)}
+.tab[aria-selected="true"]{background:var(--band); color:var(--band-ink)}
+.tab[aria-selected="true"] .tn{color:var(--gold)}
+.tab .tn{font-family:var(--f-mono); font-size:12px; margin-right:6px; opacity:.85}
+.tab:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+
+main{padding-block:24px 48px}
+.panel-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 18px; margin-bottom:18px}
+.panel-head h2{font-size:clamp(24px,3vw,32px); font-weight:600}
+.panel-head p{color:var(--muted); max-width:70ch}
+
+/* робоча область */
+.ws{display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); grid-template-areas:"ctrl board" "out board"; grid-template-rows:auto 1fr; gap:20px 24px; align-items:start}
+.ctrl{grid-area:ctrl} .out{grid-area:out} .bcol{grid-area:board; position:sticky; top:calc(env(safe-area-inset-top,0px) + 70px); min-width:0}
+@media (max-width:940px){ .ws{grid-template-columns:minmax(0,1fr); grid-template-areas:"ctrl" "board" "out"; grid-template-rows:auto} .bcol{position:static} }
+.card{background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:18px; display:grid; gap:14px; min-width:0}
+.card h3{font-size:18px; font-weight:600}
+.sect-label{font:600 11px/1 var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.group{display:grid; gap:10px}
+
+/* введення */
+.tuple, .eqin{display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; font-family:var(--f-display); font-size:19px}
+.nm{font-style:italic; font-weight:600; min-width:2.1em}
+.vec{position:relative; display:inline-block}
+.vec::after{content:"→"; position:absolute; left:50%; top:-.62em; transform:translateX(-50%) scaleX(1.1); font-size:.62em; font-style:normal}
+.br{color:var(--muted); font-size:22px; font-weight:500}
+input.num{width:5.2em; font:500 15px/1 var(--f-mono); padding:8px 8px; border:1px solid var(--rule); border-radius:7px; background:var(--bg); color:var(--ink); text-align:center}
+input.num.w4{width:4.4em}
+input.num.bad{border-color:var(--bad); background:var(--bad-soft)}
+.eqin .v{font-style:italic}
+.hint{font-size:13px; color:var(--muted)}
+.hint kbd{font-family:var(--f-mono); font-size:12px; border:1px solid var(--rule); border-bottom-width:2px; border-radius:4px; padding:0 4px; background:var(--bg)}
+.seg{display:flex; flex-wrap:wrap; gap:4px; background:var(--surface-2); padding:4px; border-radius:9px}
+.seg button{flex:1 1 auto; appearance:none; border:0; background:transparent; color:var(--muted); font:500 13px/1.2 var(--f-body); padding:8px 10px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.row{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px}
+input[type=range]{accent-color:var(--gold); flex:1 1 160px; min-width:0}
+.btn{appearance:none; border:1px solid var(--rule); background:var(--surface); color:var(--ink); font:500 13px/1 var(--f-body); padding:8px 12px; border-radius:7px; cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--band); color:var(--band-ink); border-color:transparent}
+.presets{display:flex; flex-wrap:wrap; gap:6px}
+.presets .btn{font-size:12.5px; padding:7px 10px}
+.checks{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:14px}
+.checks label{display:flex; align-items:center; gap:6px; cursor:pointer}
+.checks input{accent-color:var(--band)}
+.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+
+/* виведення формул */
+.forms{display:grid}
+.frow{display:grid; gap:6px; padding-block:12px; border-top:1px solid var(--rule); min-width:0}
+.frow:first-child{border-top:0; padding-top:0}
+.flabel{font:600 11px/1 var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.fmath{font-size:16px; overflow-x:auto; overflow-y:hidden; padding-block:2px}
+.fnote{font-size:13.5px; color:var(--muted)}
+.chip{display:inline-flex; align-items:center; gap:6px; font:600 12px/1 var(--f-body); padding:5px 9px; border-radius:99px; background:var(--surface-2); color:var(--muted)}
+.chip.ok{background:var(--ok-soft); color:var(--ok)} .chip.bad{background:var(--bad-soft); color:var(--bad)} .chip.gold{background:var(--accent-soft); color:var(--gold-ink)}
+.err{background:var(--bad-soft); color:var(--bad); border-radius:8px; padding:10px 12px; font-size:14px}
+.steps{display:grid; gap:12px; counter-reset:s}
+.steps > div{display:grid; grid-template-columns:28px minmax(0,1fr); gap:10px; align-items:start}
+.steps > div::before{counter-increment:s; content:counter(s); font:600 12px/26px var(--f-mono); width:26px; height:26px; text-align:center; border-radius:50%; background:var(--accent-soft); color:var(--gold-ink)}
+.steps .fmath{font-size:15.5px}
+.answer{border-left:3px solid var(--gold); padding:10px 14px; background:var(--accent-soft); border-radius:0 8px 8px 0}
+
+/* дошка */
+.board{position:relative; border-radius:12px; overflow:hidden; background:var(--board); box-shadow:inset 0 0 0 1px rgba(235,189,99,.28), 0 1px 2px rgba(0,0,0,.08)}
+.board canvas{display:block; width:100%; height:clamp(340px, 62vh, 580px); touch-action:none}
+.board.short canvas{height:clamp(300px, 46vh, 420px)}
+.board.tiny canvas{height:240px}
+.zoom{position:absolute; top:10px; right:10px; display:flex; flex-direction:column; gap:6px}
+.zoom button{width:34px; height:34px; border-radius:8px; border:1px solid rgba(255,255,255,.22); background:rgba(0,0,0,.18); color:#f7f4ea; font:500 18px/1 var(--f-mono); cursor:pointer}
+.zoom button:hover{background:rgba(0,0,0,.32)}
+.omega-badge{position:absolute; left:12px; top:10px; font:600 11px/1 var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:#f7f4ea; background:rgba(0,0,0,.22); padding:6px 9px; border-radius:99px}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:13px; color:var(--muted); padding:10px 2px 0}
+.legend span{display:inline-flex; align-items:center; gap:7px}
+.sw{width:22px; height:10px; border-radius:3px; background:var(--board); position:relative; flex:none}
+.sw::after{content:""; position:absolute; left:3px; right:3px; top:4px; height:2px; border-radius:1px; background:var(--sw)}
+.sw.dot::after{left:7px; right:7px; top:1px; height:8px; border-radius:50%}
+.sw.dash::after{background:repeating-linear-gradient(90deg,var(--sw) 0 4px,transparent 4px 7px)}
+.note{margin-top:14px; font-size:14.5px; color:var(--ink); max-width:72ch}
+.note p + p{margin-top:8px}
+
+/* прикладні задачі і теорія */
+.prose{max-width:74ch; display:grid; gap:12px; font-size:16px; line-height:1.65}
+.prose h3{font-size:22px; font-weight:600; margin-top:10px}
+.prose .fmath{font-size:17px}
+.app{display:grid; gap:18px; padding-block:26px; border-top:1px solid var(--rule)}
+.app:first-of-type{border-top:0; padding-top:0}
+.app-head{display:grid; gap:6px}
+.app-head .eyebrow{color:var(--gold-ink)}
+.app-head h3{font-size:clamp(22px,2.6vw,28px); font-weight:600}
+.ws2{display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); gap:20px 24px; align-items:start}
+@media (max-width:940px){ .ws2{grid-template-columns:minmax(0,1fr)} }
+.kv{display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 14px; font-size:14.5px; align-items:baseline}
+.kv dt{color:var(--muted)} .kv dd{margin:0; font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+.theory{display:grid; grid-template-columns:220px minmax(0,1fr); gap:32px; align-items:start}
+.toc{position:sticky; top:calc(env(safe-area-inset-top,0px) + 76px); display:grid; gap:2px; font-size:14px}
+.toc a{color:var(--muted); text-decoration:none; padding:6px 10px; border-radius:6px; border-left:2px solid transparent}
+.toc a:hover{color:var(--ink); background:var(--surface-2); border-left-color:var(--gold)}
+@media (max-width:860px){ .theory{grid-template-columns:minmax(0,1fr)} .toc{position:static; display:flex; flex-wrap:wrap} }
+.theory article{display:grid; gap:14px; font-size:16.5px; line-height:1.7; max-width:76ch}
+.theory h3{font-size:24px; font-weight:600; margin-top:18px; scroll-margin-top:90px}
+.theory h3 .no{font-family:var(--f-mono); font-size:14px; color:var(--gold-ink); margin-right:10px; font-weight:500}
+.disp{overflow-x:auto; overflow-y:hidden; padding:6px 0; font-size:17px}
+.callout{background:var(--surface); border:1px solid var(--rule); border-left:3px solid var(--gold); border-radius:0 10px 10px 0; padding:14px 16px; font-size:15.5px}
+.callout b{font-family:var(--f-display); font-size:17px}
+.mjx-err{font-family:var(--f-mono)}
+mjx-container{max-width:100%}
+footer{border-top:1px solid var(--rule); color:var(--muted); font-size:13px}
+footer .wrap{display:flex; flex-wrap:wrap; gap:8px 20px; justify-content:space-between; padding-block:18px}
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto!important} }
+</style>
+</head>
+<body>
+
+
+<header class="band">
+  <div class="wrap">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAACAMElEQVR42uy9d3xcx3nv/X1mztlddIAkQLBTJEVSJNW7ZKtakossV7m32GlO4uTeN734OrnXvjfOTb+OnerYsZ24W3JRtXrvjRJ7AxtIorct58w87x/nLLAgQYoFJEAS48+aAnax55yZ+c3Tfw9MjakxNabG1JgaU2NqTI2pMTWmxtSYGlNjakyNqTE1psbUmBpTY2pMjalxwJCpKTj5lkzVm3TtFBD6+5v6S7ubJXJ25HOl5J8o/TEMVVUVQs2E3mvQWMw1tnYBA+W/MDb06uOpKZ4C8NQ4tlWxqI9DgKGOtc3RUOfsvp1rTG/HJs1UhS3GVF1SynfWlvrb1XtPYMKFxoTLVXxG8YI3ACiKiGqy0KIevAgeLzGi/ap+Y+xchw2qyNa2aJjNrYsGB1ab6hrXMOssydUsKDU2LWujoaEfcCLipxZnCsBTY9QwqLpMT8/W6qhj06Ke7a/W+cK+ec4XLvV9O8LYm4Vi7XIXDVmN8qpGcijTjWBU3fAyCgqiyU8iJLDViqsIPhXY5V9XvkvyNwNAj4ioyVSLtZkhr9HLJmzozFS3bDden6qatiiqal3WPuOMK7cDkYhEU2s4BeDTZ8JNgHdRdUfbY435nS+dObB38yzVwpXRYMccL6zwcb5J4yhnxNYbYvyIopyCT1Gt+NUoIFIBYD1gofX1NoAkf5t8qSY/awL+IkQipseanBqb2SaB2RDWzG4Lso3PVLWe1Tmtdfn6muazesQEeYYPlqkxBeBTw2bN7tv28LTB3S8vG9q77SyigcuK+X3zvI+XqYvrwNUZ4xEvKAYlAaAKGPVoxTJpWdqOvkLFbwQj4PVgkD3Cu1ebyG6jSPqVIooS4LxzxgSDJqjpN2LW2prp22xN4xO1jctemnfxRzYB/SImGo/7mBpTAD6xNmxXR+OezXfOH+zasmqob9sFUb77Qu9KS3wcNRsha0QTkA6L0DIstUKuyhiAUlRM+q5P/64M6vS/RRFVPCaF/OjvEgWt+Ory34t6VEBTKZyYz/vfQ/l3guApC2wRSQ8NkyfIbLe5xs3ZsOa5qqb5r1W1XrB65rLrt4oJ+qak8xSAJ7HjqaOx7anvLx7sfPWyqL/vqijqWalxcYHzviZjkDJgVY9yoaT8b+KksrgEtCKISvKeehyC18TiVTEYLyAx1gSjwJeA0acQL9vNDp9AE3M09ynJC1F8bL0G4VAQ1m7LVTW8lJk+/+G61vOfall642Yxtg+d8olNAXji1eO6nc/8x5LBfS9fOdTf9Yao1HMBcWm+wWWNJEBCy9K1Uq2tNG49UvGeiCRAqHg39kLklIJTCs4wGAsDJctApORjoeiEUqzkY1jc6Li01Q9LeCNKRyHkvrZEHc5aIRsIVVapCZXaEKpDpdoq2VDIWiVrPEZ0WEJrhe19MOt6RIcw6SHhkg1mBI9BNCiYXN3WTG76M9npCx9uWXT5Q/VzL9siIlOxqykAn7ihqmbX5p/P7d/8+Pmlnp3vjIf2Xe5ccaHgs0ZAfdnjW6l4GlQMVmOMelxZiorHIKixqAolL+QjpScv7CtY9uQt+4YcvUWhtygMRlBwQtELznm8JtKy7HcqqXLD/JhProxxPkGcNbCtX/jCUzkKLlWxy7JYwIqQMUrGKtWBpzYD9TlhepXQkouZWeWZXg21mQT0gSTS26kBVRxg1afA9al6XrbMTSrfE6ksYpIDTYJBm6l5JVPT9FD97Asfajzrfc/X1tbuFZEpg3kKwMcNuOGWx76yKN+z9e3Fvu1vj4uDK1A3w4pLpNMhtp5iMHgMCsZgUUpq6S8J+wqwux929AfsHvDsKxj6S4bIKbEmfyupflqWzFTI9MoReeW6eTEfW+Hw3qMKgYG2fsMXn8lScJJEjfa7V5/enVGfeLrxaOpSCwxUh0JTxtFSY5hVp8ytVWbXKI05pcZEqFhQJUYQjRk5Ig6maidebu9DJMy2Z3KNz1VPn3d385Kb72iYf+FWEZkylqcAPG5qcn3bo1+5pHfPizeVBvdc5eP43EB8VlLp4xEMfpSLR4eV4sQrbEXxHnrigPZ+ZWufYUOvZXe/0lMMKHrFpXasFU3DOcnymCQlYz/H1dhjTABbaOs7NIDLtrRJT6GyE1uGLWVSNTq5i8BATeCZUe1ZVA+LGxxz6oWWXEQ2SO7bq+J15MDRUfMy4n4z4hPHmYZ5m2t4ITNtwT0Ns86/f/Y5731BRAam9uAUgI9qajo69tX3vfqvlw/t2/a+0uDeG+J4cG5gED8sbaXCotVhtdEAVkAlxLuYPXnD+h7Lmq6Qtv6YrrxNVFk8RkwqVfcP+2jFtx5+SCjyyvXzHB9dEeO8h8MGMAfxNo91P8MaCV7BYQhEqQ09rTWeM5tg+TTHgjpHbcZicTgVnILBgQpeNNEoynli6WkhIjgvLgirdgT1c+9umnvpd+Ze+MGnp4A8BeAjAO66+u4n/vXywYHd73el/hudL82xKOr1oDBSDBlxIIaiE3YNCms7hVe6cuzsVfqiRIqZ1Et7vCZ+TAAfhgo9LiYG4FRAHRmrTK8ynNXoWNHsWFLvacgJQkysFuPTkNUY3yICRgMcHhvm2rJ18++qnzcF5CkAH4aqvPHeL1w+2PHa+6Ni343G+TkYj6pHsRUyqPKvEnUS79hVyLCm0/BcO2ztM+RjM+xVNiIk2NHjmtdwcAALX3wmd1wBPCJLDRCjqji1WHFMr4KzpzvOb/Gc0eCoDRNHn/c67Ow60L9tEFEcniCoaQvrZ9/VOPeS78y98KNTQJ4C8Giv8ubH/ubK/J71Hy8O7Hqzd6U5RgT1PtlYCippzFQEq4CxGPEMRIaN3cLTe0LWdEFPPnEGBaZs7XkqA0LHe8qP3gYer+2kowJL5f/yCs5D1hpm13jOaYm4sMUzt85jDHjvU7ukbIRoxZGQaC2qBhtm24L6+XfNWHjld1rPvfW0B7Kc7sDd+fS/LOlte/KWwkD3JxyllYE6vOqo9MUK5Q5jDYH37CoYnm+3PNcO2wcsRQ3I4EYyLiZoTCyAD2POBcQ5Yiz1oePM6cIVrRHLpit1gSdWg6ofw+ZPbORALbF4TFjXVjNt8Z2tZ9/y1YZ5lz9zuoafgtP13Orbef+MtXf8wYfzXZs+GEX586zEWeMVrwEqOhzFLLttrEkkyNYeeGxXhhf3QnfBJplORsji8GLS9MOpcbBhVPDWYrEMOOG5dseLezOcUQdXzo44vyWmKac4TaR2paTxKkTiMGqQaHD+wJ5XfqWtf+dF1dMf+4989+6fVDXN2QL+NNvJp5/Urdn8wBev6du9+kNxsfvt1ri6RHuTNEc4VeMkKcCzxhA7WN8d8PCOkNWdMBCBlUSFHnHfVCqQEzf2l8DlRI4TZQMfrpo9WsIK3kMsltlVEZfN9lwxO6a5yiE+cYz5YcefH7V1jYAnKGQbZj7UNO+Nfzf34o8/KiL9UwA+9c5+djz1j0v3tT35CTfY+QlxxVnI6FO+clICMZSc8Gq38MCOgHVdUIwNVoDhYoLJJ22PNpFj4neiYNRT0gDU0ZyLuXQWvHGuZ2a1wxPjU6KC/dfKALEoQVC9s2bGijtbznnHlxvnXPzS6UBAcFqo0NrV1bDmsS9et2fdPZ+J46E3BPgQFK9SITGTrCNjDJEKazqUe9ssa7tCSj5Roa0FxSbZSlMlcuOLX/V4DKE41EBHKeRnWzxP7ra8cY7yhrkBM6qU2Gu5VHlY93HlHGw3OKe3/flP5ft2ntd/xlX/pKrfE5HeKQCfxFJ391NfXbn6vt/7TGGg/V3i45YASWt4krxdwWNUwBoEw6aekHu2Gl7qsJQcGAOBSZ1aqhjiCVeTX1+YnXyKlVYYIqJp0M4I3UXlB5ureGJ3zLXzHVfMiagLBOcVUYeKTVJNVfGaZJy7/J6L9q776Rn9nZuv6N/+3N/Wzr3glVPVyXXKAlhVq9be8Qdv3b3up592Uf+1RqzxWLRcIZOmJ4oRjBj2DRnu3hbw5C6lPzKERglMksRYWaerU5G342bN7V8RTbo+OY1pzwd8Z53h2V0BNywqcX6zx9os4h2VjisF1CtGB6cPtT//8Q0Du1ZMP+OqL6vqbSLSNwXgk2B0r7lz4au3f+bj+Z5tv2x8abYgeC+QmkSSgjcwhmKsPLwr4K5tAXuHUolrE1aMRFX2Jz9oT9rbHyEmCCWp79rYL2x9OeC8lpibz4hZ0CBomkdeORLfhho/uPvSfa/ddkaxb8clms//tVRVbz6VzJ9TCsCqanY+/m/ntr3wjT8uFXpuNvislmtx0+IWxWAkxmJZ1xNw+0bL+k7BS5JRlQA3+ax/nYqaSTv8fpJsP4K7kwzCFYUcmhSFEPB0u2Vtt3LDfM/182LqQkfk3TAlUZnPC+8Rzbf0b3vmV17p/t157evv/NLMM2+6/1SpdgpOIfBWvfaz33tvvnvLb/qo/wILxu93KgtKYDwDpQz3bLXct8MyGFkyUvaK6LB0PvUkrpzEj6MHqNpZowyVhNs2WF7bp9y8VFnRFGB9hFePS7O5ykwjQiko9G29Zdez/7G81LHpL1KVunMKwJNg7F579xlrbvvNT+d72j6MFGZbFVQrKwY0LSKwvNpluX2DZX2PxQqExp+CoX85VbB70OFEEuYShbU9IW3PG66d77hpYYbGIBpmDxlxkAlChC90Ld274b6/dKX4YlX9gohsnwLwBI72l7+/aPcL3/x8lO+81aJBwoZBqkI5VITAWAox3Lkt4OdbDYOxJTAyfEKfaiEh3b/Y/yRWoQ82jI5UGAdGKDrDHZthY5fj3ctCljXGeK8VaR8e1KB4jMs39my975PrBnaGPe3rvtA0e8Vm9SenRm1OYpU52PzQ/71q9yvf+2KU77jVoIHXkXI/owpiyBjLtn7Ll17K8pONlrwPCY0mdamcehv7dBm6n3ohAtZY1vWEfPkF4Z5tFq+CFUnLIcomUpKSGXsX9re/9JHtj/31P3duePhmVT0psRCcrOBdc9cf3prft+5/+Ki0fCTYU8GfbASM5/Hdlh+uM+wrMBwWSs/hKRScgrAOrDIYhXx3rWdzr/DeM5WWqpiSr3CKiUv4rkUypf4d129/9l/nlLo3Bar645Mteys4CcFr19z1e7cW9qz9POoWSYWSJJo0/wlEKMbCD7fkeKDN4HySD1z2zbpTHLxmFGvW6YbhlGZXhCd3B+zs93z4LDhrmsN7h6NMwZtGGpwjHty9fNert/150ZVa0+ytzikAHx/w1q/56R++K9+x9n+o+kVl265MTK6SxHD3Dhr+a43l5X0WCRIH1tSQ0+hJE4bMjPHsHlD+30sZbl1S4qq5kna6GB3b9wrihpZ1bLj7z63Gy1X1z0WkfQrA4zg6dzw9b/VPfud3i90b3i8ataAGJw6jI+RxgRHWdVq+ucbSNmCwAVgtx3N1Crun1SP7NNMupBgp31wXsHvI887FETkrB9Z8q6BRf8Oe9ff/iovjQFU/fzKA+KQAcOeGh+btePxf/zTu3/5REQkTpsMEvGAwOEQMj+/O8L01hu7YEBiDaKoynVbglUN5fE4zizj1i4ggXrhnq6WjqHxoudKciSj5Eb+Join1Zl+uY/P9n0pZOCc9iIOTArwvfO1P4/7dHzVqwkj8KOIWIw6H5e6thh9vskTeYK1HfEJfczpqzzomqcDpqoGklD4mIFDP87tC+vMxH1tlmFctxOpGc4EqEA/mujbf9yl8POlBHEx28La98LU/LQ3s/mggEkbiR+UHGhFKPuD2TZa7twVJZdFwlz9O6w07NUYPqw4ngrWGDT2GL7+Q4RdWOpY2eaL9isJVBeJirmvbQ5/CmEkN4kkL4M4dT8/b8fi//qnvT8DrK2pAE9I4TyG2fHuN4ZFdQepltmlXgakxNUYPjyCaaGWBMewaNPzzS44Prwo4d4Yn9klugA63qfEQDeW6Nz/4KSaxOj0pAdyx/aW5bU9++U9dX9tHLTaMxI1ShQPjGCoFfHNNwFPtFjEJxYSZAu+R2cannWaSFKeoQMY49pVyfHV1iY+fBRfNdEReDpDEPhrKdW9++FOBsZMSxJMOwKoarL7zDz/u+3d82IiEkbhRWqEV6CsFfP21gOf3hARGQXzSN3eqVncKu4cFZI8XS4gyWLL8+6uGWA2XtpaI91enAY36cvs23fcpb6p8CuK9UwA+CHjX3PV7t5b2rPmUqMs6GG694RFC4+gvZfj6qwHP7UvifA6LVTcF3sp5lHL6/tShNvYEmWF4ijEMxoZvvFpCNeDyWY6SL/egGjHZJBrMdW6445PGBLtV9a9EpDQF4APA+4e35ves+byqnuHVIMM2iScQw2AU8LVXLc/vtWSM4sWkgfmpTTpK3IowypiYsivGlMQKGJ+0pht0Gb75miOgxEWzPbHjAHVao4Gavet+8ku2qmpdWo7opwAMiAnY9NBfv31w72ufN94twgvepFxVqbc57wzfXB3w/N6Q0LiEj3kKvEegPU+heGxtBYzGWGMYcvAfawKs9VzQcqB32isQ956xb+29X6ipO7OEmJ+iE4vhSZEUvOf57y4d2PXMZ4x3i1QVxGE0ub0kVBTy3TUBT+61af1u2ds8Bd6xJEuSnWaGmSymxqFmS3CSEhYK9MeWb7wKq7sCQgNezGiL2Fvc4I7l2174l8/o0M6FE33/Ew7g9nU/XbRzzY/+tFjoeWO5JrOc22zV49Vy2wbh4V0B1trkxGSq9/OxyOKpcfAZMsbQE1m+vtqysS8kK/sfg4rGQqlry9XrH/zKZ1V13mkLYFXN7Xvltt8o5TveZ5Ag6Qs/ktuMsdy9zXDP9gBjwOjhe5tlksJnjI4/x0GqnHzYnQy3WOZDM2LoGLJ87dWA3UMhRsrpuAlNjxcHQrZ/38sf3fr4l/9YVaeddgBW1czan/7Bh4r9e94fohYtt7JO2lOGVnh8t+UnGzMYLTMhHb7arGU+uv1fE7hZZIwJPy4UzvunUp4EjBxayR84YWumw/zUgTHs6INvvmbpjwJsWaiUubbUIXEh7Np4//t2Pv/dd6pqOBHzFkzUudH28N+8pb973ecMbrbTkS0uCiaIea0zy/fWhkTeILbcevLwl1FUiaM49WPL8EY21mACm1KynLjhJak9dfu5N0WEIBOO7/2cZMTuqop6j/ceX17nch0CIEawYpKihBPwbIKmdeWW1Z3K99YbPrwiJJAoXaRUS/QAg00dm+79o6qW+e3AHacFgHe8+K2le1/72a8ZV5w/TGCVxt2MhT0DOb71mqU3AmvLPXX1iM7RTBhyycpzCAKbRlYEawzbd7WzYWcbxtgT+szeeea3zOLsJUtxaTMQI1Asxjz+yotEpdK4AW8ywlf3E7DOK7FLAFGVy9HU0MSMpmk01daRzWURIIpiCkMFuvv76Bzoo6+/n0KxCIANAowxw1tDxhnCiEM1ICMxj+6yNFcptywOiCu5wkUwXomGdize/eJ3f1VV14nIplMawKpa9fL3f+kXXL7zunLNpsdi8SCGfOT5r7WG7UNJzipH04dIIY4cH7vlXVy66pxRb72wbi2/+vnPEjs9cYJKEynzGx/8MDdcduWotx587hkefPY5jBjGKxF07GqkiYN10q5VMN4Q+5jIx8yoa+C85Wdx2Tnns2rJUuY0N1NXW4s1B1p1xSiif2CAXR0drNu6medeW80L69ayu3MvAmSCkDJF4fhEJjTV6R1ODAbPT7dmaK2JuHSWUvQGm6btqiRliIXOLW/Z/Njfdqnq74vInlMSwKpqX/vZH32o1L/3E0Y0KDcXs2m7E0G5bXOWVzrAWpsmnx+Fgi7CYFziu3fdwSUrzx6ldp175lIuWXk2Dz3/LGGYOSHbOnIxKxYv5o3nX1TRdx5i7/nOXT+j5Etkg3E0oeSwXFsnzmBSAe/JuxILWufwjmuv46Yr3sD8mbMO6++zYUi2qYkZTU2cc+aZ3HrDTezr6ebxl17gtvt/zsvr1uPwhHb8XTqJ8yogcjHfWRfQUu1YWO+J1IyQBigYVwx6tzzx7vbG+c+o6ldOVJLHCXRiCW1Pff28Ys/GX7NSai3HyMsuemMMj7ZbHmgziLGE+9VpHqm6lrMhj7/8Eq9u2Tz6gY3hPW96c1rwf6IOLs97r7uBXDaLaqKAAby4bg3PvbaaTGDHOWI7uZToKPZkcjk+feuH+Pr/+nN+6V23Mn/mrGGHkT+CdS1/vrmxiXdcfR3/9Nk/4wu/+d9YOLOVYhQfn50rMdZARxG+s87SH4GVEaGTdEj0SDRYt3ft3R8f6N6x6sR5k06U9O3pbupte/QzvtR3nt9vxawxbOnPcNt6g1NDQjl29MX4SlL0MJAf4Ef33j3iX0wxcvm557Ny8VIiF2P1+G13FSV2jkWz5/KmVHU2MjLpP7r3bvKl0vhzhshoZ+6EqM0mMVGi2DFv5kz+7vf+hF+79QNMb2gYpYWU/bpek5dLzY3yy+nIe5WfL49MEPLmK97AP/6P/8UVZ59LMY4TZ9c4PrmqgAqhCGu7An66KQcSDLdxSQ4Wg9OYUt+OC9qf+8bvqmrLKQNgVbVrnvrzDxYH99wiYk2lnSICQxF8b53QVQhSArpj385eIBeE/PyZJ9jWvjsBSerczIYh77zuBlQ9XkizvsbfaWNViJ3jlmuup6G2rgJfwubtbTz4wrOEYcipOESFUuyZM30Gf/U7f8BFZ60Y7tkkY5o9ycumDsfyy8rIe4dyWrZOn84X//vvcNFZZ1EqxcfrqRBreWi78nR70pJHsemhkqjTBm/7dz93y85Xbn+3qh738/OE2MBbnvrHVfm9G3/REjU5Z0f1ITJiuXNrwNrOhJibcWh0Uj4D1Bq6e3v48YP38ZkPfCR1iCWxiTddchn/8ZMfsa19N4G1x2GpIfLK3OnNvPWqaw54/4cP3Etf/wDZbOaUA2+awk5oQ373k7/E0vkLGHa7H2Ts6+lhQ9tWtu3eRW9fH845stksjQ31zGuZxRlz5tLS1HQIS1VpqK3jj3/p0/zyn32O7v7eMR1ix3osW1VKGvCj9Z4FdTC7ukQpLbwh1SSCeLC+a/0dn2hedPkTwEsnNYBV99W9+P3f+5SLBs+2ynCXwER1Fl7uCrhvmwETjr+jRcHagDsffZgPveVmpjU0Dp/+DXV1vO3qa/nSt76BWHtcXDxxHHPjG99A67Tpo37f3tXFzx9/nOAESF8dPtFOnDItCqUo4m3XXMk1F10ySq3XivguwAtrX+OH993Dk6tfobO7i8jFo9bCIIRBwLTGRlYsXsJbLn8Db7zwYmpyVUloSjV1UibfuGTOfD7w1rfypW99A5vJHJf5NGJoz8OPNno+uSokY0qUG+mJCh6P9u26eNuT//Rrqvq7x7Mv8XFVocVY1t31N9fF/Z23BhC4ivNSBHpKIbevMwy5AIs7LjnO1lq2723nzsceOSCafPMbrqF5+jSc+nHf3l6VxoY63nPtjQe8d+ejD7Gjcx+hnJrFBqqQzWb44HVvGXNeRcGp8i8/+B6/8vnPcdsD99PR3YVYSzaTJVfxymQyIEJnTw8PPPUkv/v3f8mn/9fneHXL5nJTlQO+/51XX8/M5mZif7wcwZ7QwHPtAU/tUsSMdkJ6lFicGdy9+j3tr/341uOpSh9XAHev+9mSoa7tv2U0blU/kuWc2AqGe7YKm3sNgSkrQcfhdgQCMdz+wP0MFPKjlnt2czM3XnolURSNO5BKUYkbLrqMBbPnjDo2+ocG+cmD9xFYizOnZj1V7B2LWmZz5qJFY5s3Anc99hBf+c43ib2jKptNwoYH9QILxhjCbECVDXlp/Vp+76/+nLbd7QfgV4GWpmlcvuJcXBwft2cUQEX46ZaAXQMWk4YqVRTRpFrOxf3TO9ff/wsU+5efdABWVbN99U/eGRe7rkA8XgRJEwyshbXdhge3BxibgNpjjo80UgiCkPXb2njo2WfSE3IkXfgd199AbVUNURzjnDuMV5y84pFX7JJXlP5biiJqsjnefcNNjFj7yXjwmafYuKONwFrkeB3MOuqfE54L7b1j3uzZVGUyBxZvCJTiiO/cdRdxqo76w7w3UYOKEGYzbN2zm3/70fcOWhxy8dlnH+dEHUUM7M1bfrLR4hQkzZhOOmMm+dKF3q2XbH35+59Q1aqTyAYWdj7zz5cV+3Z+1IrLep9WeuAQDIVIuH1zwKBL6ntVjy/5uhfFG8eP7r2bGy67gkwQ4CUxxpYtWMhb3/BGHn/pRTJhmKTHlc/Yci6uVCQBSlpyIaM/k4QuEput4GMuWraSFYuWgE9tNIFiHPPD++6ZoFzlE3hNVRobGg56F7s6O9i8azs2CI7ubNIkfPTYS8+xp7uT1qbpB3xu8fwFVOeqiOL4uOVPK0JoPM/uNZy/J8MVrSUKahhOHFUBLYX9bU/e2r/k6p8Cj5wUAFb19a/+6NOf9L50jvGjHzgwhoe2B6zrNGRMmTtfj/PWVTLW8sKGdTyz+mWuPO8CypFCVcfvfuKXiOJoeKFlVJhLONAPJFRm95oUvJqCW1WxtlKtSj753OqXeWnDBsIgPLFAnYDzwqSF8GOVoPQPDhCVSsek/oUYuvv62L13zygAl79zTstM6mpq6ejpxh4HAKchIxCD88odmw3LphkaQnCVkW6vFPt2Ltzzwrc/oKovikj/JAewsPGBL1xe6t3zZotnpI+CYoxh96Dl3m0WkROo2aX9k4pRxI/uvZcrzj1/BJhiyWUsuUzmuOFJAO8937v3bmIXEdrMcXxuHZXIUZ7jE0q4K4bO3p6Dvl2TrcIGIXGpePRPacA75YFnn6Wnrz+tYiofupAvlo7/2aXlpCFh2wDc1xbw3iURrhxHS7OzDZEMtL/6rs5tT94vxv5gPJuJjzuAOzrW1e+458/eH2txjlWPqB2WQALcuS2gK08aozuxPtgwDHh09Qus3bSJs5YsOaHXfm3zJh5f/QJBGB73FM6xSxlOnBi2xrBtxw4GigVqs7kD3m+dMYM5M5pZv30b4dGq0QIZY/nGT37EN3TsCR2uWDrO2h0kLW0f3mm4sCVgQUOEK2ueGuDxUOya1b3h55/yLn5SRHZOUieWsO+Zr10eFXpvTG7bphSnSX/edT0hz+7WpLZzAoYRYXAoz/fuu+eEX/uHD9zL0FAROUHPrhOoQltr2dK+k5fXrR3LPKY6m+Pmq64lcvGwY/NIjQRRcAYCawmCADvG68R5FxQRS29RuHObwVX6dMSDJpVmA/tevbJn86M3jWdYaVyfMpG+n32/EM3x5cLnNNBe8pa7tgoDcUBoDEI8IaR0YRDwwDNP8vFb3sWCWbPSTZWUuw0UBlmzeTNg0lxcj6/MzSUpOB/+2XtUk26z3ivqYladuZQ5za2jbN+29t3c99QThIE9qg17VBucias/EqDoYr5x+4+4cMVKskE4ksCRLvn7bnoLG7Zt5UeP3IcRQ8aGacF+6sEd6/QRxfpkXisjCRM9yrdhxfDCXmFtZ8CqGTGxL5s0DlXBlfrq926+7wONi95wD7BjkgFY6H7iXy+PCv03GjF4TSp9vSSOq1f2Cq90BoQmacQtEzT51gj7env48cP385n3f3iUo8o7+N//9s9s3NVGaOyoAohk/8gBvZc0bSxO7Kirq+NbX/i/w4QSPs2U/cnDD9DV20M2kz0xG+pEEG+9zsgFIY+ufol/+u63+c0PfhTdjxqnKpvlc5/+DS465xx+8sD9rNu2hf6hQZzfP6lm5KdsGOArHFKTK4aeJCcVnXDPtoAzmzyBjHJnoU4Z3Lv2sp7ND9ykql8VOXYUjBuAOzrW1bfd89n3G9U55YLytIybYmy4f5vFOcWahDhsIqRvuQA7YwPueORBPvTmtzK9Icmv9arU19bwjmuu5S+/8e8YG6ZBednvG+SAzSUoBR/zliuvShI30o9ZhI7+Pu545EGsDU7wk+6/yU88irM25N9v/wFOPb/x/g8fYO+GQcA7r76Ot7/harbvbmdd2xa27t1FT38/cRynxAQyrE088szT7OvtHvZwT8YRGmVtp/JSZ8AlM5NqtBFLWfGl/rqOTY++v3HRtXePhxQep10ldD//r5f7wtCNYkhKgdINExrl+b2GtT1m2KGg+Ak5PyXVa8UKO/a0c/djj/Cht96CKsMhn7e94Wq+fefP2NfdjQSjk/UOdug4FWqranjn9TcMX6j8yZ8//ijb29uTlMCJUu9OcC708FEnigSWr/74h7Tt3M5nPvxxFs1JWFgdiknBaa1l4dw5LJw755Df+Ylt29jT1YkJzSTm6DPEKtzfFnP2dENGRtJUFBAfM9Dx2qWdWx+/QVW/dqxSeFyOMlVfk+/a9x6Pm40faUYmwFAMD7QJccpgMHZkcAKm2Vp++OB9DObzo/IqmqdN56Yr30jBxxgvw0Xkh5rlUhzxhrMv4KyFo1MHhwoFfvDgz49DVczJMRIiViEbhPz82Wf45Of+hL/55tdZ37YN9Uemg5V9DyfDU4sxbO4MeWWfwVrZ/118obe+e+PD7wVmHvtxMQ5j5+N/vzQq9LzRClLpeQ4MrO4M2dhjCCdAChxS1bEBG7Zt48Hnnh52ZJXHO655E9Nr6okPp9hfE1XxXTe8GbNfccKjLz3Pxs3bTqhHdDIO0cR51T/Yz5OvvMQzr7xEKYpOzWdNlf6SOB7eYSjGY2UZKoP7Vl/Q2/bs2RMOYFW1nTtfeZPzhTN0mMMqcUREseHhnZY4jQVPPr1H+cHP7zkg3W7RnLm88cKLKLno4An26StyEecsW8rFK1cm52vq93LO8aN778ERn2CPcJrmOdyhkAnhhRZJ29IplJznDedcwD/84ef4z//9f/nw226hOpsd7QxM1Rzdj5FDy+Rxms7tBDpAD9/74DFiWNedMHgYa0fNv1clKnS3dGx/8hZVrZ5QALe/eNu8uNh9ixXNqpZrjRIK1zU9lnWdARlRRM2kq7wJwpAX16/j2VdXH4DO973pJqqy2VEZPgfYvqm3+b3X35Q4aFRSBkZ4cd1anl67mqwNTjB0JkeTc0XwzpEJLb/zsY/zd3/wJ1x2zrnYCvKEUe7A9ESU/Rg5JE1TtSbpk4UqftKXcCV1dZEXHt4OkTOMJvkRDN4U9qx5a75/34UT6MQSunY9cp6P8ytMhd2rJFxGj+8ylLwjsAaZhJ0Ey9zD3/n53Vx2zrnDUlgVVi1dyqXLV/HwS88lRQ77L5EkUvbMeQu4+sKLGSXoRPn+fXdTKpbIZjOJCnkiZaDqhCo7iWai1FVX82e/+ptcd8ml+FTymP3ykmPn2LJjO1t27mBfTxf9Q0MUSiVcHOP9CPWvKuzo2EModljLmezDGuG1Lsu2XsfSRiHSkaCSqpLv37GwY/0d16nqY0fLYnlMAO7e8nzjpsf/z3vEx02+QphbY9jWb3mtwyR8xyM7e9LpO2FoeeKl53l18yZWLV6SJG4IWLG8+4YbeOyVF5MjyYBUHv0KPvbccu2bqK2uHpYiirBx+1Yefe5ZMkEIE7DZkmwvP2Hz7TUpHvkfv/zrXHfJpcMrX2mmeK/c8+SjfO/uO1mzdTMD+Tz+dWiEM2EGY81JQ4IgQN4ZntgdsqSxUPH7cm/igunb9eI1XPjxrwHbTrAKLXRs+eGlWipdZ/cjOzIIz7YLPZHFDHd3m5x6j4gwkB/iB/ffMzzr5Um5/NwLOGvRIiLnMfvpbd57WluaedsVbxhl/wjwo/vvo3uwH2NOz46ApSjifTe8mRsuu2IUm2RZknqv/N23vs7v/d3f8vTaNRTiiEwYjmLiGOtl5OSbTyPw0j5lb74SJYk977BEfbsv7Nzy6NVHi4+jBrCqDwsde691WprlRtwlGIHOouH5vQZrTo6zMheEPPDUU2zdsxvDSKOXqmyWd19/Izg5oPi+GEfcfNkbmdE0bdSJu6ezg3uefJxskDkte/N672luauKDb7l5xLatPOAEfvzwA/z7T24jtIZMGGBO4danYqC7IDy/z2JlxD+gYhE8cWmgrnvLI1ep+poTCuD2F2+bExe7rwolKY03eIwmtKBrO2HPkJw0CyPG0NHbw8/uv++Aibn+ksuYP6uV2I+QralXmuoauPm660dMzvTNOx59mPaOvRhjJy4XuYKRw8uRkacfs/R1jotWrmJOS8uBjiqgp6+ff/vR9zHGJJ7qcYjtqihePU6TfytfSZ77BEpgFVRCnm23DEWmYmcl+RKGmHzXlkuLxf75JxDAhr62By+ISwNLqai8cMYQe3hmTyZJ7peTp610xlp+/NjDdPV0j5IYTXX13Hz11ZRcPDxZRRdx9UUXs3jO3GHgJnHOIX780P1p2MCfdi21vUkKEc45c9lBP/PKpvVs37MbG4wfla/BUF9Tx/TqOhpr62hIX421DdTmqifsIE0krRLiaOs3bOo1BFK2gct9HSAa2reoZ8P9N6rqEU/KUTmxurs7G7fd9d/eK+Kn++HevUJIzLbBHBu7U45nlQlLmzziTRAYdu/Zy51PPMaHy+pfCuKbr7qG7951J90DfYgIVZks77nuxtGiBbjvmSfZsmMHmTBIkll0Yp57ojKWjE8IBJunzTjoZ9rad+FjRzBOueGxcyyeN4+//u0/IhMGoyS6GMMDzzzN//nqPx1V3fGxO7ES3cdLgHMxz+4NOXt6EVFBRqlJper+vavfNpN3/Bew97hL4N5NP1oUF/svNBU6fVI2FbB6n9AflTfuyQHe4Qm3cNv9P2cgn69IofTMaZ7J9ZdfSRzHxLHj0pWrOG/psmHJmyStRNx2373D3R8mCryVlxZIm6Of2E7u2UPwXZeiCBVN6GiOWfImobyl8xexoLWVWdNn0Dqjefg1c9p0cEnf4YlbjIS4QkRY2wldRYMaGSWl0Zh819YVhZ72VUczB0e2ycVS2PXa5bGPF/jhQyQJXOcdvNiRsAWddM4GTRgc1m/fykPPPpMWjY+c5u+67npqq6sQUd59w00HMD08tfoVVm9Yd1y6PBzN2T9RV/Uo+eLBqXKaG5sQEZwcO3h9GjG4/JzzKoye0WPTrrZJsB6KEdiXF9Z1C9ZU8sAljKzx4L7W7h1PXX6kavQRI62rq6OxMLTvqpBSViuSN4zAjgHDzn7BmJPT/2qTnD1+eN/dRC4e6SaAZ/mCM7ho1dksnj+fy88+/wCV9fv33ENB3aQIdUzkLXhVOrq7Dvr+2UuW0VRTh3o9COQO8zoCpThm8Zx5vPGCC0erHmVpH8es3bIZmRTFJIJT5ZUOUs6s8m8T9kqvkS3sXXMl0HRcATyw9vvzo2LvKpGR2G7Srdzw6j7LoLMnpfOmrDKHNuTF9Wt5ZvXL6fSa5CXCe9/0Zj50081UlfN409336uYNPPnKS+ROeNrkoZ/lRF8TwKiycdu2Yc1M91OVF8yezduuuY5SsZSo93KkMEh9E96DwKfe+36a6uqG36x87q07d7Bl+w5COzmKSYwEbOiydBVkJOtv2H/gGOjauizft3fpcQSwMLBv3Spxhfm+gunQoBRjZXVXgDnZg58pf/MP7rk7ZRUZGVeccwG3XPumJFur4vc//Pk9DBUGjxv/8FF4sSZMaZcw4MUNaxkYGkIOYn3/6q0f5OqLLmGoWECcP2x3gQxL3giv8Fu3fpi3vuGqgx5W9zz+CN2FQSZDPo0iGPF0FgO29EBllaGXpFV4NNQ+q3/7k0uPhDfNHNm+8Nmo1HO+R6upUNWNCLuGAtoHPGIsJ/vIBhkee+VlXtu8adTvA2sIjR12XCEJ39X9zz6FDYNJlbghR/13mpIAyxHnrnuBwFjadu3kyZdeSH43xtlSX13N//6t3+ajN7+TMJuhVCgSpbnPY7VaUE2YLQqlEi6KWTH/DP7iM7/Np959K7p/yWd6eO3et5cfP/wAWZuQ+OuEr0daneXh1c4AVwE9UY+KRV0pN9i56Srv3WFXKB2RbtG54c7muNB7aSDGjDQEE4zAxh4YjCTNvppISrVjVwWtCIP5QX7087uT/GjSHsLlihnK2ofw0wfvp7O7h2w2O66L7UVQDzGC0aSNh6loT/N6DrlhVTp19Ki8flA+Iac3GPXELnFIYQyhObyQWPm6Hvj6T27nsvMvoDZXNaZ93lBdw+//wi/yruvexJ2PP8qTr7zEzvbdDBaGcLEfqWqzlqpMlhlN01i56Eyuuehirjj/fGrS7z1A6ZGENuIfvvdf7OroSNq76GTYV0mwVS1s6hX6S4baMCG7M2hyEBkk37/rAuAM4NVxB3DXrhfO8nHhTKmoqjDqidXwWldYsQtObj3aiycXBPz8mSf52DvezYLWWWmZ4GjnQ1dvLz95/GGCcY4xKgbnPVe0elZNjxAP9+0M2NwXpC1c9MjErxz+4aUKNYHnuoUxuRA6CpaHdiRNcQ5XHodBwIsbNvAv3/su//2jHz+ERudYumAhSxcs5Fdv/QDtHXvZ29lBb/8gzjnCMKS2pooZjdNomTad2qqqw3rU//rZT/jZgw+RDSdXOqtiCHHsyVt2DTjOaoLKNGRVpdC/a0HfztXjD2BVldW3/daZ3sVNo2wKI3QVA3b2eUSC4RyTk9gETuSrNXT39HH7A/fzmx/8cJKSV+F4EODOJx9h5+49ZDLj7yQR7zmzUblqgYA3vNRj2NzjwB5OH+WjXwFRJRMINyxUGnLK1h7PozsyuCOsR8lkLN+448fMmNbER992y9jXEkkdXQnoF7TOZkHr7IMeLj6VY3KIe/nmnT/h77/1daxlUqUgmGFau4AodqzvFpZPCxAfo5I2OVCB/FDtwL5XLlbVu0Qkfv3vPfxRhSteboU0fJSodkaEXf1JgDrJbeXkH2k2RhAY7nr0Afb19iBpWWR57wwVCtz+wP0cjwhFsqUtqp4ojim6GO88JYKk5E7LrVrldZ1YoiOvsXGfuIKVhGiuhIBTCgjOeyK1qJgjzksp94r6m299jb/7zjcplEoVT6ckUSRT4ed//e8rk+ClLYfSeUoeqqu3l//1L1/hr77+VeJU9Z9splnikU9Mz809QuzNAZ5zkVKQ79y6HDisboaHLTra197WEg11niEV5m1sDDlVNvdC5FNb6RQaxlra9u3h7sce5SNvvXkUXh556XnWbt1MLrDjXihg0hzaDd2O0INXw2AxZlGtxZqYwdjQWUwqsI9V31EMRh05K9SGgmgS3nm6TagPHXsLIaIxhiNvyGZFUIWvfv/7vLR2Db/87lu5eNU5WDHHHKs2KZJLUYl7n3iUf779B2xuS9JYZVKXHSZJHW2DAf2FIRqrErKLsvtQ1ZMf2L6yVCotAl4aNwD3b3vtTOdKS41qxdJDXi1beoOUcfLUSt9XIDQBP7jvLmY0NhGkxeQi8K2f3Y7VhFZnPLWOcrdkj7CkMeDyBY7IebBwQWuRXGh4aY/jKy9b1Iw4R47+sPCUvOENc0rcujTGKzy/ExbPMEyvCtnep9zdFiSOvOFCy8NfZxEhyAa8sPpVPrNuPectX85NV7yRy88+l9kzZx71jtnb1cUjLzzHjx/4OS9vWA9ANhueFL5TIzBQUrYNhUyrLuG1MrXS4wr5maXudc3jJoFVVdb87A/PVBfVjbhjkzNjsKS0D3iMWE61ISS9d7bt2sXv/+1fjFJ3rEl68uh4g1ctIg6PkLWOXCBYlNAoVSFUhzHZIMBqjBKkHmuTeqfT7CYzQqGgY5jEipAwuAiamgtZIzRkFe9DcqZETWCpDWOqQ4PFJc21TVoed8R2NdhMgFflqdUv8/QrL9HU0MCS+fM564zFnDl/IbNbWpjW2Eh9VQ3ZMEMQ2MRs8Z5iFNE/NMiejg7Wt23lhTWv8uKG9ezt7ACRkUKFk0gBjJywvQ/OnzGi0iaEfZao2FvXv2/Teap6/+tR7RyuBM5Exd4LrdVcmfVEUKwIe4YsPSV7yhZlK2CMGbPLnY77ceExUsRjsSh7hgwbOx0lL7TnYXOXJRc6dg8Z8mIRD4JPc2v3M2sr70/3v5KCJqWfXiH2nr6S0taX2N0dxYCafmWoZNk9ZIhTD6k4jzc2CXsczRMKw/xifUODPP3qqzz1yisYEYLQUp3JUZOtIpvNEoYBYgzeOQqlIoNDQ/Tn8wkdrQiBtYRheBLvK8P2XqloRUpavQdGo2y+d+eZKT5Lxw7gvjW1Lt85w6ApSepI25StfQbnFKw57o26T70xsnhOobVa+fBZjoxE7B2ydA7FDMQJBY1zQiFOSGrVxbx9vmN6ddIF4JGdnp2DIVb0AMSO2VpFITDK9fOVutBRjDxDsaNzSBEsA3FMVykEYnoLjjfPNyxsdAjK/dsdL3UEBGZ0vwpNLfLDVemNGMLQjNyjKoOlIv3FAuLLHLOMNDxLGSrLfZxP9p0WSLJmA5GjNtRRxAPiY6KBHcuAWbwOV9ZhAXjHlleXiHK26ujO9E6FHQNJKpidAu9heFE9jnK/5JTYTCX52SvVQcxZTZC1SmM2ZrcxnNfiKXmhv2A4q9lRFTqsCFlrWTqthFfDui7L9gHG7ERf2VplGN4q5EzEW+Y7ZtbEdJYC1uwynD0zwnrDUF5YPMMxK+fZ2AeDg7ByVlLc8WpHhkoCQyknKAx7ng+/c7vo6LY1hrTFjT20RnRqbAhDT9HRWYCG0I9mD1elWBhYRBQ1vx6AD8vXPrhzdU0cD9ZW0pOJQMEZ9gz4Se71mywAThxTCjivlLxFvRIrRN5TVMFr0ls2UovzSiQG9Yr3klL1GpyC+gwxCU1p7EmI81UP3n6kAlBlS9lLkpwRe0mIxo3g1OLEExkBb4mxqDdECN4bcIKKx3mIlZTCRimqJVaIxWLVJyA+TJNKTyVQHtF+UErOs3uw0iOfHOYqii90Zwe7N00/ZieWqsr6Oz+3UtXVaoXaJ8BAyaeqViVNyNQYa3iScFOVccyt82Qo0hOHWDxVoSdyAmp4oi3GGqW3aOgpOYoxOC9s6/ZEXggkYPegJzDKvl6DE6G3qNRmPFYgHx8o+ctAEQuhJG1f8cozu5VpoWfACTv7/HBa3+ZuJV901GWhY9AzGBkGixCLoXNQOaOuRMYm9tuQMzSGeRRDZ17ocRms+tMUlkfm2XNeaB8cTfluPKhYXGFw+kD3pktV9Z5DNUA7HBU6iOK+s0KkynuGYyYi0FOAoZIZ5kOeGoc+cb0aWqrhv13gqQ5iXtqj1AbCwmkxsRoebxPOnmmoCpT2AaF9UDlvphD5pIH4eTOVbABr9wnZABY2KUXnGYwd58yMCA28ss/Q1j9SKVZuhh17uHR6iWsXCQHK+k5hTq0ys0YYKCVq9aoWj0GIYmHhdGV6lbKjF3oKyqqWpNbXeVg1U2nIenoKhjUdyuVzk2SQb6y2PLjLExg/tR9eV+9ImE73DCZ+jLIZgpTTeGJb7Guv53UKCw7LBi4N7DQMOyrcsO69txAQ+zTrRadO3ENKYEkC9qJKVpTQOqyEhCYmCBRxirVCTUapsUpvINQGSl3WUHRQFSi1WUM2UHIZJRcENGRgyAkNWc+sWkfWGHb1CW19o0t0ytHb6pywuL6ER+gpGOqzQkNVUoBSHcY05pKsqOqMoy5jaMhCbxYin6RVOjVkDGQN5KwnZw2hhYwVrDhCAfEWtX5KAL/OcS4K3hj25j3FGLI24Yk2Kb5UPaX+fVVABigcNYCHdrw802AXO1FU3KhTpD2fnB52akVe3+uqSdr6kDes6Raqgxy7BpUBm8Rx8UrHIGzr9uSsZV8eevKerd1KSQ17h6CtBzLWsHfIk7GenEDeK52Dnh09htDA3sGxq+QFyBeU7b0hhoh9g0oUG3Ce/tjQWVB29iZdezrzQk2/UIqUPQOG3oKws8vjxdOdhx39Ql9B6Y88nYPCll6DKHRHGTDxMA/U1Hgdp6YoA0VlwAXkghKmsjOFOly+5xJgLrDxqAHcue/lWS6Olo26tBocjo4hj2gwtViHpTQlYZB9Q8rfvhCmDgvP+xZBXdEQ4xhyhv5IiZwyGFnyUUh3KWmSNRBDd9EQBNBXFMJA6CwIBQ+9JcPeQhKX7ymloRlNStTKklgEemPLjv4Iq9CRF0oOYg0olIS+QsCefo83Qm9R6BoSimrpLnj6S4a9BSGWDL1O6SwqRS/kI8vPdwXc1pZ4kL0qgWFqPxyWTyRZmsFY6CtCc1ZhdPoNPso3QanqmJxYAx0brcYFkYokaBFP7C09RWHK1DnCk1cE1A67/BY1CWfNyBPHAX1FWNWSlPPt6EvI8S+YGVF0lqGS4byZnmwYkyVDJgNLG2MGnKEUKee3QBDEOF/F6o4Da7K9QnON49I5miSK7BFmVDnm1Xn6SxYMXDjHY0WJnWHZNGVGXUxbr6FzyHNeawzeUShZzp4BjTmlv6D8cLPiSpJ6nqfGkUrhklO6CrC4Yf/wmxBFBUoD3YecWPN6Hmhrqs5VpUkrcqBFlEIs9BSSbxCdvL2PJqsHUobPYQ8aJAX8aVVQJCSMDeqJJCDGgBccgvpwxJRJkqHxCE4ENDMSlpExtosmqZNWk9K1GEnCSWkVWSyGmCDp22NAvcFrkLaeCPCESRaWCD6pckz9IuWGNFN74EiHU6G7giOrMmrgir3T8t1bVx5qXl9PAovY+ExjqVFX3nsJKfVQrORjRTRAjU8rKqbG4anTfrje7idbLE/shFgNvSVB1WFMosIORIaBWHHOs6lH8JKoybv6hTCAXb1QdLC9L+2hi2dDn6DGJPHgMl23JPbWnkHPY22Jx3PrANT2eHb0BBRipa0viSEbk7Cr9JYcNVlLV97RFwn9JUGIWd1lWN1jyFlDycNgVCY6mFr/o1OlDb2FxIElxKOK+/GlptLQ0FIxFvXx0anQUX/XKAdz6gBnKBZKPmnQJFMe6KPVp3m5wxKTxTnHykbPqhbBirCz39M1BCtbIIoDCrFn2XQhYyFjknDS/DrPoA+IvWPpDENGhLwX2gZ1DG0K6jIBZ05ziBicGOozAbPqPAOREDvLmTM8xsBQJCxoEKZVe3b1C115z8rmpG3pxoGAO7caApMcDIEIYtK4r05J4CNXo5XeYuJ13l/SqipRsVtEDp6c+roALg10K5WNiVNqmYGSJskHkiTWTZ2/RzdCSWhWilbIWaWxSsjg6YuSDK3mHOSdUJ+B6dVKznr2DFqqQ6G51pOLPfU5ZXo1VBlPXc6gA2NfqyaIaa5L8sH2DkFDTmit9vRFlvaM0lINxsQ0ZGFaLqClOmbQZfBemFGdFKI3BjGhVJMxIwc6xFPq8zHYwf1xUnU1QtKQaE+qnlKpj2NxYtWIuGbBpTwCKaWJwEDJ4L1ijEyB9xi9keU6RRWhY9DgUToHoSsfsK3PEzuhK+/Y1WfJWegcUgZDJWcsgw66B4VdA0pOhJ48FQ4sGbVRhmLYNRhgvKNjUCl4hxXLQAQ9Rc+uAbAYuvOwO2NwTugYsPRFyq6BpD1mCYOKHy0R1Ewt5DGMfJTYwtbIcD6FpHUHOtitRw3g4r4drcYGq9wBNlzi/vbA1NKNkyQ2sL7X8r+fVLwGFFS5fk7M9MGA2McMlGDvoMPakO6hmDAQQjXkPXQXLXv6Y6wN6CroQc/6gaJhVx9YVToLwqC3qBfysac7b2jvT4r2ewuOIKOUYktnMeLHW0J0o2BEiLwnnFr08bSiyMdQ9JYa46isJxONiaOBOS4u1YjI4BEDOHL9WVXqkZFK9vIFBiOGWyROjfHybnn6XQZQYq8sbihx0WylEEMxhvNalVxQIDSWxtBxRpOjz1m8jzl/tlAlRSKfYXVHmrpZWUyonpYa4aJWxeLJBpb6LMyvj+iPLKjjgllgDUQqnNEYM6tW2T4UcPsmpd+FiTMMO7Xi42wDF51QcknmnY7SmjwE4XlAM3DkAE5XftR6GRyqGUpxwrRXNq9lDCldqcxVfqbMVzx8o7pf0j37h7QPfL/yGuz3mSPzCB/4HWVH3dEmJOgB33U4fyNpSZ0f/is1JmlTStJUXCQAiRAJMEZTQCXVSAEeJMCqx4tFsYzoSB7FppQPyTWcBngvYJK2McPc0XiMCiKG2BpCVbwJsU7TQv4RNpbXe/ZjmbeD/e5ov1+PYZ8c7jWP9N6UROOJPZRUDmiGntpYVYfC6aEBHA2gjE6f9BJigEKkFLxwcOZdOcT0j71IB/8eOL7ZPTLGEus4f+eRHSUxnhf2GgaLQsk7NvYoQxiyYtner+RC2NgrFJywuTuJ4WZVeK3XDB8AXiQBNEk3ie398FCbR8mypVeoscqWPiHvYEuPZUg9AbC+V9k+mEjonqJQjGJKaoftsuO7Doc6Vo9lPxz+jjuR6+6BvPP4WEc7sdKvsiJHbwN3790qPhocuS0xWI0By9nNlvpcPKrHyyHn/CjnTCtshQNE8LGuhRz8iE4YEo5WWUxv8iifu6wBxF7pKiUOozm1hv7IMeiFmoxF8XQWEhaUWbWSNMwiZloOFjUm6RyBT6SxoLTkPMumW/bmLRaozybSuTOfSPnWWk9vMUnKmJETvEJPyaFiePtiGY5RHn/1+dA6y7hJ4OMgF3Q4U1EObPlyiL8xFmqDsjO4Usi9/jcc2gYe2IOL41QZU9CyXeU5v8Vz4cxjeP4TdSCepJbRSH31fgaFAOrG3gyS9tnRpIJIUpVYFWoycPPiaL8t4SjT4CSKdpJgUnnmCw6VaGqNjrO8jr2OYqeslNBHDWAoHVSKxDoFvOMrhYa9BUd1yo3lk4i9HqYnYGpMDJTHckHp0edCH8mFpsbxXNDR7rCxiuXHLqA/sHPQiBOq/P9yEBunMsIwtebHd6WPXhoGryN/D1DXytxO1qSez+Mke17HRD0N5K8Oh4LKZHGiBqNRQg6AADFoAOJHut9hcKrgNf0bJTYGmzJRSpryKPj0e3TY5i537/EECA4vScPuQ9pjOoXxY1vr5FCNNR7TbpZjAXDmAOBo2slG2NmrdEchU1Vkx0f2OoHYC0YjlACLx2HwBITEeAxOAgL1QJhaswarjpbqmJaaIKkJFgjwFB282pmlqJYAB8ahaim3DLPiKREmzc1wxJLBqMNLQEb0EP640+loPQ5rrUl137z6gDrr8Wm1lxymaRMczmaqXCrBg7H8eFvAs7sMwRQdx3EZXoXF9RENGUusjt6CML06JqOezlJAaJXaIEn46CkoTdVCRkrsyofMbwj4+AoPvkRsAgTLzjz8dKMyIxeBWDqGLLUZT85C3kNfSWjJJRzi+/JQnTFkjZJ3jg09lnInpqkx3iJYsdbw2xdF1Ddo4rVSHW7hc2wAztQiYkDjUdq6UcigOLFTqZTHRa1KuMfeucRydnOJ/sjw9C54wzxDxgjP7/ZMrxbmN3j6SwEv7nJcOd8SWM9jO2BtZ8I8GacSFeNxseXi2cJbF0ZEwNM7HAubLK3Vjo6iYd0ew2ULEhX8yW2wrNnRXO1pGzB84WlDFFnGDklOhROO1VwKcQktleowQf642MBhTQvGhhCXRl9SILQylUh5nC0jxGHxWAwZdZikbyGSLrOQsKMkWVmOpOUrw+1CpaIFipCo0opJ2rFI0iVP0gPZiEt72CpGkmuKeKwqxpO0jn1dFXpqHM0wAnaM+dWkmPvoEzmams7Q7rCGOB6dhmlQMnZK9o672ux9QtyOwaJ0FmDXoCEfCX2R0D6QOKK6iiYp7jcJsUJ3EXb1C4FRuosRY7U2EKC/6Ng5AKqGzhJUDSkuhp4SdJegfSChOu2LhH1DQqQBnUOWSBOeLkOyn6yZWvvxlMCBCKFhmPj/SITioVXoMIMae4BsAMjYqZN3PIfzyoppcMnMCOeV9oLQMeDZZAQfe7ryyq5+wQj0DClxDOohH1t68p6d/UooAb1DFXKxgvFfBHpLlt19ScVa15AhgzCUg4Gi0l3w7OizGDV0DikZ6+gpBXQNOq6cpcytjQkMrOkMeHpPUkY6NcZnWCNYa/ESIWlppqYS+PVaq7+OEysDairoDRMPGZLwFE8t4fiNGKGlqsQNC2MUZUNnQN5Zzm4pMRRZvMJFsyGUGGuzNFfB/HpHf5xUF104x1BFiUiyvNqhY5708+oMl84uUhKDM4bFTY4ZOejOw5pAuHiOQ/AUvbCi2dKcjdjQl2VuwXHeLE+gnoEIHt+TJTO1ZOMmgTPWkzF+VF11ORPPY7o4Wl5oral2IrZ0oJtCUwBPkdkds9qsiVbjFQo+oIgjUI9DMeqICXEo4iFSQEJEHTGWWC3eK94bvIdIAtQnlDljOZsUKGJQb1APzhu8emIMpqIHk3iPByICRCOct8QenISUXID3SZgrsd9kqivlMQI4a5XscDcL3Q+e+hSw56gAXFc3qwei7YqsLG8Co4JRpSZM1LmpcWyjMRNjTFJS1lMo8fhWcGTYk1fUwd6Cx8XCll6IBYxR2noDakJlW5WSd0JbH0SiWFU29AbDJvCwAys9Zzf1OIKtFkTZ3Kt0DAo1WWGoBO15pegVFcOGbkNvpFSHho68YzBWeqLE2bWrL2JGTgmt4j30ukzq19S0I+jUpjiSIapkA8FaHc5BH4awWGyucdDYTHSUKjQd3sfrFN5ceTZ4oC6jWEnS4aeW7ChOXoWcdXz6PGVmtaMUKc+3K8tmWnLi2dxtiZ1naTMUoqQy6ezWJDabEUdjlTCv3tMfB1hVzm9N+LW8ETb3+jGup8ytt1w4xyE+cWQtbIIZVY7uvKGmC86flbBbRTEsbTY05hxtvYaBgmFFi0s4mpxwy1KlPuMYioS/eyGmIy+oTDm2jlYC1waKTZjxRxfcCoTZOqng0zhiADsT1sZO9g33WzaqqAq1IYQW3BSf2ZGduKltk0R7DI2ZEtMzjrwRsoFlWhgRWKjNKHFsaAo9A8ZRbYS6TNJOJZcx5AKlLjRATDbtqZQTT1UQMFaKuwI5G1OXUZwK2cBREwp1oVCIlUyg1GU9HkdVYKjNGJpCR3fGos5Rn1VElepAaMzENOSSXkzGZIhFCCTtBjG1GY7MhCIhLDTpoU5FAwUjQiZXe0gD5XUzsaoa5ojr245LWxAnarSnOlCqjCdPcNhpX6c3cAEsMY7YK8YL3joGSpbOQCnEliHn6S1arIWB2BBFQlcx4Uzq80p3ISAjMX0RiBH2FYWhGAaL0FUQMkB/ZIczeCRdFm+STOl8JHQOKYplsOToKQrGQHdRGIiUzrwFsfTHnt5CQICnv5i2dSkZ1AcMuHLdMAxGhtjHxHEGNR5jAgJxCYh1ak8c7r5oyCWx90hMynqSeKCt2CiTaRzA+6MGsNqgpsupxgJBuWbCIVQFSi5r8dEUsd1hqUqiePW0VDnOmZ7Q4ewd9Gzo9OztF0pO2d0HqwPIiLIv73CxJs2+HewdgHUdnkA87b1CTwYKRSh42FNQtuxL6HH29HkYQ50VUfYNCes6FUPE7kEDAp2DMf0FQ/sgrA0Fj2NPH4RSYm+o7BnyFGIw3lPCs6s3kbTVYfL7OVXCuc0lDJ513cK2AYOVKZ7Swx0GpSmrBxSNGgGCmnbNNj6tB6n/fl0Aixhde/+fPwl0iJFW9QqieBL7rSkXs6PPoDaYInd/XVUpQH3MGbXKJ1aUULE83eaY22SYWQN5nzBvXDFXsFbY3APFkmVlCxRc4mm4ZJ6SNfBCe8i0rOeMRk9fnJSXXDQPsuIIreXlDn+g4q5wRgNcOU+JEdR4lkyzzMhZOoeEtV1w5dzE+2y8cNZMw7QqZWsP9BUS+1tVMSqsaoH6LAyUICeONyx0BEb4rzWWrb0BGsiwJJkah7Z/A1Gm5UZ5roZ/CHJ1hZqmuV2HPgBe5xL1jUv6bKY63n81rBGm5ZKGHgJToYTD9FwN80BLWnViIBRHRkCMYsVhTJLCKKnSbTWxhwJNKGGNOCyKFyXQJHZrVPHGIiahPqqk1TAVxINC0sRbVDE4ROLkdwIGj9GEEsYiWHUYTejxbLrGYhzWJusvttyeKcSLgsSjqpanxusr0FUhNOYALafJ+uH3JMiaTO20Y0nkgPrmpaW9tmrQ0cf+ROEtVT65oJop58VhqEreQEdeeWCHRUXY3J1kXDVkLUUHW3shY5Ow0t4BcHHMYGwoOdjcnbTeMNawvTemOjTsHICStzyzx7C6K0BE2Zt3zKkb4dQs89AFAo/tFtZ01eCNY7BoGYiUuqBEX0nYM6CIWrwk1yp5pTYU9gwJhQgKsRJh2dBt6Io8daGlGENbn+CMwYqyvc+C9YjaKc/mYYDXI1SFhsYwTasbPmqTA9Bm6wskgYGjB3BN3ao20JcQXZYac8Pna2t1EkqSKXXp9ZdLHZiQLQOGf3lVsV6Hiw5AiB2saok4oyFJexSEYmw5o9GTj4WegrBwmiE0SuSFutAwr84Rq+H+XYanOwwhQqzC3Do3HDUor0tohK39Aa92GzyGmdVF3tuk1AQBHQWLJ2ZREzgRevPCnEZLU+gQk3CAz21MDoWXu4RvrckQpmyGRuDR3Q4vGZAkPVPTBgNTED6UT0QQ75iWTeLAbv8qJLHkqme8AOw6JgDTwECmdnp3vthJpTfMAzNynmyYeFCThiBT4+DGiGBSZ4QVSZMtRhbNo1QZmFkLIhGDkaVQUpqrDYVYqctAc7Una6CjH2qyyswaj/OOGmvISNJcW31SikiZF1oTlCmKiCE0HidClbXMrC5QlVGsxPTlA2ZVe0oCtSE0V3mmZ5X+SMmKYVaN4o2n1tqEjcWMMHmQ8koPK846pY8dWvYmR6tTmFaTJMW4/fjKxFgytY17gP5jAzBokG3u83796E4qqtTlhPrQkY/s1HF7FMu4P5uFU6Xokx5EscKQ8/THSikSSlHAYMkR26StTWSEzmJAyVuKFRS4Y/oitHLjSNL/10NnMUOti+ksWoa8YyASIoRirAxGSdLIUGSG7wsVIh2R62PbulPH+OEc5uVpmlXlKB+5lco1komq6md3vt6Evj4jh7Hxxnv//AnB9mJ8k/q00lSVmgCm54T2QZ3qLHmMIzCwoT/kb56NAMNQZFnWEDMYxTgXsHkgJmgPCGzMll7h2T0GEyRNuwcjy6jqzkO0o1TACnQWhb98JknEcLFn2TRDFohxbBmwRCg1gWdv3vJyh3JHm8Wg7CyEU72RxmlYI8ypZT8DVEE8NtPQWVW/4Gk5lnrg5Ps89bNWdPa1P1ei2DfcSFIRMlaZUyes7pxiNhsPeVyM4LXuTPqT551LDBfMMuQjj9nuuXxuTC5QjDXcsyPExiNE4pWQLbeq8QeT+wJOLT2lRJpGPuD6+hJXzHdEahDvWNFqmJH1bOwT7mrLUPCJmWRFpnjQxkEGOyz1QZGW6qSgZWTtkghCUFUX5Rrm972+c/QwRqZu4S5MsHmEbCtRx6x65tf5lEB8alWPHcRJYXdgIMQjJiIk8SAbk3QwtBayEmHwiJiUVePI1VhBUyYIwUiSWBIaR8ZoGtryWEmYR60k9xSY4wdeVcWr4r3HqyYd6k/l41pjGqoN07PRAbyAgiFT3bKBMGx/Xc3tcC7XMG/lzrB62pZSqedyXDnSV/Z4eqqtUnBTJ/N4Ojmcgc3dARkiii7Dph4h7y0Z49nUazByCC7hI+j65hGsODZ3wz2bMzg823sS9a4+dOwYkrRgRcdz++JUieMY9R5rLZkwJAwCjDF474ljRxRHRD7xqAfGYGyAkdFU9yfrllP1LKyNyQQW713F0inGWKrqZm7kEGWERwRgIM7mpu0s+o1OEKsVvtPGnKGpyrNzwDJFUDmOIPZCJvBUh56sjdg2aLhvR4AxSb57YvMeBFRHcJJK6p1+oUN4dq8QI8yqKnDxHE9V4MiVLEYFp/v1XDlCwBoFZxKa8VIc0VBby9mrlnLBsrNYvGABzY3TqMnmEGtx3lMoFenu62Xnnj2s2bqZ1ZvWs23nTvJRRNaGmJQUzCgnZYN5I8IZ9eWWNvsdqqY6yk1f2MbrxIAPG8AiJtr44OefxASD+Li+3EUcVeqDiDl1Idv7OXijs6lxhBZSAqxZNZal02Iib6nLGAiEQI6yW9phbChrk/BPtcmyqKlIXQhqEnK7Y8l4FwUvEMWOmmwV77/pzbznxjezePbcw/6OoVKRNZs2cMcjD3PPE4/TM9RPlQ3xJyHbrSpkA8O8egV1FX2wEpLCIFfbV9N85jMir59UHhzuDqhuPX97346X2rXUVz9KhRHD0vqYp3eFU3bwQaQPR7nHijEMxULRK17B4g9vjo/afkxMI2cihmJDgFCIYvwx6lZeIHIxc2e08LlPf4ZLVp5N3+AgP37wPl5av5a93d2o98xonMZFK8/mqosupr66OomWJvkuVGeyXHjWKi48axXvvuHN/N3Xv8oTa14ha8KT8oCelo2ZXu1R9Wly60jTm6rqmbtyDfN3H853Ha4Kzaxlb9nQ8fJ318dR/9IyR1Y5Te+MBk8uSPoFh+lpO6kmLFW19vfMjqYKOgi/sRyOMTl2dwJRh08dfEciOAXwxvD9TZa7tgV4PPsKQWr3Ht8RouwrhPz1Mw5jcpQcRGqP6Wj2qjTU1PCF3/ptzjtzGfc++QR//19fZ9uuncmRlFZPqXp+eP89nLV4Cb/9sU9yyYpVidc8JTondaKuPGMRf/m7f8h//8s/59nXXiEMgpMDuanfwnvLgjqoCxNWExkmqlKssVQ1zH0N2HJYqvgRXH7IVDe/5rw6ST2fouDU0FrjmVEtGJ/025lskthqkulUKJUopq9SxX/v/3Op8ufi0b0KxRL5UoQrxhh/5OqnwdJbUHYMetr7DbGT1Nt/fCWDT/u67Mwbtg8aOvLlZjpHb/9Gccw7r72R885cxlOrX+azX/obtrfvJpPJkstkyYYh2TAkl8mSyWRYs3kj/99ffJ6fPfpQ6pWVYfCWR31NDb/xvg+RDcOTJwdQBUj6MS9t8iQuw1EBfERyUa552ascgsjuqCSwiJQ2P/Kl5/L71hXQUk25KZNRRy4UljQo2/uCJDd6koUAnCq1NTVc98ZLsaE5sB/XfmGwSpyM7tFn9v/DMT4vw0ktgQg9ff3c8+RjxP4I22OLS+O7BrUpI+jRAukILmtUcEYxw03VTKpBHN2aeoVckOGaiy4B4Pv33s1AsUB1JjwoHVM2zDBQLPJn//j/iOOYd1xz/ZifO3PhAuZMb2bLnt0Ye3K4UNULdaHjjKYkFj+q7FIUm2sarG9Z/ryIxOMKYIDa1uUbu9oebpNS8Swd7nAHIbBsmvLwTodMwpQs5xwtjU38yS9/+oSTkm/dvYt7n34CnDsyxURl+EAYSbs8PBAlJX4VNOFHwI6haRWEpP9L5fJRa1WKksllmd7YBEB3Tw/WmEOGgBQIjCWOHf/n3/6JXDbHTZdfOSxpRdOQpTn+Wsl46jcqBu+V2bVCa7VLGplVaooYMg2zt2ab5m457AP3SG6hecn1W6qyTZu9pD130ss7VZbUF6jPHoP/5Dg7ksQYYhef8GuXouiYFDw9YhdYCnk5tvlKoHfsGXYCeOcope155s+ejfOHR4VorKUQR/zPf/4S9z71BKbcGzP901fXb2R7x96TolOEpIyuirB8WkzOuAOw4kW0qnHus4dr/x4xgIH+bP3sp9XhREb8Zl6hsUpY3OBwk7BjkgDWmIPwJR/nc1d1gk61ybEGIsJQscDWnTsAuOXa66mpqiH2hzcnGWMZKhT47D/8DV/+7n+yt7uLQlTihXWv8cWv/QtxFJ8UUjjRY4Sc9axo8vvZvukeDesKNbPOflTE5A/3e4MjXIx45yvff8q2v7xPonxrWbUSElrMc6Z7nmuffIWgHghtQOY4eyvHipae+JTAtJGGTo6DVACvnnsef4w3XXoF5y1dzm++78P89Te+ikMIjBm27w82p9ZYSrHjH7//bW578D4aamrZuXcPg8XCyeOBBpx65tc65tYn6aKj/B0akq2buXf6/Ms3j1t3wrFG46q3vNKz7o61xb58a/loSToLCMumORqz0FfSSXUqikC+WOLp11ZjZSTyb+Qg/dBl/9+M9fuR34kKGFg8Zz41VbmxrMrTdiSdB0IefO4ZHnvxBd5w3vl8+G1vJ5PJ8Fff+g/yhSGygX3dOTIiZMMMe7u7ae/uJBBLaIOTaiZUYeUMpTZU4sr6QbWogaoZi14GXjuSbz3iGaimep+tn/to3L/nKpNQKAGCephWZVjWGPPkHkswiaRwaAO27NrJb3z+T3EywoA/zMF7mN2UzQFpGcnPsXgyYvnXP/sCqxaduZ8EPlIbdnxOrMl0aIgIcRTzxX//Z+b+4WdZ2DqbW2+8iXmzZvHFf/1HNuzaSTYTvq6+kDi3DCoGOdmyrxBqrGflDD+q/EhJiHQkqI7rZ5z/CNB9JN9rjmIxopqZZz1ubNW+ESmriHpC4zmnJUYkoQxRmRxE357EK+vR1EuevipVzdQnpxX/7v/fXhWnCZNC8kp+xifVM0bGIlTXE2wCy3A5oTI5sgwVCALDtt27+KO//xvaOzsAuOzsc/jHz/4vbrr8SqI4wqk/rFDbyQTeci9n72F2vTK/3qNeR2t4ImRrZu2un3/BYaVPHhOAAaYtueXlbFXj2srJ9lhiFVZMc8yoMojzGJVJYw6XJ4oK/I71kop/D/XfB77GtjmniIZGQJwJQ17ZsJ7f++u/YFfHXgBmzpjOX/zW7/D7H/8l6quqKUbRKfPM5SIOn7Zpv2hGTJ3VAxxYRgx1zctfCnK1q4/0GkcF4Orq6j1B4/yHHMZX5jSIj2jMwnnNMTGSplSeLhtYDiYPT/AhppMzlpeOXDbgxfXr+e9/8X/YuGN7sgmt4cNvvZkv//GfcuGKsyiWisNSSk/iHaSAE4MjaUdzdrPHqQHxFZqpQlAb1845/2Gg64QAWETiutnnPSxBdrdIOS/aJcqCwEUtjirrJ/VGOh6OsrEcdzoBTiyt8LlNtgCLqpDJBKzZupnf+uLneX7d2uEc9ZWLlvClP/gcv/reD2IzAXHskjIK4SSmbFLURyxtcsysBaeuAryCwZBtWrB12hkXPXak6vNRAxhgzoq3v5StmfGslyBRldMZdh4W1jvOaBydqH366o6nbwz4UCMThuzY285v/9X/5qHnn02I3VSpyeX49fd/iL//nT9m8fx5DJWKGK8nKXSTIzQU5ZJZjlD2t31jsEJD64r7IHzxaK5xLJkNndUtS+8FyaupTLVTMqHh8llxGiE+vUsMJ2TrycmhdmaCkO7+Pv7o7/+Kux5/GCuSOhyVy84+h3/6k//Ju6+5gcg5vDv5yvYFJVaYUw/LpycH1PB7mlQT2KqW/sYFlz8mIkMnFMAioi1n3vBwkJuxxQzny6YZJ95xdrNnVk2MVx0dSz2l1Wg5BIJP3PMf4IWWyTn/XiA0AflCgT/9ypf46cMPkJZOADCjoZE/+7XP8Mef/FVqq6qI4oiTiX1N0ujMpa0xdYEbjh4Nk/JKQM30ZU/VzFj24NFe45hyC2tnnrO5tm72Qw6rIx3xElr+xixc2Jr0ovViTltVWicDQdsknXqj4FA8SvfQEJ/7yt/z8ycf3+9QVG696c383e//CYvnzKNYihLmxpNgOBWmVXkumOmhgvfKoKh4sDW+Ye6FjwA7JgTAImYwt/C879ugqq2ySE8R1DsuneWZkY1HCrJPdQk8WdBzEjgPvSqFqIRBWLFgEb9yy7v5n7/x3zlj7rwxt+gFy87iH/7oc7zhvPMoRPmTBMBw6cyYlirS1ikjtrGIkpu2cFPjsjf8/PW4nw81jjEXTZm78tZnezc9/mSpa90C8KgaBI9TmF0Tc/7MkJ+3eYw1aQf3U9HOlYN2aJwYH5ZMYjEslEolamtquPnKq3jHNdez4sylVGUyAMRxxNptmwlsyJK580ZVQc+a0cxf/H9/wJ/90//jrsceIZepSiSZTsY9AY1ZuGIOSMqsKcOJTQomR+Psix8MqXrhWK4zHsmk/Y2tqx7c27Xx5sBLTSQehlt4KG+YU+Lp3TkG3TEUpJ8k0vdgYaSpdiOp1PUedcrVl17Kr777faxctGT4vS27d3LHQw/y8AvP0bZrNzXV1fzV7/we5565LDFBUgdXbVUVf/qrv0kcRdz/1FOEuQzHQJh5fEwDPAUfcH5LxNyamEgNpqJ5igCZ2tau5jOvvu9IKo+OC4BFRHVo6M6ubU+/3w1su6Zc8wgQq2FePZzXWuKR7TmsOZU7t8uktj8n+jaiOKa2uprPfPAjvPf6NxOkvWCGikW+etsP+O49d9HV101gDdYEDHUX+OyX/pav/NHnmDOzdXiGPVCTy/HHv/zr7OroYN3WzYRBOKmOyBhLQ+i5Zm4JLwajDq043MVYGuZe/HimtvXBY12Z8fEGVFW11bUu/W4smcHRLbsSV/l1c5W6TFxJnjlxdolz5KMipWKccmQVj/lVKEUUSm5sdVkTmpoTC1YdPcsCE5nUGscxs6dP469/5w/4wI1vxabg7ezp4Xf/+s/5x+/9FwNDA+QyWQIbIiKEoWXzrp38+Vf/dVR6ZbmWbEZDI7//qV+hOluV5KGP22YeH03jwlkRC+qTThPDlHWSNm2vbe1tXnrj94yxe471WuNSjyUiOjTUdUd/+2vviwZ3XiMVtJTiHPPrDJfMLHHv9hyBNRidmAxh5z0XnbWS+a2t+LLetT+3y1hcLwf7TJmxxiuBDairrT0omE5X8Ru5mFnTmvir/++PWLFkyfDUDeTzfPbLf8sDLzxLXTY3Jjl7Lszw0PNP85177uRjb7tllK6jwAVLl/P+m97Kv932PXKZ7OTQdFRpzCjXzi1zw1WylCpGhMZZFzxe1TT/XtVj10jHraCyqqqpraZ1+Xe7Nu27WCSu0fTmnRgCYq5aEPLCnpjuOBwx5E+0JHAx77j2Bm6+6urjc/Lq2E6s07Ui2HulJpvjT3/9v7FiyZK0sCPRBb52+w94+PnnqMvkkpx5HdsqsUHA127/IVddeBELW2cfcC594C1v4+7HH2FPZwd2EhDbOS9cNtuxsDYm9kGSbTX8OILUtvY2nXnTt42xu8fjeuOmdYiILrroI3eENc3PiCgMe9w8sSrzahxXzFU0ya+cwAmOj5tQMmM4sQQ94T18Kp1pMkFiWAV87Pjl976fy1adm8xPWp22acd2vnP3XWTCzMHBm47QGPZ2d/Ltn/00ORTSpuXlhI6Z06bzjmvfRBTHODOBB6UkfVCaqzzXzHNAjIqrcNoqGEPD7Iser29ZMi7Sd1wBnIjhWW0NzWd/V9QMBt5SrsRN+gknD9Zak9gFU+PUdVgBuFLMqrOW8v4b3zpqkwtw24P30TnQizXyus/hBaqCkLuefJQde9sxmAMKG2688o3UNzSAm7jEXY/FqOPaeY45VRElwlErIUBY09rbsvzGcZO+4w5gEdGFl378Dls79xmkHLoeIb6bXuW4cYGf0FS4MofSibqHMqndCQXVJMj8EjF8/K3voCo72jYdKAzx8AvPkrH2dZuSDQtnY+js6ebnTz2ZgmX0WNA6i/MWLyV2bsIOL3WOhXXCG+d6IlLPc9IEFlDEBDTMv+yxmunjJ33H1QYekcJNbbXzLvxu57r2i62Laiq3rvPC5bNinmmHNV2WwJT5Ck5MrNQay8+ff4o9XZ1JD9px269KRiw3X30t0xsax8TS6VTSEfuYJfMXcMV5Fx7gAdyyYyfte/YSHKa9OuxnNIZHn32Wj7zt7RgzuvuHEeGCs87ioReenQDNOTGSQuN586KY2qzHDRde+LQe3JGpm9/ZsvKWb46n9D0uABYRVR26Y2D3i++LerddI16Hu+15hFwQ8/ZFsKk/wLmyJeNOyBYPrOXBR5/g7kcfxWiSizseIHbqyWVyXHnuRQcAeEKMsQlWo13suOLc86nJ5Q6w/ze2bSVfLJLNHFnsNrABm7ZvY3dHB/NaZh7w/tIzFhME9oQ2DRYEbzxxbLm81XFBs8O7eFixTf4/RqRap53xxp9V1c68Zzyl7/jbwCNiuK3lzBu/KUGuqzyZmnI1xV5YPl25erZD3Uhs7ETZhia0VGUyhLnxeWVyGbK5DLlsJm2BcqB01gkC8USNwFouWH7WmNr8tvZduKMoMjUidA/1s2lH25jvz5w+g1w2dwJnO9m73gU0Z4u8bVGMGFKNsuIQFUtV85JNsy9477+ISOd438VxAbCIaOuqd36/umnZD1Gr5RYdmiZ2oJ4bFzpm1UU4PXHEd1KhlpnUvybH+CrX6xkUe5B8vhObRDGyhSYiiVNVqa6qYsGs2WOeJR093ViOroOld55tO3eO+V5NropsGJ7Ayq+EJsT6mDctVObVuSTCkgorTTeHsXW+edlbfgzhcdHvj1vyioj0zlj+jv8Kq5va1GiSr5o+nFOYXuV5+5KkQ9uJpz4/Ht85dp+epBLr9IkDO/XU19TSlJoS+8/IYH6Io2ccUNo79429kY2c8M4bsTpWTFeunusqivWT2njrLAGe+jkXvjTjzOu/JSKFkwrAADMWX/pE7byL/0U0yBsYVcfpnefCFsfls3xKcn1yu3nkEBLpdBkqadgnmyUTZsacl9gdffMdFaF/aGziitg5nIuPrSnUkWgDKtSFys1LY6qtrzAVyr2pIqRu4cCsc9/9r8BLx+s+jiuARSS/6MJf/q+qhoXPYUxS+lVhGwY43nqmZ25dwrVsJtz9cmwIPmg3Cj3xSRRl8JzwYzHlxzYHmQtjzFGT1InqsJq6/+gfHKQYlY7z8yb9fSV9zrcu8Cxu9Dg/ukG84PG2SpsXX3dX9YwzbxMRd1ICGIBcbuu0FW/7N7H1+2R4YyUbOtKAWZkS71rqyJmIOJ2gkxO/B1ehJ9KvpCfQsSWabO/IO5wbe89WZ3NHzZVdbjs61mjv2EexVDrOLX08iKfoLec2x1w/P0oY29m/Flyoaz1v4+wLPvD3IrLreM75cUeLiPjW5W/+YcPci3+kGJdEzQyKweCJvOH8lhLXz0uaYJ2U8vd1QhcT0V3lsPT747KhhMF8nnxhbJOvob6eow2kqEBNVdWY763ZuOGgh8Z4TF/aTQv1yqxcxHuWxtiAUapz2iWMoLp1qPWcd30ZeOr4z/eJ2D8iffMu+uSXsg0LnxNTftDEuaOStCZ56+ISZ09TnPeIKHIS9c8QEiedOSSp3Qm8H93v0ifwBBERBoYG6ejtHdN6mN3SgtGjl8DN06aPYf/GvLBmDVaCcX/KhITCp0eTQ6zwrmUx82pIpa/ipex5FjBVTF963U/rZ5/3XREpnRIABsjUNr06e9W7/kHDpj1GKrrHkwA4GxretzyiNedxPqHmOZns4YO1VpkID7ROoBgWEQqFAlt27RjzsovnzEvSWY9iWkJjmb9fRRLA2ratvLxtI0Fgxv0pDYoXi8ETe+FN8xyXzHQHNCk3adZVw6yz18+94GNfPt6q8wkHsIj46Uvf9MOm+Vd+W20uQvxwcb+KoC5mXq3jvct80oEOl07fyQFiQSaNBD5A7J1g+9up58U1r405AWfOXcC0hsYjLmhRVeqqqjlj7vwD3vvxQ/czNDR0XHZz+e5j71g1A955RoQHnMhwhmH5k5na1sGW8z74ZeDxE2eynFgpNbDojb/+91XTlt6FWEYaO490dbiwNebmM2JUBWGcuq9LxVUqmxPu9xrTbXuQz476uwoL6KBOrBM70RNqhAc24MlXXqRvcOCACW1ums65S1cQHaa9WmbacC7mjDnzmDezZdSzbNrexl2PPEwYhMet/4p3ntm1wgfPcuRCB+qHzSZNQ6MmzNBy1jtur5+54jsiEp2SAE5BvLn1vA/9Y1A7f1OS3KHDXiDFo+q5cSFcNkuJvElJyo8tl0lUiBUKxZioUBp+lYojr6hQolR+ldLfl0Z+t//nK1+FYpF8qcTYnW0mwgutE+rJstayZfdOHnrhudHUDQk3HbdcdU2qZR3BEznPtZdclqrfgmrCsPLl73+b7v6+tMDhOIBXlZqM8uHlMbOrI2I/3BEb8QYVwYrSsOCaV1tXveOfRKT9RK70hLQ4nzb3/HtLy67/wq4Xv/NXxANNI61vDE6FKinxgaUh3QXLq92WbCUd59GodE5ZMHsW777uBjwjROvDfNXlbCndr/xPdcRjmhK0j/ocSftQ7z25MENNbW5MKJ1wKawTht3hy1sM3/rpT7j2wkuoraoa7qGuwBXnncdlK8/lkVeeJ5cmfBx6/RyzZs7krW9ImFS8JJLnB/fdw8+feoLsYXzH0VoiVoT3LY1ZMSOm5JVRVrYoIY7sjHM2zLnok58FHjvRWJoQAItIpKq3F/r2XNqx6d5PEJeyZT1VRIlR6rMxH1mhfPlF2DVgsWbE3jjS3GnnY2bNaOFjN79jAszRCpewnLAJnmB/AIQ25NXN6/mPn97Or936geHDUkQIg5DPfPijrPnCRnqGBgmNPejR7PGUvOeT73wvM6dNQxWMwFOvvMzff/M/x2yqPl6HkAfevrjElXNinNNR6mqZbUbq5uTnnv+xr2arG398PBM2Jo0KXQHiroVX/sb/qZ224ufWpMyNoqlME5z3zKlxfGyl0phzxCp4CY9BFTqdWEB0wq/ujSdnQ/79xz/gniefwEjSL1rSQ23FosX84S9+mlwYUHLxQdXXQjHi1jfdyHuuuyGxPQVeWr+Wz/7D39JfGCA0x8nuVcc1c2PetnBsQgZBMWFdPPOcd3+9bu7ZX5sI8E4ogBMQm20Lr/iVLwXTlqzBuv02gRB7ZVljiY+tiKkN4rRy6eTK1NJyczc5bfA7XHuGEeLI8/l//jIPPPM0wXDcIdGlbrr8Sv73b/4uc5pbKBSLlKKIyMWU4phCsYgR4RNvfye///FfSgjrxPDYiy/wu3/9f2nv6SYMDE7GP04RObikBW5dGiMmZv/upqJggpAZy9/6bOuym//fibZ7J1yFrtxpuWkL7114zif+aNNTf/N//ODe5UIwKnQUe+X8ZscHlwvfXCOUHEfkmZbUZgon6AlNEOL1xJ6UIhNfGCKagNTapADhj7701/z6+z/CB2566zCpuweuu+gSVp6xhJ88/ABPr36J7r5espksyxYs5C1XXsVFK1cBUCxF/OddP+VffvAdhoolMtam5HYybseOwVH0hnNmRHxwpafKOpw/kOncGkP93Ctfnn/xL/wZsHaiD8vJIKXMzlf+8+N7XvrRXxH1N3k9kJjZWsOD20O+vTYg8gZzBJla3ntaZ8zgqgsvxlZKAamchZGtMAwASX8nMrp1SpkoXcoecmHkTyqC+9awbddu7n3iERBzQiY78sr18xwfXRHjfMLgGBho6zd88ZksBZd4gE5kopsh8SKX8Fx1/sX84jvfwznLlo0JvkIckbXh8HxGLubxl1/iP27/Ec+89gpZYxFrOB4GUckLK6cV+cWzlWlZl5CyS2VCUZKXVTP73JeXXPPZ3w9yNXfLBKcMBpMBwCLiVfU2InfO3td+/KsmGsipjk7E985z9dyIyMH31gc4FQ7X/LHGsKezk2/+7Cejks4P6dc+VCRGRzyq+5O8j3bACIERskGIP7En4qTSqzU9RTLe8vBzz/D0qy9z6fKzuerii1mx5ExmTp9OVa4qcWZ5ZV9/F7v27OG5ta/xyHPPsnrTeiIXkwsyqOg4E/Umixd7ZXmj45MrlenZiFgFZDRfm6Bkpy/vXXTZr//tZADvpAFwCuJuVf1iVMqHPevv/pSP87kkiCMjXj+vvGlBDCjf3xAQqWDFYNXhOXhcsez9rMpkJmQbn+4kukoStxVRwjAgjmMefPEZHnzhaaqrqmioq6OuqoYgCChFJfoGBugZ6KdQKmGNIbCWTBAmIUDGl+HEqFJQw7KmiF88O6IllzQjk4qaKcViiAjr5w/OueRj/5xpnHe7TJJk/WAyLbSItKvq57cMdNK5/bFPCZqrFCaJxPO8aQEYUb67PkPkE3Aa/KgerJPQtzPRsztpri4iZMLEKxHFMXs7O9lDR6rZyPArl8kcsHbj/RRFhRVNRT55NszMxZTUHtBB0+AJq2cNzbnoo19pmnXBF0Wka7KsajDptlkK4uinf0jf3pc/JeJHgzjVaK6d7wltxHfWBuSdxUqlFjvVznPyeToO7nCz1h7QeupEjNjDOTMiPrHK05R1lLxJq+TKdelJ2MpUzRiadeEHvzx94dV/fjyI6U4pAFeCeM1PfscMdLz2KREylXad4hEPV89Rcha+tUbojyAwCYQ9FtHTWHE1+/WAnPCC5MNRs0/keZbYvJfM9HxwBTRmYpyX1AhThrlhjMdmmodmn/uBLzef+eZJB16YxPQXItJ+1tv/8i/rWs7+mShurPz82CuXtcb88jkR06s8JR8kHeD0xPBMT42T0B5XiFW4eq7jE6siGjMlvDOMtGJP638lJsy2DM5d9c4vzzzr5kkJ3kkNYAAxdvPyGz772aqWVd9QNYUExKPP6sgrK2fE/Ma5jkV1EQUfTFm8U2NM28GnjrS3Ly7x4eWOrFWclwqutpHP21zr4Jxzbv1K8zm3TlrwTnoAox7J1r264Oa/+KPqlpX/5ggLY1GHeudZWB/x6fMcF82IiPxIvFZPR0HsdfgIO52PMYNLWDIQnIeqUPnIWRHvXOywxo1RZJLkiJmq5qHZ573vK80r3zGpwTtpbeD9R63IblX9/Pq7/5C+9jWfElfM6Sh1WnAOWrKOXzhPmb5eeWB7mCS+m9OwO69MmQ8ATkKMOpz3tNYoH1kesXKGT1JydSzrO8ZWzxyac+GHJq3Ne1ICuGwTq+rntzzyt3Rve/RTRP25pJg6zbwViIAa43j/cqW11nPbBsNAFCSk36cRjKfgm0pgHxGpsGoGfHi5Y1aNJ/IjTDCM7B4EJaibOzT34o98efrCa08K8J5UAK4Esc3WsW/j3Z+S4kAOn7bpEEHUJ3YOMdfNN8yqDvjOWs+2AQhMmdvBnwbw1YqXnDawltSDrALex1gj3Dg/5p1nRNQEied5/ySQss85O215/+yLPv5PTXMvOGnAe9IBuBLEQVhd3PPa7R/TQveMwAfE1o9aFOeUFdM9v3lBie+tD3lmT+pjlKMnBpgak3uUK9WcU6ZVGW49s8TFrUkniEgPTL8UTdqWVs06Z82iS3/1H7NNC751MoH3pARwBYj/ZxBWvbj7tTv/iMHty42OhOA9SUDeuZjpuYBPrSqypNFw+5Ys/cUkP3n/CpNTWsU+TXRqn9CfcHaz59alJebVKrF6VAVFhpNty+ttwgz1c694ecGVn/mDIFtzz0TV9J52AE5B3Kuq36xqXty/85mvf97tXbtS02xZSXOoVYRYHWIMNyzwnNFY4AcbAtZ1BmAMZWFs04aXekrs9LKDpoKhT0/FM0krpK4h9jH1YcyNZzjeNN+RsQlnVuUhpmpTE8ojYUOpedlbH2695BP/N4B75WQiIq+080/qRRTRupln/3jJNX/wGzVzL/qB2LCE6H59ahTFUVRhSX3Mr53nuOXMmBqb0KSA4iTAn9xTsf/EnB4SVwJiDN6XWNWo/MYF8PaFSlYSzvUyF+kwAR2CxRPWzi7MueDD/zb3kk/8SijmnpMVvCe1BK4AsQceVNXN25/6966Ojfd8II566lAFTZQm4w0qSlEs1cbx9sWe5dMtP90Ar3YZxDvEnMKb/hR8NI8h8tAURtyw0HHtfEdtWoDv99dIEBBPKJCdcc6Gued/5Kt1c8/92kQyaUwB+EAgt6nqn2QbZr+yZ83tv1nq3raEMoOkJCTxtswy6TzLGpT553se3Wm5Z0vIvoLHGJuQs+vpngIxmQ8iwXnFEnNJi+fmRZ6F9R6nPk3gkQrokqy5eCSojuoWXv3c3Is+8cVsdeNPTkZ795QGcArivar6lZppi9Ztf/Frnx7avfZmiQuBwzG6yUmSmZMR4Yb5jrNnKHdsCXi2PaYQW0SmciEmpXXvAY2ZVwdvXui5eKYjsEo8qstDRaNtUbwIYe3sfMuym/9r1jnv+b/AupNZZT6lAZyCOAbuUdWN25/96rbODfe/3xY6W52OLgVXQNQReaGlyvHxFZ7LZgXctQVe7TTEXgjMFGgmBKj7af2qSf/oaTnP1fPh6jkRDRlFvcN5c1Anl0iOmtaV62ef/+F/rJ+58jsnql/RFIDHB8ibVfWPa1tXPLv7xR/+2tC+9ZcKBYOW+yLatOVKmbBdWDmtxJIG4YW9lnu2BWztIylNNEKgHn+SGJMyFiJOMlVZcMQEqFPqQ+XSVuWaBY65NQljhvfxcNxXIemQoIqXhHw9yDUPTV9y/U/nXvwLXwYeSw92pgB8coF4UFW/1TT3she2PfEvv9697dF3+3zHTC+K8S5d/JHwUeTBinLpbMfZMxxP7Ql4YAfs6FciDTHCSREvPtn1Q1Eo+YC6MOb8Vs9184WFdTFGHSVvESrLRRVNGVlEFStV1LYu39B69nu+XD/34u+JyM5TeY+f0gBOQazAq6r6e41zL3h092u3f2qo/eXLoFSduLQUHaVaK7FTMoHlurkxF830PL0n4NE2T9tAUkuadInYX2GbROCeZKR2hz5s0jAPilMhVqEh9Fw+y3HNvIgz6sGKI/KKV5tWGJXjv2nbbVWsCKZ+7kDzouvuar7w1v8XEj5xIpuMTQH4+AN5QIz9T+/iR9tf+OaHOrY98Uv57m1nCE5EKxmX0qwddUQqVAeeG+bluXhmhpf3CY/vgI29ASVvsSZpRC46Em+clDA54czyBx8J7HxKFJf04YgxiI9pyikXznRcMcexsDZpqu01UZmT53CjjASj4K1ggipfP+uiR1tXvuM/alpX3Hkq2rqnPYAB1LtyuOlvGpZc91j7s//5wZ49L92qhe4Z6AgD/0hSZpKeV/JQb4u8YbblgpkhG7pjHtulrOkU+ksCRghxo6TClE59sLPEp7lySecNK8q82hKXtDoungUzqxzWK0VNVOVKjjMdxevrUKmmdvqZG6ed+aYftyy/6d9F7OrTjQP0tAJwhTQuAo+o6st9O555Yu/auz7av2f1ZabUWzdMgVqx7z2WGAUPOYk4b4aycoZlV7/hmXbDC3sdO4ZC8B4jr8dXfboUU4zN3VxSCyrUho7FMxyXzfKsmKbUZxTVhJsqTjWgpKvG/sTqipiQsHZu7/Qzrry3+ZwP/L8wDJ8WkcLpuJdPSwBXALkXMd9Q7x7Ys+aON3dtvOf9+a6tl+MLNapmhJG6Am8e8D7hTZpX55lfB9fPN2zsKvHMvhzru6C3CD6lRrVpB4eE5j2V7HrcH2zCxbCKwajHY/Hq8WrIGs+8upgLmh3nNntm1XsykoSIYj+iGks5hssoijkwQlAzq7d+7mWPtyx/y7drmubfLSJ7Tuc9fFoDONWrEZEdYuy/ehffvefl77+3e+sTHxnq2noOOhgkPiEZEw4u1dbqMp4LZxsuaC3Snre82mF4tQO29gm9JUlMN2tBLFbdKS9/kxbLnkiFrIlprlFWTI9Y1QyLGhw1QVJ0opp4/g/m3AKwCsYIVM/srZ19weMtK274dv30s+4VMbunsuWmyBvG2HxqgVV7X/3xezs2PfTWfPfmZeILNcNNwUelgqSpIel7SQaXwYin5IU9ecvGLssrnUJbr9BVCnEpI4QIFar2odTqI1O5I69cPzfmoyvdfr2RhC8+kzui3khlDaTspdcD7mekJkhV8Zp4h2sCR0sNLJumrJrumFfvacgoxnu8BydS0flgxMo1lREBUUQMtmZmb2PreY83Lbvx2/UtU8CdksCvr1Y74CVVXdOy8pZv7Xr1R2/s3/r0rUO92y7zpd46oz6RMCQFEompN0JLiibhEAHmVDvm10S8ca6lu2DY1hezvseypRt2DQXkY4/XpOwxUEFN0iRNNKEIEhTUT1CZo6CUHUk6TA6HT57d4TDeIaIE1tCUVebVe5Y2RSxqhFnVMTVhokKrOpxLXVJSpm9NTRQ1IHF6LCQN3r0Evqq2dW/dnAufn7H4hu/UtCyZAu4UgI8YyCVgrRi71rv4zp5tT9y0b8vj7xlqf+W8aKiz1UgseIs38UH3lVNwmpALTM85plcZLmj1FCJLdz7PlsGQ7T3Kjn7L7iHDYOSIYnCS9uYRiy3LOzkCdWlcErkViHBYjFd86j22IlQHMTNyjtYaw9x64Yz6mNk1MTVZQ0ZiPIJXTYsLPBygtaQTphbEJ6E4BGy1zzYt3FQ/+5yfNC++5o5c44LXpoA7BeBjNJFdYiOL/Tfv458N7HxtZdf2x97Zt+e1m0q92xZYpxkvrqKIfiw1U0ny7ROa06zxzKo1zKmLcLOEyMX0Fw0deWXHgGHXYMDeIUNHHoYiTyGGyEvqBkuYJcqpIyMdTxOEj9CT6yimkXLGmR+OoeoI7azq8DcOy16BjDXkQmVaxjGjWphd7Zhb52ip9jRlDbmMIxAPqfqMxkRqk+8eg4i/HGX3qZosJkYkwOaa+6unLdrcMP+i+5qWX/f9kKoXTlev8hSAj5tt7EjrR9tV9QmioW+0b3n06oHtz7xpcN+6lVGhd46lhPceJ+b/b+9ce9soojD8npm9Oev1NZdaJKVUiUhLiNoqgBAS4jfwd/kEorSAABVSQCqJSEqIk7iJ797bzOHDrh27SoAixCWdR/IHa+2V5dl3z5yzZ96BmDz5yBLOzDx8ygORFRRn7y0Qap5GvQCs1xXACRItECaMdiLRiQhnIeEsAtojoBcTeqnAKNEYpoxICbDOpuOUnzNzGomh4UDnCa+FFA5lUdSyCI5gOJJRcAi+pRA4jMAl1DxG3dWouYySozDnSLhSQ4hxvpv9H6yBdNLAMt5PKFsBNLs57HmfMhNgQ4AtX7nl5b3y4q2PKjffu+8v3v4CwJ4Rrili/ZMFLwKwGLb2Ntr7n37YOfnh3ej06aoO24GiOMtf+fzCfrFhIUiobGPwqVHi3G1CMRArgUgRQkVIVRalYy1QcWIs+AIMDaEBQSmiVOLnvg1JDFsAUhJcyfAEw7M0JAFSYMo3avzKPaX4r19gBIKWDBJB6vnXDufmV7eDxuYn8zfeuQ+78BURDc3VZAT8b4t5DsBy/+jHrc7Tzz7oHe/cibqHa0l0UpE6hebzbunpmi5fmn/mRaNxV8lzwzXujhTg7HkryTyXZDALKM4jPiMviElYQk82OtOT342ZPm49tbhD5N8VzNB0ea5MLIDJ9iTZzYoImcuJLCZusNQsVFe2g8bdj+dvbD2EXf0eQOsqrcs1Ar56Ym70jp/c7Ta/eT9s7a6HnYPb4eBwQarIYU7BrLNNyfPNpAU0mEW+zFHN1IJ5usHhwiUTlz1qot+5RfyxE+fsZ8RMXM6O5ccpuyVIIaBhs+XVe17Q2CnUr+8WFze+LDXufG55xW0Ap7kFksEI+H8jZhdAJQ3bt7rN7+4NTnY2R539Rtj9dSMdtsqsE5+1AnEKqbMCj/4v2oGwBJHKI20mXSEkFBwlC37b85ZOC+WVx+7Cyo6/9ObDoL72GMAvAAZGtEbAV0XMAoADoJaMeq91jx+tJ2d79wZnzZWof/RGEnV8FZ7WSMU2WIE5nUymz6e6F3eF/bkhnW7FmD4bPxfvxwb4eQQnApEFTQ7bbqlleUFoudUnfrnxk11dbrq1tQflxddPAOwC6L8My/iMgA0ASbBObQBVAK+E7YPaqL3/dtQ+qIeDphsPTrfSqL2gk6GVRv0lTkNPcZLltcwgVvnids49runC/JqmCmDjHJhmdgWywSRARBCwAGkr4Xot2y72pFtSllf51i3W9p3S8sivrT7wF64fA/YRgCMA6qoYxBkBG/6OKD0OfRaAZQBzyfBZMeo234qHz+rxsIU4HkKNzljH/ZuseVMnIytVCaAUoBMwNHSaAsQekXCYuS+ElXnnCgGQDcuyIWwHsJxIWoWvpV06kK5P3lwR0qvHMrj2qFR9dS+X/CGANjCx8TUYARtebKQEiEQ2nc1VpdO4DGD+4nEMkQyjKgnpK+Ij1w0um9YqAMdCOoPMUTcvUmkTVA0Gg8FgMBgMBoPBYDAYDAaDwWB4ufkN31I195KLoPcAAAAASUVORK5CYII=" alt="Логотип кафедри фундаментальної математики: коло з символами ∀, ε, ∃, δ">
+    <div>
+      <div class="eyebrow">Кафедра фундаментальної математики · ХНУ імені В. Н. Каразіна</div>
+      <h1>Пряма на площині</h1>
+      <div class="sub">Аналітична геометрія · <b>Практичне заняття 1</b> · інтерактивний практикум</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabsbar" aria-label="Розділи">
+  <div class="wrap tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="konstruktor" aria-selected="true"><span class="tn">1</span>Рівняння прямої</button>
+    <button class="tab" role="tab" data-tab="roztashuvannia" aria-selected="false"><span class="tn">2</span>Взаємне розташування</button>
+    <button class="tab" role="tab" data-tab="metryka" aria-selected="false"><span class="tn">3</span>Перпендикуляр і кут</button>
+    <button class="tab" role="tab" data-tab="mediany" aria-selected="false"><span class="tn">4</span>Задача про медіани</button>
+    <button class="tab" role="tab" data-tab="prykladni" aria-selected="false"><span class="tn">5</span>Прикладні задачі</button>
+    <button class="tab" role="tab" data-tab="teoriia" aria-selected="false"><span class="tn">6</span>Теоретична довідка</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============ 1. КОНСТРУКТОР ============ -->
+<section class="panel" id="p-konstruktor" role="tabpanel">
+  <div class="panel-head">
+    <h2>Усі форми рівняння однієї прямої</h2>
+    <p>Задайте пряму одним зі способів: точкою й напрямним вектором, двома точками або загальним рівнянням. Решта форм обчислюється автоматично, а рисунок показує, що означає кожен коефіцієнт.</p>
+  </div>
+  <div class="ws">
+    <div class="ctrl card">
+      <div class="sect-label">Спосіб задання</div>
+      <div class="seg" id="t1-mode">
+        <button type="button" data-mode="pd" aria-pressed="true">Точка й вектор</button>
+        <button type="button" data-mode="tp" aria-pressed="false">Дві точки</button>
+        <button type="button" data-mode="ge" aria-pressed="false">Загальне рівняння</button>
+      </div>
+      <div class="group" id="t1-g-pd">
+        <div class="tuple"><span class="nm">M<sub>0</sub></span><span class="br">(</span><input class="num" id="t1-x0" aria-label="x0"><span class="br">,</span><input class="num" id="t1-y0" aria-label="y0"><span class="br">)</span></div>
+        <div class="tuple"><span class="nm"><span class="vec">a</span></span><span class="br">= (</span><input class="num" id="t1-l" aria-label="l"><span class="br">,</span><input class="num" id="t1-m" aria-label="m"><span class="br">)</span></div>
+      </div>
+      <div class="group" id="t1-g-tp" hidden>
+        <div class="tuple"><span class="nm">M<sub>1</sub></span><span class="br">(</span><input class="num" id="t1-x1" aria-label="x1"><span class="br">,</span><input class="num" id="t1-y1" aria-label="y1"><span class="br">)</span></div>
+        <div class="tuple"><span class="nm">M<sub>2</sub></span><span class="br">(</span><input class="num" id="t1-x2" aria-label="x2"><span class="br">,</span><input class="num" id="t1-y2" aria-label="y2"><span class="br">)</span></div>
+      </div>
+      <div class="group" id="t1-g-ge" hidden>
+        <div class="eqin"><input class="num w4" id="t1-A" aria-label="A"><span class="v">x</span> + <input class="num w4" id="t1-B" aria-label="B"><span class="v">y</span> + <input class="num w4" id="t1-C" aria-label="C"> = 0</div>
+      </div>
+      <div class="sect-label">Перевірити, чи належить точка прямій</div>
+      <div class="tuple"><span class="nm">P</span><span class="br">(</span><input class="num" id="t1-px" aria-label="Px"><span class="br">,</span><input class="num" id="t1-py" aria-label="Py"><span class="br">)</span> <span id="t1-pchip" class="chip">—</span></div>
+      <div class="sect-label">Параметр <span style="text-transform:none;font-style:italic;font-family:var(--f-display);font-size:14px;letter-spacing:0">t</span></div>
+      <div class="row">
+        <input type="range" id="t1-t" min="-5" max="5" step="0.05" aria-label="Параметр t">
+        <input class="num w4" id="t1-tv" aria-label="t">
+        <button class="btn" type="button" id="t1-play">▶ Рух</button>
+      </div>
+      <div class="sect-label">Кут між базисними векторами ω</div>
+      <div class="row">
+        <input type="range" id="t1-om" min="30" max="150" step="1" aria-label="Кут між базисними векторами">
+        <span class="mono" id="t1-omv">90°</span>
+        <button class="btn" type="button" id="t1-om90">90°</button>
+      </div>
+      <div class="sect-label">Показати на рисунку</div>
+      <div class="checks">
+        <label><input type="checkbox" id="t1-s-int" checked> точки на осях</label>
+        <label><input type="checkbox" id="t1-s-slope" checked> трикутник нахилу</label>
+        <label><input type="checkbox" id="t1-s-n" checked> нормальний вектор</label>
+        <label><input type="checkbox" id="t1-s-t" checked> точка <i>M(t)</i></label>
+      </div>
+      <div class="sect-label">Дані задач заняття</div>
+      <div class="presets" id="t1-presets">
+        <button class="btn" type="button" data-p="1">Задача 1</button>
+        <button class="btn" type="button" data-p="2">Задача 2</button>
+        <button class="btn" type="button" data-p="3">Задача 3</button>
+        <button class="btn" type="button" data-p="4">Задача 4</button>
+        <button class="btn" type="button" data-p="5">Задача 5</button>
+        <button class="btn" type="button" data-p="6">Задача 6</button>
+      </div>
+      <p class="hint">Числа можна вводити як дроби (<span class="mono">1/3</span>) або десяткові (<span class="mono">-2,5</span>). Стрілки <kbd>↑</kbd><kbd>↓</kbd> у полі змінюють значення на 1, разом із <kbd>Shift</kbd> — на 0,1. Точки на дошці можна перетягувати.</p>
+    </div>
+
+    <div class="bcol">
+      <div class="board"><canvas id="cv1"></canvas><span class="omega-badge" id="t1-badge" hidden>афінна система</span><div class="zoom" data-for="cv1"></div></div>
+      <div class="legend">
+        <span><i class="sw" style="--sw:var(--chalk)"></i>пряма</span>
+        <span><i class="sw" style="--sw:var(--c-gold)"></i>напрямний вектор <i>a</i></span>
+        <span><i class="sw" style="--sw:var(--c-sky)"></i>нормальний вектор <i>n</i></span>
+        <span><i class="sw dot" style="--sw:var(--c-coral)"></i>перетин з осями</span>
+        <span><i class="sw" style="--sw:var(--c-lilac)"></i>вектор <i>t·a</i> і точка <i>M(t)</i></span>
+      </div>
+      <div class="note" id="t1-note"></div>
+    </div>
+
+    <div class="out card">
+      <h3>Рівняння прямої</h3>
+      <div id="t1-err" class="err" hidden></div>
+      <div class="forms" id="t1-forms"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. РОЗТАШУВАННЯ ============ -->
+<section class="panel" id="p-roztashuvannia" role="tabpanel" hidden>
+  <div class="panel-head">
+    <h2>Перетинаються, паралельні чи збігаються</h2>
+    <p>Кожну пряму можна задати загальним або параметричним рівнянням. Програма проводить дослідження так, як це робимо на занятті, і показує геометричний зміст визначника.</p>
+  </div>
+  <div class="ws">
+    <div class="ctrl card">
+      <div class="sect-label">Перша пряма <i style="text-transform:none;font-family:var(--f-display);letter-spacing:0">l</i><sub>1</sub></div>
+      <div class="seg" id="t2-type0">
+        <button type="button" data-type="ge" aria-pressed="true">Загальне</button>
+        <button type="button" data-type="par" aria-pressed="false">Параметричне</button>
+      </div>
+      <div id="t2-ge0" class="eqin"><input class="num w4" id="t2-A0" aria-label="A1"><span class="v">x</span> + <input class="num w4" id="t2-B0" aria-label="B1"><span class="v">y</span> + <input class="num w4" id="t2-C0" aria-label="C1"> = 0</div>
+      <div id="t2-par0" class="group" hidden>
+        <div class="eqin"><span class="v">x</span> = <input class="num w4" id="t2-x00" aria-label="x0"> + <input class="num w4" id="t2-l0" aria-label="l"><span class="v">t</span></div>
+        <div class="eqin"><span class="v">y</span> = <input class="num w4" id="t2-y00" aria-label="y0"> + <input class="num w4" id="t2-m0" aria-label="m"><span class="v">t</span></div>
+      </div>
+      <div class="sect-label">Друга пряма <i style="text-transform:none;font-family:var(--f-display);letter-spacing:0">l</i><sub>2</sub></div>
+      <div class="seg" id="t2-type1">
+        <button type="button" data-type="ge" aria-pressed="true">Загальне</button>
+        <button type="button" data-type="par" aria-pressed="false">Параметричне</button>
+      </div>
+      <div id="t2-ge1" class="eqin"><input class="num w4" id="t2-A1" aria-label="A2"><span class="v">x</span> + <input class="num w4" id="t2-B1" aria-label="B2"><span class="v">y</span> + <input class="num w4" id="t2-C1" aria-label="C2"> = 0</div>
+      <div id="t2-par1" class="group" hidden>
+        <div class="eqin"><span class="v">x</span> = <input class="num w4" id="t2-x01" aria-label="x0"> + <input class="num w4" id="t2-l1" aria-label="l"><span class="v">s</span></div>
+        <div class="eqin"><span class="v">y</span> = <input class="num w4" id="t2-y01" aria-label="y0"> + <input class="num w4" id="t2-m1" aria-label="m"><span class="v">s</span></div>
+      </div>
+      <div class="sect-label">Кут між базисними векторами ω</div>
+      <div class="row">
+        <input type="range" id="t2-om" min="30" max="150" step="1" aria-label="Кут між базисними векторами">
+        <span class="mono" id="t2-omv">90°</span>
+        <button class="btn" type="button" id="t2-om90">90°</button>
+      </div>
+      <div class="sect-label">Дані задач заняття</div>
+      <div class="presets" id="t2-presets">
+        <button class="btn" type="button" data-p="7a">7 а</button>
+        <button class="btn" type="button" data-p="7b">7 б</button>
+        <button class="btn" type="button" data-p="7c">7 в</button>
+        <button class="btn" type="button" data-p="8a">8 а</button>
+        <button class="btn" type="button" data-p="8b">8 б</button>
+        <button class="btn" type="button" data-p="8c">8 в</button>
+      </div>
+      <p class="hint">Зміна кута ω деформує рисунок, але не змінює відповіді: взаємне розташування прямих — афінне поняття.</p>
+    </div>
+    <div class="bcol">
+      <div class="board"><canvas id="cv2"></canvas><span class="omega-badge" id="t2-badge" hidden>афінна система</span><div class="zoom" data-for="cv2"></div></div>
+      <div class="legend">
+        <span><i class="sw" style="--sw:var(--chalk)"></i>пряма <i>l</i><sub>1</sub>, вектор <i>a</i><sub>1</sub></span>
+        <span><i class="sw" style="--sw:var(--c-coral)"></i>пряма <i>l</i><sub>2</sub>, вектор <i>a</i><sub>2</sub></span>
+        <span><i class="sw" style="--sw:var(--c-gold)"></i>паралелограм на <i>a</i><sub>1</sub>, <i>a</i><sub>2</sub></span>
+      </div>
+      <div class="note">
+        <p>Визначник \(\Delta = A_1B_2 - A_2B_1\) дорівнює визначнику, складеному з координат напрямних векторів \(\vec a_1=(-B_1,A_1)\) і \(\vec a_2=(-B_2,A_2)\). У прямокутній системі його модуль є площею паралелограма, побудованого на цих векторах. Прямі перетинаються тоді й лише тоді, коли паралелограм не вироджується, тобто \(\Delta\ne0\).</p>
+      </div>
+    </div>
+    <div class="out card">
+      <h3>Дослідження</h3>
+      <div id="t2-err" class="err" hidden></div>
+      <div class="steps" id="t2-steps"></div>
+      <div class="answer" id="t2-ans"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. МЕТРИКА ============ -->
+<section class="panel" id="p-metryka" role="tabpanel" hidden>
+  <div class="panel-head">
+    <h2>Паралель, перпендикуляр, проєкція і кут</h2>
+    <p>Тут система координат прямокутна декартова, тому з'являються довжини й кути. Перетягніть точку <i>M</i> і стежте, як змінюються проєкція та відстань.</p>
+  </div>
+  <div class="ws">
+    <div class="ctrl card">
+      <div class="sect-label">Точка</div>
+      <div class="tuple"><span class="nm">M</span><span class="br">(</span><input class="num" id="t3-x" aria-label="Mx"><span class="br">,</span><input class="num" id="t3-y" aria-label="My"><span class="br">)</span></div>
+      <div class="sect-label">Пряма <i style="text-transform:none;font-family:var(--f-display);letter-spacing:0">l</i></div>
+      <div class="eqin"><input class="num w4" id="t3-A" aria-label="A"><span class="v">x</span> + <input class="num w4" id="t3-B" aria-label="B"><span class="v">y</span> + <input class="num w4" id="t3-C" aria-label="C"> = 0</div>
+      <div class="sect-label">Друга пряма для обчислення кута</div>
+      <div class="eqin"><input class="num w4" id="t3-A2" aria-label="A2"><span class="v">x</span> + <input class="num w4" id="t3-B2" aria-label="B2"><span class="v">y</span> + <input class="num w4" id="t3-C2" aria-label="C2"> = 0</div>
+      <div class="sect-label">Показати на рисунку</div>
+      <div class="checks">
+        <label><input type="checkbox" id="t3-s-par" checked> паралельну</label>
+        <label><input type="checkbox" id="t3-s-perp" checked> перпендикуляр</label>
+        <label><input type="checkbox" id="t3-s-ang" checked> кут з другою прямою</label>
+        <label><input type="checkbox" id="t3-s-sym"> симетричну точку <i>M′</i></label>
+      </div>
+      <div class="sect-label">Дані задач заняття</div>
+      <div class="presets" id="t3-presets">
+        <button class="btn" type="button" data-p="9">Задача 9</button>
+        <button class="btn" type="button" data-p="10">Задача 10</button>
+      </div>
+    </div>
+    <div class="bcol">
+      <div class="board"><canvas id="cv3"></canvas><div class="zoom" data-for="cv3"></div></div>
+      <div class="legend">
+        <span><i class="sw" style="--sw:var(--chalk)"></i>пряма <i>l</i></span>
+        <span><i class="sw dash" style="--sw:var(--chalk)"></i>паралельна через <i>M</i></span>
+        <span><i class="sw" style="--sw:var(--c-sky)"></i>перпендикуляр, вектор <i>n</i></span>
+        <span><i class="sw dot" style="--sw:var(--c-gold)"></i>проєкція <i>H</i></span>
+        <span><i class="sw" style="--sw:var(--c-coral)"></i>друга пряма, кут φ</span>
+      </div>
+      <div class="note">
+        <p>Нормальний вектор \(\vec n=(A,B)\) задає напрям «найшвидшого віддалення» від прямої: вираз \(Ax+By+C\) пропорційний відхиленню точки від прямої зі знаком. Тому перпендикуляр з точки \(M\) іде вздовж \(\vec n\), а проєкцію одержуємо, зсунувши \(M\) на потрібну кратність \(\vec n\).</p>
+        <p>Симетрична точка \(M'=2H-M\) пояснює задачу Герона про дзеркало: найкоротший шлях від \(M\) до \(Q\) з дотиком до прямої проходить через точку перетину прямої з відрізком \(M'Q\), і саме тоді кут падіння дорівнює куту відбиття.</p>
+      </div>
+    </div>
+    <div class="out card">
+      <h3>Розв'язання</h3>
+      <div id="t3-err" class="err" hidden></div>
+      <div class="steps" id="t3-steps"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. МЕДІАНИ ============ -->
+<section class="panel" id="p-mediany" role="tabpanel" hidden>
+  <div class="panel-head">
+    <h2>Задача 11*: трикутник за вершиною і двома медіанами</h2>
+    <p>Задайте вершину <i>A</i> і прямі, на яких лежать медіани з вершин <i>B</i> і <i>C</i>. Вершину <i>A</i> можна перетягувати; кут ω показує, що розв'язок не залежить від метрики.</p>
+  </div>
+  <div class="ws">
+    <div class="ctrl card">
+      <div class="sect-label">Вершина</div>
+      <div class="tuple"><span class="nm">A</span><span class="br">(</span><input class="num" id="t4-x" aria-label="Ax"><span class="br">,</span><input class="num" id="t4-y" aria-label="Ay"><span class="br">)</span></div>
+      <div class="sect-label">Медіана з вершини B</div>
+      <div class="eqin"><input class="num w4" id="t4-A1" aria-label="A"><span class="v">x</span> + <input class="num w4" id="t4-B1" aria-label="B"><span class="v">y</span> + <input class="num w4" id="t4-C1" aria-label="C"> = 0</div>
+      <div class="sect-label">Медіана з вершини C</div>
+      <div class="eqin"><input class="num w4" id="t4-A2" aria-label="A"><span class="v">x</span> + <input class="num w4" id="t4-B2" aria-label="B"><span class="v">y</span> + <input class="num w4" id="t4-C2" aria-label="C"> = 0</div>
+      <div class="sect-label">Кут між базисними векторами ω</div>
+      <div class="row">
+        <input type="range" id="t4-om" min="30" max="150" step="1" aria-label="Кут між базисними векторами">
+        <span class="mono" id="t4-omv">90°</span>
+        <button class="btn" type="button" id="t4-om90">90°</button>
+      </div>
+      <div class="presets"><button class="btn" type="button" id="t4-reset">Дані задачі 11*</button></div>
+    </div>
+    <div class="bcol">
+      <div class="board"><canvas id="cv4"></canvas><span class="omega-badge" id="t4-badge" hidden>афінна система</span><div class="zoom" data-for="cv4"></div></div>
+      <div class="legend">
+        <span><i class="sw" style="--sw:var(--chalk)"></i>сторони трикутника</span>
+        <span><i class="sw dash" style="--sw:var(--chalk)"></i>прямі медіан</span>
+        <span><i class="sw dot" style="--sw:var(--c-gold)"></i>центроїд <i>G</i></span>
+        <span><i class="sw dot" style="--sw:var(--c-sky)"></i>середини сторін</span>
+      </div>
+    </div>
+    <div class="out card">
+      <h3>Розв'язання</h3>
+      <div id="t4-err" class="err" hidden></div>
+      <div class="steps" id="t4-steps"></div>
+      <div class="answer" id="t4-ans"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. ПРИКЛАДНІ ============ -->
+<section class="panel" id="p-prykladni" role="tabpanel" hidden>
+  <div class="panel-head">
+    <h2>Де пряма працює поза аудиторією</h2>
+    <p>Кожна форма рівняння прямої має свій фізичний чи прикладний зміст. Нижче чотири ситуації, у яких знайомі з заняття формули розв'язують реальну задачу.</p>
+  </div>
+
+  <div class="app">
+    <div class="app-head"><span class="eyebrow">Кінематика і навігація</span><h3>Параметричне рівняння як закон руху</h3></div>
+    <div class="prose">
+      <p>Параметричні рівняння \(x=x_0+tl,\ y=y_0+tm\) — це закон рівномірного прямолінійного руху \(\vec r(t)=\vec r_0+\vec v\,t\). Точка \(M_0\) є положенням тіла в момент \(t=0\), напрямний вектор є вектором швидкості, а параметр є часом. Коли ми вилучаємо параметр і переходимо до канонічного чи загального рівняння, ми «забуваємо» час і залишаємо тільки траєкторію.</p>
+      <p>Звідси важливе розрізнення. Щоб знайти точку перетину траєкторій, розв'язуємо систему з двома різними параметрами \(t\) і \(s\). Щоб з'ясувати, чи зіткнуться судна, потрібен один і той самий момент часу, а це вже інша задача. Розрахунок моменту й відстані найбільшого зближення (CPA, closest point of approach) лежить в основі суднових радарних систем автоматичної прокладки та систем попередження зіткнень в авіації.</p>
+    </div>
+    <div class="ws2">
+      <div class="card">
+        <div class="sect-label">Судно 1 · положення (км) і швидкість (км/год)</div>
+        <div class="tuple"><span class="nm">r<sub>1</sub></span><span class="br">(</span><input class="num" id="s-x1"><span class="br">,</span><input class="num" id="s-y1"><span class="br">)</span></div>
+        <div class="tuple"><span class="nm"><span class="vec">v</span><sub>1</sub></span><span class="br">(</span><input class="num" id="s-vx1"><span class="br">,</span><input class="num" id="s-vy1"><span class="br">)</span></div>
+        <div class="sect-label">Судно 2</div>
+        <div class="tuple"><span class="nm">r<sub>2</sub></span><span class="br">(</span><input class="num" id="s-x2"><span class="br">,</span><input class="num" id="s-y2"><span class="br">)</span></div>
+        <div class="tuple"><span class="nm"><span class="vec">v</span><sub>2</sub></span><span class="br">(</span><input class="num" id="s-vx2"><span class="br">,</span><input class="num" id="s-vy2"><span class="br">)</span></div>
+        <div class="sect-label">Час, год</div>
+        <div class="row"><input type="range" id="s-t" min="0" max="8" step="0.02" aria-label="Час"><span class="mono" id="s-tv">0</span><button class="btn" type="button" id="s-play">▶ Пуск</button></div>
+        <div class="forms" id="s-out"></div>
+      </div>
+      <div><div class="board"><canvas id="cv5"></canvas><div class="zoom" data-for="cv5"></div></div>
+      <div class="legend">
+        <span><i class="sw" style="--sw:var(--chalk)"></i>судно 1</span>
+        <span><i class="sw" style="--sw:var(--c-coral)"></i>судно 2</span>
+        <span><i class="sw dot" style="--sw:var(--c-gold)"></i>перетин траєкторій</span>
+        <span><i class="sw dash" style="--sw:var(--c-lilac)"></i>найбільше зближення</span>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="app-head"><span class="eyebrow">Економіка</span><h3>Кутовий коефіцієнт як швидкість зміни: точка беззбитковості</h3></div>
+    <div class="prose">
+      <p>У рівнянні \(y=kx+b\) коефіцієнт \(b\) є початковим значенням, а \(k\) показує, наскільки зростає \(y\), коли \(x\) збільшується на одиницю. Для підприємства витрати на випуск \(q\) одиниць продукції часто моделюють прямою \(C(q)=F+cq\): тут \(F\) — постійні витрати (оренда, обладнання), а кутовий коефіцієнт \(c\) — витрати на одну додаткову одиницю. Виторг \(R(q)=pq\) є прямою, що проходить через початок координат, з кутовим коефіцієнтом, рівним ціні.</p>
+      <p>Точка беззбитковості — це точка перетину двох прямих. Вона існує лише тоді, коли прямі не паралельні, тобто \(p\ne c\), і має економічний сенс при \(p>c\). Наведіть курсор на графік, щоб побачити витрати, виторг і прибуток для конкретного обсягу.</p>
+    </div>
+    <div class="ws2">
+      <div class="card">
+        <div class="kv" style="grid-template-columns:auto auto minmax(0,1fr)">
+          <span class="nm" style="font-family:var(--f-display);font-size:19px">F</span><input class="num" id="e-F" style="width:6.4em"><span class="hint">постійні витрати, грн</span>
+          <span class="nm" style="font-family:var(--f-display);font-size:19px">c</span><input class="num" id="e-c" style="width:6.4em"><span class="hint">витрати на одиницю, грн/шт</span>
+          <span class="nm" style="font-family:var(--f-display);font-size:19px">p</span><input class="num" id="e-p" style="width:6.4em"><span class="hint">ціна, грн/шт</span>
+        </div>
+        <div class="forms" id="e-out"></div>
+      </div>
+      <div><div class="board short"><canvas id="cv6"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="--sw:var(--c-coral)"></i>витрати <i>C(q)</i></span>
+        <span><i class="sw" style="--sw:var(--c-mint)"></i>виторг <i>R(q)</i></span>
+        <span><i class="sw dot" style="--sw:var(--c-gold)"></i>точка беззбитковості</span>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="app-head"><span class="eyebrow">Комп'ютерний зір</span><h3>Нормальне рівняння, відстань до прямої і перетворення Гафа</h3></div>
+    <div class="prose">
+      <p>Поділивши загальне рівняння на \(\pm\sqrt{A^2+B^2}\), отримаємо нормальне рівняння \(x\cos\theta+y\sin\theta-\rho=0\). Тут \((\cos\theta,\sin\theta)\) — одиничний нормальний вектор, а \(|\rho|\) — відстань від початку координат до прямої. Підставивши в ліву частину координати довільної точки, отримаємо її відхилення від прямої зі знаком; модуль цього числа є відстанню, тобто формулою \(d=\frac{|Ax_0+By_0+C|}{\sqrt{A^2+B^2}}\).</p>
+      <p>На цих двох фактах тримаються класичні алгоритми пошуку прямих на зображеннях. У перетворенні Гафа (параметризація \((\theta,\rho)\) запропонована Дудою і Гартом у 1972 році) кожна точка контуру «голосує» за всі прямі, що через неї проходять: на площині \((\theta,\rho)\) це синусоїда \(\rho=x\cos\theta+y\sin\theta\). Точки однієї прямої дають синусоїди, що перетинаються в одній точці, і ця точка є параметрами прямої. В алгоритмі RANSAC пряму проводять через дві випадкові точки й рахують, скільки точок лежить від неї на відстані, меншій за поріг ε. Перетягніть точки \(P_1\), \(P_2\), щоб зібрати якомога більше точок у смузі.</p>
+    </div>
+    <div class="ws2">
+      <div class="card">
+        <div class="sect-label">Пряма через дві точки</div>
+        <div class="tuple"><span class="nm">P<sub>1</sub></span><span class="br">(</span><input class="num" id="h-x1"><span class="br">,</span><input class="num" id="h-y1"><span class="br">)</span></div>
+        <div class="tuple"><span class="nm">P<sub>2</sub></span><span class="br">(</span><input class="num" id="h-x2"><span class="br">,</span><input class="num" id="h-y2"><span class="br">)</span></div>
+        <div class="sect-label">Поріг відстані ε</div>
+        <div class="row"><input type="range" id="h-eps" min="0.1" max="1.5" step="0.05" aria-label="Поріг ε"><span class="mono" id="h-epsv"></span></div>
+        <div class="forms" id="h-out"></div>
+      </div>
+      <div style="display:grid;gap:12px;min-width:0">
+        <div class="board short"><canvas id="cv7"></canvas><div class="zoom" data-for="cv7"></div></div>
+        <div class="sect-label">Простір параметрів (θ, ρ): кожна точка зображення дає синусоїду</div>
+        <div class="board tiny"><canvas id="cv8"></canvas></div>
+        <div class="legend" style="padding-top:0">
+          <span><i class="sw dot" style="--sw:var(--c-gold)"></i>точки в смузі ε</span>
+          <span><i class="sw" style="--sw:var(--c-sky)"></i>нормаль з початку координат, ρ</span>
+          <span><i class="sw" style="--sw:var(--c-coral)"></i>синусоїди точок P<sub>1</sub>, P<sub>2</sub></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="app-head"><span class="eyebrow">Вимірювання</span><h3>Рівняння через дві точки як калібрування датчика</h3></div>
+    <div class="ws2">
+      <div class="prose">
+        <p>Багато датчиків мають лінійну характеристику: напруга на виході пропорційно змінюється з температурою, тиском чи масою. Щоб перевести покази в фізичну величину, датчик калібрують у двох еталонних точках, наприклад у тальній воді й окропі. Дві точки \((U_1,T_1)\) і \((U_2,T_2)\) визначають пряму, і рівняння прямої через дві точки дає формулу перерахунку для будь-якого показу \(U\). Це і є лінійна інтерполяція; за межами відрізка \([U_1,U_2]\) вона стає екстраполяцією, і там похибка моделі зазвичай зростає.</p>
+      </div>
+      <div class="card">
+        <div class="kv" style="grid-template-columns:auto auto auto auto">
+          <span class="hint">U₁, В</span><input class="num" id="k-u1"><span class="hint">T₁, °C</span><input class="num" id="k-t1">
+          <span class="hint">U₂, В</span><input class="num" id="k-u2"><span class="hint">T₂, °C</span><input class="num" id="k-t2">
+          <span class="hint">Показ U, В</span><input class="num" id="k-u">
+        </div>
+        <div class="forms" id="k-out"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ТЕОРІЯ ============ -->
+<section class="panel" id="p-teoriia" role="tabpanel" hidden>
+  <div class="panel-head">
+    <h2>Коротка теоретична довідка</h2>
+    <p>Матеріал практичного заняття 1 у зв'язному викладі. Розділ «Доповнення» містить формули, якими користуються вкладки 3 і 5.</p>
+  </div>
+  <div class="theory">
+    <nav class="toc" aria-label="Зміст довідки">
+      <a href="#th1">Напрямний вектор</a>
+      <a href="#th2">Канонічне рівняння</a>
+      <a href="#th3">Загальне рівняння</a>
+      <a href="#th4">У відрізках і з кутовим коефіцієнтом</a>
+      <a href="#th5">Взаємне розташування</a>
+      <a href="#th6">Метричні поняття</a>
+      <a href="#th7">Доповнення</a>
+    </nav>
+    <article>
+      <div class="callout"><b>Домовленість.</b> Усе, що сказано в розділах 1–5, має місце в будь-якій афінній системі координат. Розділ 6 і доповнення стосуються прямокутної декартової системи. У задачах заняття 1–8 систему можна вважати довільною афінною, у задачах 9, 10 та в задачі із зірочкою вона прямокутна.</div>
+
+      <h3 id="th1"><span class="no">1</span>Напрямний вектор і параметричні рівняння</h3>
+      <p>Нехай на площині задано афінну систему координат \(O\vec e_1\vec e_2\). Пряма однозначно визначається точкою \(M_0(x_0,y_0)\), через яку вона проходить, і ненульовим вектором \(\vec a=(l,m)\), паралельним їй; такий вектор називають напрямним вектором прямої. Точка \(M(x,y)\) належить прямій тоді й лише тоді, коли вектор \(\overrightarrow{M_0M}\) колінеарний вектору \(\vec a\), тобто \(\overrightarrow{M_0M}=t\vec a\) для деякого дійсного \(t\). Записавши цю рівність у координатах, отримуємо параметричні рівняння прямої</p>
+      <div class="disp">\[x=x_0+tl,\qquad y=y_0+tm,\qquad t\in\mathbb R.\]</div>
+      <p>Кожному значенню параметра \(t\) відповідає рівно одна точка прямої, і навпаки. Про параметр зручно думати як про час, а про вектор \(\vec a\) як про швидкість точки, що рухається по прямій: при \(t=0\) вона перебуває в \(M_0\), при \(t=1\) у точці \(M_0+\vec a\), а від'ємні значення відповідають минулому.</p>
+
+      <h3 id="th2"><span class="no">2</span>Канонічне рівняння і рівняння через дві точки</h3>
+      <p>Вилучаючи параметр, приходимо до канонічного рівняння</p>
+      <div class="disp">\[\frac{x-x_0}{l}=\frac{y-y_0}{m},\]</div>
+      <p>яке слід розуміти як пропорцію: якщо, наприклад, \(l=0\), то воно означає \(x-x_0=0\). Якщо відомі дві різні точки прямої \(M_1(x_1,y_1)\) і \(M_2(x_2,y_2)\), то за напрямний вектор можна взяти \(\overrightarrow{M_1M_2}\), і ми отримуємо рівняння прямої, що проходить через дві точки:</p>
+      <div class="disp">\[\frac{x-x_1}{x_2-x_1}=\frac{y-y_1}{y_2-y_1}.\]</div>
+      <p>Напрямний вектор визначений з точністю до ненульового множника, тому його координати корисно скорочувати: вектор \((3,-6)\) можна замінити на \((1,-2)\), і рівняння стане простішим.</p>
+
+      <h3 id="th3"><span class="no">3</span>Загальне рівняння прямої</h3>
+      <p>Розкривши пропорцію в канонічному рівнянні, отримаємо рівняння першого степеня. Має місце основна теорема: в афінній системі координат кожна пряма задається рівнянням</p>
+      <div class="disp">\[Ax+By+C=0,\qquad A^2+B^2\ne0,\]</div>
+      <p>і, навпаки, кожне таке рівняння задає пряму. Його називають загальним рівнянням прямої. Вектор \(\vec a=(-B,A)\), а також будь-який колінеарний йому ненульовий вектор, є напрямним вектором цієї прямої. Справді, якщо точки \(M_1(x_1,y_1)\) і \(M_2(x_2,y_2)\) лежать на прямій, то, віднявши рівності \(Ax_1+By_1+C=0\) і \(Ax_2+By_2+C=0\), отримаємо \(A(x_2-x_1)+B(y_2-y_1)=0\), а це означає, що вектор \(\overrightarrow{M_1M_2}\) колінеарний вектору \((-B,A)\).</p>
+      <p>Щоб перевірити, чи належить точка прямій, досить підставити її координати в загальне рівняння: точка лежить на прямій тоді й лише тоді, коли отримуємо нуль.</p>
+
+      <h3 id="th4"><span class="no">4</span>Рівняння у відрізках і рівняння з кутовим коефіцієнтом</h3>
+      <p>Якщо \(A,B,C\ne0\), то загальне рівняння можна звести до рівняння у відрізках</p>
+      <div class="disp">\[\frac{x}{a}+\frac{y}{b}=1,\qquad a=-\frac CA,\quad b=-\frac CB,\]</div>
+      <p>де \(a\) і \(b\) — абсциса й ордината точок перетину прямої з осями координат. Якщо пряма проходить через початок координат (\(C=0\)) або паралельна одній з осей (\(A=0\) чи \(B=0\)), рівняння у відрізках не існує.</p>
+      <p>Якщо \(B\ne0\), то рівняння можна розв'язати відносно \(y\) і отримати рівняння з кутовим коефіцієнтом \(y=kx+b\), де \(k=\frac ml=-\frac AB\). Коефіцієнт \(k\) показує, на скільки змінюється ордината, коли абсциса зростає на одиницю. У прямокутній системі він дорівнює тангенсу кута нахилу прямої до осі \(Ox\): \(k=\operatorname{tg}\varphi\). В афінній системі \(k\) також означений, але тлумачення через кут втрачає зміст.</p>
+
+      <h3 id="th5"><span class="no">5</span>Взаємне розташування двох прямих</h3>
+      <p>Два рівняння \(A_1x+B_1y+C_1=0\) та \(A_2x+B_2y+C_2=0\) задають прямі, що перетинаються, якщо \(\frac{A_1}{A_2}\ne\frac{B_1}{B_2}\), тобто \(A_1B_2-A_2B_1\ne0\); паралельні різні прямі, якщо \(\frac{A_1}{A_2}=\frac{B_1}{B_2}\ne\frac{C_1}{C_2}\); одну й ту саму пряму, якщо \(\frac{A_1}{A_2}=\frac{B_1}{B_2}=\frac{C_1}{C_2}\). Точку перетину знаходимо, розв'язуючи систему цих рівнянь; за формулами Крамера</p>
+      <div class="disp">\[x=\frac{B_1C_2-B_2C_1}{A_1B_2-A_2B_1},\qquad y=\frac{C_1A_2-C_2A_1}{A_1B_2-A_2B_1}.\]</div>
+      <p>Число \(A_1B_2-A_2B_1\) є визначником, складеним з координат напрямних векторів \((-B_1,A_1)\) і \((-B_2,A_2)\), тому його рівність нулю означає колінеарність напрямних векторів. Якщо одна з прямих задана параметрично, найпростіше підставити її параметричні рівняння в рівняння другої прямої. Отримаємо лінійне рівняння відносно \(t\): якщо воно має єдиний розв'язок, прямі перетинаються; якщо не має розв'язків, вони паралельні; якщо справджується тотожно, прямі збігаються.</p>
+
+      <h3 id="th6"><span class="no">6</span>Метричні поняття в прямокутній системі</h3>
+      <p>Якщо система координат прямокутна декартова, з'являються довжини й кути. Вектор \(\vec n=(A,B)\) є нормальним вектором прямої \(Ax+By+C=0\), тобто перпендикулярним до неї: його скалярний добуток з напрямним вектором \((-B,A)\) дорівнює нулю. Рівняння прямої, що проходить через точку \(M_0(x_0,y_0)\) перпендикулярно до вектора \(\vec n=(A,B)\), має вигляд</p>
+      <div class="disp">\[A(x-x_0)+B(y-y_0)=0.\]</div>
+      <p>Кут \(\varphi\) між прямими (гострий або прямий) обчислюють за формулою</p>
+      <div class="disp">\[\cos\varphi=\frac{|A_1A_2+B_1B_2|}{\sqrt{A_1^2+B_1^2}\,\sqrt{A_2^2+B_2^2}}\qquad\text{або}\qquad \operatorname{tg}\varphi=\left|\frac{k_2-k_1}{1+k_1k_2}\right|.\]</div>
+      <p>Зокрема, прямі перпендикулярні тоді й лише тоді, коли \(A_1A_2+B_1B_2=0\), або, для прямих з кутовими коефіцієнтами, коли \(k_1k_2=-1\); прямі паралельні, коли \(k_1=k_2\).</p>
+
+      <h3 id="th7"><span class="no">7</span>Доповнення: проєкція, відстань, нормальне рівняння</h3>
+      <p>Проєкція \(H\) точки \(M_0\) на пряму \(Ax+By+C=0\) є точкою перетину прямої з перпендикуляром, проведеним через \(M_0\). Шукаючи її у вигляді \(H=M_0+\lambda\vec n\) і підставляючи в рівняння прямої, знаходимо</p>
+      <div class="disp">\[\lambda=-\frac{Ax_0+By_0+C}{A^2+B^2},\qquad d(M_0,l)=|\lambda|\,|\vec n|=\frac{|Ax_0+By_0+C|}{\sqrt{A^2+B^2}}.\]</div>
+      <p>Точка, симетрична \(M_0\) відносно прямої, дорівнює \(M_0'=2H-M_0\). Поділивши загальне рівняння на \(\pm\sqrt{A^2+B^2}\), отримаємо нормальне рівняння прямої \(x\cos\theta+y\sin\theta-\rho=0\), у якому \((\cos\theta,\sin\theta)\) — одиничний нормальний вектор, а \(|\rho|\) — відстань від початку координат до прямої.</p>
+    </article>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap"><span>Кафедра фундаментальної математики · Харківський національний університет імені В. Н. Каразіна</span><span>Аналітична геометрія · Рівняння прямої на площині</span></div></footer>
+
+<script>
+"use strict";
+/* ================= утиліти ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const isZ = v => Math.abs(v) < 1e-9;
+const clean = v => (isZ(v) ? 0 : v);
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+function lcm(a, b) { return a / gcd(a, b) * b; }
+function parseNum(s) {
+  s = String(s).trim().replace(/−|–/g, '-').replace(/\s+/g, '').replace(/,/g, '.');
+  if (!s) return NaN;
+  const m = s.match(/^([+-]?(?:\d+\.?\d*|\.\d+))\/([+-]?(?:\d+\.?\d*|\.\d+))$/);
+  if (m) { const d = +m[2]; return d === 0 ? NaN : +m[1] / d; }
+  if (/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(s)) return +s;
+  return NaN;
+}
+function toFrac(x, maxD = 10000) {
+  if (!isFinite(x)) return null;
+  x = clean(x);
+  const sg = x < 0 ? -1 : 1; const ax = Math.abs(x);
+  let h0 = 0, h1 = 1, k0 = 1, k1 = 0, b = ax;
+  for (let i = 0; i < 40; i++) {
+    const a = Math.floor(b);
+    const h2 = a * h1 + h0, k2 = a * k1 + k0;
+    if (k2 > maxD) break;
+    h0 = h1; h1 = h2; k0 = k1; k1 = k2;
+    if (Math.abs(ax - h1 / k1) < 1e-9 * Math.max(1, ax)) return { p: sg * h1, q: k1 };
+    const r = b - a; if (r < 1e-14) break; b = 1 / r;
+  }
+  return (k1 && Math.abs(ax - h1 / k1) < 1e-9 * Math.max(1, ax)) ? { p: sg * h1, q: k1 } : null;
+}
+function dec(x, d = 3) { return String(+(+x).toFixed(d)); }
+function numTex(x) {
+  x = clean(x); const f = toFrac(x);
+  if (f) { if (f.q === 1) return String(f.p); return (f.p < 0 ? '-' : '') + '\\frac{' + Math.abs(f.p) + '}{' + f.q + '}'; }
+  return dec(x).replace('.', '{,}');
+}
+function numTxt(x) {
+  x = clean(x); const f = toFrac(x, 1000);
+  const s = f ? (f.q === 1 ? String(f.p) : f.p + '/' + f.q) : dec(x, 2).replace('.', ',');
+  return s.replace('-', '−');
+}
+function numIn(x) { x = clean(x); const f = toFrac(x, 1000); if (f) return f.q === 1 ? String(f.p) : f.p + '/' + f.q; return dec(x, 4); }
+function apx(x, d = 3) { return dec(x, d).replace('.', ',').replace('-', '−'); }
+function apxTex(x, d = 3) { return dec(x, d).replace('.', '{,}'); }
+function par(x) { const s = numTex(x); return clean(x) < 0 ? '\\left(' + s + '\\right)' : s; }
+function slash(x) { const f = toFrac(x); return (f && f.q !== 1) ? f.p + '/' + f.q : numTex(x); }
+function intCo(arr) {
+  const fr = arr.map(v => toFrac(clean(v), 10000));
+  if (fr.some(f => !f)) return arr.slice();
+  let L = 1; fr.forEach(f => { L = lcm(L, f.q); });
+  let ints = fr.map(f => f.p * (L / f.q));
+  let g = 0; ints.forEach(v => { if (v) g = gcd(g, v); });
+  if (g > 1) ints = ints.map(v => v / g);
+  return ints.map(v => (v === 0 ? 0 : v));
+}
+function normABC(A, B, C) {
+  let r = intCo([A, B, C]);
+  if (r[0] < 0 || (isZ(r[0]) && r[1] < 0)) r = r.map(v => -v);
+  return r.map(v => clean(v));
+}
+function lin(terms) {
+  let s = '';
+  for (const [c0, v] of terms) {
+    const c = clean(c0); if (c === 0) continue;
+    const a = Math.abs(c);
+    const body = v ? (Math.abs(a - 1) < 1e-12 ? v : numTex(a) + v) : numTex(a);
+    s += s ? (c < 0 ? ' - ' : ' + ') + body : (c < 0 ? '-' : '') + body;
+  }
+  return s || '0';
+}
+const shiftT = (v, x) => lin([[1, v], [-x, '']]);
+const eqABC = (A, B, C) => lin([[A, 'x'], [B, 'y'], [C, '']]) + ' = 0';
+function ptTex(name, x, y) {
+  const sep = (toFrac(x) && toFrac(y)) ? ',\\ ' : ';\\ ';
+  return (name || '') + '\\left(' + numTex(x) + sep + numTex(y) + '\\right)';
+}
+const ptTxt = (x, y) => '(' + numTxt(x) + '; ' + numTxt(y) + ')';
+function substTex(terms) { // [[coef, valueTex]] ; valueTex null → константа
+  let s = '';
+  terms.forEach(([c0, vt]) => {
+    const c = clean(c0); if (c === 0) return;
+    const body = vt == null ? numTex(Math.abs(c)) : numTex(Math.abs(c)) + '\\cdot ' + vt;
+    s += s ? (c < 0 ? ' - ' : ' + ') + body : (c < 0 ? '-' : '') + body;
+  });
+  return s || '0';
+}
+function sqrtParts(n) { let k = 1, r = Math.round(n); for (let f = 2; f * f <= r; f++) { while (r % (f * f) === 0) { r /= f * f; k *= f; } } return [k, r]; }
+function sqrtTex(n) { const [k, r] = sqrtParts(n); if (r === 1) return String(k); return (k === 1 ? '' : k) + '\\sqrt{' + r + '}'; }
+function overSqrtTex(num, s) { // num / sqrt(s), s — ціле
+  const f = toFrac(Math.abs(num));
+  if (!f || !Number.isInteger(s) || s > 1e12) return null;
+  const [k, r] = sqrtParts(s);
+  let p = f.p, den = f.q * k; const g = gcd(p, den) || 1; p /= g; den /= g;
+  if (p === 0) return '0';
+  if (r === 1) return numTex(p / den);
+  return '\\frac{' + p + '}{' + (den === 1 ? '' : den) + '\\sqrt{' + r + '}}';
+}
+function niceStep(m) { const p = Math.pow(10, Math.floor(Math.log10(m))); for (const f of [1, 2, 5, 10]) if (f * p >= m - 1e-12) return f * p; return 10 * p; }
+const nf = new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 3 });
+const fmtTick = v => nf.format(+v.toFixed(6)).replace('-', '−');
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* ================= MathJax: черга ================= */
+const dirty = new Set(); let mjTimer = null, mjChain = Promise.resolve();
+function setTex(el, html) {
+  if (el._raw === html) return; el._raw = html; el.innerHTML = html; dirty.add(el);
+  clearTimeout(mjTimer); mjTimer = setTimeout(flushTex, 50);
+}
+function flushTex() {
+  if (!window.MathJax || !MathJax.typesetPromise || !MathJax.startup || !MathJax.startup.promise) { mjTimer = setTimeout(flushTex, 250); return; }
+  const els = [...dirty].filter(e => e.isConnected); dirty.clear();
+  mjChain = mjChain.then(() => MathJax.startup.promise).then(() => { MathJax.typesetClear(els); return MathJax.typesetPromise(els); }).catch(e => console.warn(e));
+}
+const row = (label, math, note) => `<div class="frow"><div class="flabel">${label}</div>${math ? `<div class="fmath">${math}</div>` : ''}${note ? `<div class="fnote">${note}</div>` : ''}</div>`;
+const step = (html) => `<div><div>${html}</div></div>`;
+
+/* ================= кольори дошки ================= */
+let COL = {};
+function readCol() {
+  const s = getComputedStyle(document.documentElement); const g = n => s.getPropertyValue(n).trim();
+  COL = { board: g('--board'), grid: g('--board-grid'), axis: g('--board-axis'), chalk: g('--chalk'), faint: g('--chalk-faint'),
+    gold: g('--c-gold'), coral: g('--c-coral'), sky: g('--c-sky'), mint: g('--c-mint'), lilac: g('--c-lilac') };
+}
+const FONT_MONO = "500 12px 'IBM Plex Mono', ui-monospace, monospace";
+const FONT_LBL = "italic 600 17px Spectral, Georgia, serif";
+function alpha(col, a) { // працює з #hex і rgba
+  if (col.startsWith('#')) { const h = col.slice(1); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+  return col;
+}
+
+/* ================= дошка ================= */
+const BOARDS = [];
+class Board {
+  constructor(canvas, o = {}) {
+    this.cv = canvas; this.ctx = canvas.getContext('2d'); this.o = o;
+    this.cx = o.cx ?? 0; this.cy = o.cy ?? 0; this.ppu = o.ppu ?? 36; this.ky = 1;
+    this.home = { cx: this.cx, cy: this.cy, ppu: this.ppu };
+    this.omega = Math.PI / 2; this.handles = []; this.drawFn = null; this.mouse = null; this.hoverH = null; this.drag = null;
+    this.names = o.names || ['x', 'y']; this.static = !!o.static; this.W = 0; this.H = 0;
+    BOARDS.push(this);
+    new ResizeObserver(() => this.resize()).observe(canvas);
+    this.bind(); this.zoomUI();
+  }
+  resize() {
+    const r = this.cv.getBoundingClientRect(); if (r.width < 10 || r.height < 10) return;
+    const d = window.devicePixelRatio || 1; this.W = r.width; this.H = r.height;
+    this.cv.width = Math.round(r.width * d); this.cv.height = Math.round(r.height * d);
+    this.ctx.setTransform(d, 0, 0, d, 0, 0);
+    if (this.o.onResize) this.o.onResize(this);
+    this.render();
+  }
+  toS(x, y) { const wx = x + y * Math.cos(this.omega), wy = y * Math.sin(this.omega); return [this.W / 2 + (wx - this.cx) * this.ppu, this.H / 2 - (wy - this.cy) * this.ppu * this.ky]; }
+  fromS(X, Y) { const wx = (X - this.W / 2) / this.ppu + this.cx, wy = -(Y - this.H / 2) / (this.ppu * this.ky) + this.cy; const y = wy / Math.sin(this.omega); return [wx - y * Math.cos(this.omega), y]; }
+  fit(x0, x1, y0, y1) { // для ω = 90°
+    this.ppu = this.W / (x1 - x0); this.ky = (this.H / (y1 - y0)) / this.ppu;
+    this.cx = (x0 + x1) / 2; this.cy = (y0 + y1) / 2;
+  }
+  range() {
+    const c = [[0, 0], [this.W, 0], [0, this.H], [this.W, this.H]].map(([a, b]) => this.fromS(a, b));
+    const xs = c.map(p => p[0]), ys = c.map(p => p[1]);
+    return [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  }
+  clip(px, py, dx, dy) {
+    let t0 = -Infinity, t1 = Infinity;
+    const chk = (p, q) => { if (Math.abs(p) < 1e-12) return q >= 0; const r = q / p; if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; } return true; };
+    if (!chk(-dx, px) || !chk(dx, this.W - px) || !chk(-dy, py) || !chk(dy, this.H - py)) return null;
+    return [t0, t1];
+  }
+  render() {
+    if (!this.W) return; const c = this.ctx;
+    c.save(); c.clearRect(0, 0, this.W, this.H); c.fillStyle = COL.board; c.fillRect(0, 0, this.W, this.H);
+    if (!this.o.noGrid) this.grid();
+    if (this.drawFn) { try { this.drawFn(this); } catch (e) { console.error(e); } }
+    if (this.hoverH) { const [X, Y] = this.toS(...this.hoverH.pos()); c.beginPath(); c.arc(X, Y, 12, 0, 7); c.strokeStyle = alpha(COL.chalk, .55); c.lineWidth = 1.5; c.setLineDash([3, 3]); c.stroke(); c.setLineDash([]); }
+    if (this.mouse && !this.static && !this.o.noReadout) {
+      const [x, y] = this.fromS(...this.mouse);
+      c.font = FONT_MONO; c.fillStyle = COL.faint; c.textAlign = 'left'; c.textBaseline = 'bottom';
+      c.fillText('(' + apx(x, 1) + '; ' + apx(y, 1) + ')', 10, this.H - 8);
+    }
+    c.restore();
+  }
+  grid() {
+    const c = this.ctx; const [x0, x1, y0, y1] = this.range(); const so = Math.sin(this.omega);
+    const sx = niceStep(46 / (this.ppu * so)), sy = niceStep(38 / (this.ppu * this.ky * so));
+    c.lineWidth = 1; c.strokeStyle = COL.grid; c.beginPath();
+    for (let k = Math.ceil(x0 / sx); k <= Math.floor(x1 / sx); k++) { const [a, b] = this.toS(k * sx, y0), [e, f] = this.toS(k * sx, y1); c.moveTo(a, b); c.lineTo(e, f); }
+    for (let k = Math.ceil(y0 / sy); k <= Math.floor(y1 / sy); k++) { const [a, b] = this.toS(x0, k * sy), [e, f] = this.toS(x1, k * sy); c.moveTo(a, b); c.lineTo(e, f); }
+    c.stroke();
+    const O = this.toS(0, 0);
+    const axis = (dir, name) => {
+      const E = this.toS(dir[0], dir[1]); const D = [E[0] - O[0], E[1] - O[1]]; const L = Math.hypot(...D);
+      const t = this.clip(O[0], O[1], D[0], D[1]); if (!t) return;
+      const A = [O[0] + D[0] * t[0], O[1] + D[1] * t[0]], B = [O[0] + D[0] * (t[1] - 3 / L), O[1] + D[1] * (t[1] - 3 / L)];
+      c.strokeStyle = COL.axis; c.fillStyle = COL.axis; c.lineWidth = 1.3;
+      c.beginPath(); c.moveTo(...A); c.lineTo(...B); c.stroke();
+      const u = [D[0] / L, D[1] / L], nrm = [-u[1], u[0]];
+      c.beginPath(); c.moveTo(...B); c.lineTo(B[0] - u[0] * 10 + nrm[0] * 4.5, B[1] - u[1] * 10 + nrm[1] * 4.5); c.lineTo(B[0] - u[0] * 10 - nrm[0] * 4.5, B[1] - u[1] * 10 - nrm[1] * 4.5); c.closePath(); c.fill();
+      c.font = "italic 500 16px Spectral, Georgia, serif"; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const lp = dir[0] ? [B[0] - 12, B[1] + 16] : [B[0] + 16, B[1] + 12];
+      c.fillText(name, lp[0], lp[1]);
+    };
+    axis([1, 0], this.names[0]); axis([0, 1], this.names[1]);
+    c.font = FONT_MONO; c.fillStyle = COL.faint;
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let k = Math.ceil(x0 / sx); k <= Math.floor(x1 / sx); k++) {
+      if (k === 0) continue; const [X, Y] = this.toS(k * sx, 0);
+      if (X < 14 || X > this.W - 24) continue; c.fillText(fmtTick(k * sx), X, Math.min(Math.max(Y + 5, 4), this.H - 18));
+    }
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    for (let k = Math.ceil(y0 / sy); k <= Math.floor(y1 / sy); k++) {
+      if (k === 0) continue; const [X, Y] = this.toS(0, k * sy);
+      if (Y < 22 || Y > this.H - 10) continue; c.fillText(fmtTick(k * sy), Math.min(Math.max(X - 6, 44), this.W - 6), Y);
+    }
+    if (O[0] > 0 && O[0] < this.W && O[1] > 0 && O[1] < this.H) {
+      c.font = "italic 500 15px Spectral, Georgia, serif"; c.fillStyle = COL.axis; c.textAlign = 'right'; c.textBaseline = 'top'; c.fillText('O', O[0] - 5, O[1] + 4);
+      if (this.o.basis && this.ppu > 18) {
+        this.arrow([0, 0], [1, 0], COL.gold, 2.2, 9); this.arrow([0, 0], [0, 1], COL.gold, 2.2, 9);
+        const e1 = this.toS(.55, 0), e2 = this.toS(0, .55);
+        this.vlabel(e1[0], e1[1] + 14, 'e', COL.gold, '1'); this.vlabel(e2[0] - 14, e2[1], 'e', COL.gold, '2');
+      }
+    }
+  }
+  /* примітиви (афінні координати) */
+  line(p, d, col, w = 2, dash = null) {
+    const S = this.toS(p[0], p[1]), E = this.toS(p[0] + d[0], p[1] + d[1]); const D = [E[0] - S[0], E[1] - S[1]];
+    if (Math.hypot(...D) < 1e-9) return; const t = this.clip(S[0], S[1], D[0], D[1]); if (!t) return;
+    const c = this.ctx; c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash || []);
+    c.beginPath(); c.moveTo(S[0] + D[0] * t[0], S[1] + D[1] * t[0]); c.lineTo(S[0] + D[0] * t[1], S[1] + D[1] * t[1]); c.stroke(); c.setLineDash([]);
+  }
+  lineABC(A, B, C, col, w, dash) { const s = A * A + B * B; if (isZ(s)) return; this.line([-C * A / s, -C * B / s], [-B, A], col, w, dash); }
+  seg(p, q, col, w = 2, dash = null) {
+    const c = this.ctx; const a = this.toS(...p), b = this.toS(...q);
+    c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash || []); c.beginPath(); c.moveTo(...a); c.lineTo(...b); c.stroke(); c.setLineDash([]);
+  }
+  arrow(p, q, col, w = 2.4, head = 12) {
+    const c = this.ctx; const a = this.toS(...p), b = this.toS(...q); const D = [b[0] - a[0], b[1] - a[1]]; const L = Math.hypot(...D);
+    if (L < 2) return; const u = [D[0] / L, D[1] / L], n = [-u[1], u[0]]; const h = Math.min(head, L * .45);
+    c.strokeStyle = col; c.fillStyle = col; c.lineWidth = w; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(...a); c.lineTo(b[0] - u[0] * h * .7, b[1] - u[1] * h * .7); c.stroke();
+    c.beginPath(); c.moveTo(...b); c.lineTo(b[0] - u[0] * h + n[0] * h * .42, b[1] - u[1] * h + n[1] * h * .42); c.lineTo(b[0] - u[0] * h - n[0] * h * .42, b[1] - u[1] * h - n[1] * h * .42); c.closePath(); c.fill();
+    c.lineCap = 'butt';
+  }
+  dot(p, col, r = 5, ring = false) {
+    const c = this.ctx; const [X, Y] = this.toS(...p);
+    c.beginPath(); c.arc(X, Y, r, 0, 7); c.fillStyle = col; c.fill();
+    if (ring) { c.lineWidth = 2; c.strokeStyle = COL.board; c.stroke(); c.beginPath(); c.arc(X, Y, r + 2.5, 0, 7); c.strokeStyle = col; c.lineWidth = 1.4; c.stroke(); }
+  }
+  text(p, s, col, dx = 8, dy = -10, font = FONT_LBL, align = 'left') {
+    const c = this.ctx; const [X, Y] = this.toS(...p);
+    c.font = font; c.textAlign = align; c.textBaseline = 'middle';
+    c.lineWidth = 4; c.strokeStyle = alpha(COL.board, .85); c.lineJoin = 'round'; c.strokeText(s, X + dx, Y + dy);
+    c.fillStyle = col; c.fillText(s, X + dx, Y + dy);
+  }
+  textS(X, Y, s, col, font = FONT_LBL, align = 'center') {
+    const c = this.ctx; c.font = font; c.textAlign = align; c.textBaseline = 'middle';
+    c.lineWidth = 4; c.strokeStyle = alpha(COL.board, .85); c.lineJoin = 'round'; c.strokeText(s, X, Y); c.fillStyle = col; c.fillText(s, X, Y);
+  }
+  vlabel(X, Y, letter, col, sub) { // літера зі стрілкою над нею, екранні координати
+    const c = this.ctx; c.font = FONT_LBL; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.lineWidth = 4; c.strokeStyle = alpha(COL.board, .85); c.lineJoin = 'round'; c.strokeText(letter, X, Y); c.fillStyle = col; c.fillText(letter, X, Y);
+    const w = c.measureText(letter).width; c.strokeStyle = col; c.lineWidth = 1.4;
+    c.beginPath(); c.moveTo(X - w / 2 - 1, Y - 11); c.lineTo(X + w / 2 + 3, Y - 11); c.stroke();
+    c.beginPath(); c.moveTo(X + w / 2 + 3, Y - 11); c.lineTo(X + w / 2 - 1, Y - 14); c.moveTo(X + w / 2 + 3, Y - 11); c.lineTo(X + w / 2 - 1, Y - 8); c.stroke();
+    if (sub) { c.font = "italic 500 12px Spectral, Georgia, serif"; c.textAlign = 'left'; c.fillStyle = col; c.fillText(sub, X + w / 2 + 1, Y + 6); }
+  }
+  vlabelAt(p, q, letter, col, sub, side = 1) { // підпис біля середини вектора p→q
+    const a = this.toS(...p), b = this.toS(...q); const D = [b[0] - a[0], b[1] - a[1]]; const L = Math.hypot(...D) || 1;
+    const n = [-D[1] / L * side, D[0] / L * side];
+    this.vlabel((a[0] + b[0]) / 2 + n[0] * 16, (a[1] + b[1]) / 2 + n[1] * 16 + 3, letter, col, sub);
+  }
+  poly(pts, fill, stroke, w = 1.5, dash = null) {
+    const c = this.ctx; c.beginPath(); pts.forEach((p, i) => { const [X, Y] = this.toS(...p); i ? c.lineTo(X, Y) : c.moveTo(X, Y); }); c.closePath();
+    if (fill) { c.fillStyle = fill; c.fill(); } if (stroke) { c.strokeStyle = stroke; c.lineWidth = w; c.setLineDash(dash || []); c.stroke(); c.setLineDash([]); }
+  }
+  angArc(p, d1, d2, r, col, label) {
+    const c = this.ctx; const O = this.toS(...p); const a = this.toS(p[0] + d1[0], p[1] + d1[1]), b = this.toS(p[0] + d2[0], p[1] + d2[1]);
+    let a1 = Math.atan2(a[1] - O[1], a[0] - O[0]), a2 = Math.atan2(b[1] - O[1], b[0] - O[0]);
+    let diff = a2 - a1; while (diff > Math.PI) diff -= 2 * Math.PI; while (diff < -Math.PI) diff += 2 * Math.PI;
+    c.strokeStyle = col; c.lineWidth = 1.6; c.beginPath(); c.arc(O[0], O[1], r, a1, a1 + diff, diff < 0); c.stroke();
+    if (label) { const m = a1 + diff / 2; this.textS(O[0] + Math.cos(m) * (r + 13), O[1] + Math.sin(m) * (r + 13), label, col, "italic 600 15px Spectral, Georgia, serif"); }
+  }
+  rightMark(p, d1, d2, s = 11, col) {
+    const c = this.ctx; const O = this.toS(...p); const a = this.toS(p[0] + d1[0], p[1] + d1[1]), b = this.toS(p[0] + d2[0], p[1] + d2[1]);
+    const u = [a[0] - O[0], a[1] - O[1]], v = [b[0] - O[0], b[1] - O[1]]; const lu = Math.hypot(...u), lv = Math.hypot(...v); if (!lu || !lv) return;
+    const U = [u[0] / lu * s, u[1] / lu * s], V = [v[0] / lv * s, v[1] / lv * s];
+    c.strokeStyle = col; c.lineWidth = 1.4; c.beginPath(); c.moveTo(O[0] + U[0], O[1] + U[1]); c.lineTo(O[0] + U[0] + V[0], O[1] + U[1] + V[1]); c.lineTo(O[0] + V[0], O[1] + V[1]); c.stroke();
+  }
+  /* взаємодія */
+  ev(e) { const r = this.cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  hit(X, Y, type) {
+    const R = type === 'touch' ? 26 : 15; let best = null, bd = R;
+    for (const h of this.handles) { if (h.on && !h.on()) continue; const [a, b] = this.toS(...h.pos()); const d = Math.hypot(a - X, b - Y); if (d < bd) { bd = d; best = h; } }
+    return best;
+  }
+  bind() {
+    const cv = this.cv;
+    cv.addEventListener('pointerdown', e => {
+      const [X, Y] = this.ev(e); const h = this.hit(X, Y, e.pointerType);
+      if (h) this.drag = { h }; else if (!this.static) this.drag = { pan: true, X, Y, cx: this.cx, cy: this.cy }; else return;
+      try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+      cv.style.cursor = 'grabbing';
+    });
+    cv.addEventListener('pointermove', e => {
+      const [X, Y] = this.ev(e); this.mouse = [X, Y];
+      if (this.drag && this.drag.h) {
+        let [x, y] = this.fromS(X, Y); const st = e.shiftKey ? 0.1 : (this.ppu >= 70 ? 0.5 : 1);
+        x = +(Math.round(x / st) * st).toFixed(4); y = +(Math.round(y / st) * st).toFixed(4);
+        const [ox, oy] = this.drag.h.pos(); if (ox !== x || oy !== y) this.drag.h.set(x, y); else this.render();
+      } else if (this.drag && this.drag.pan) {
+        this.cx = this.drag.cx - (X - this.drag.X) / this.ppu; this.cy = this.drag.cy + (Y - this.drag.Y) / (this.ppu * this.ky); this.render();
+      } else {
+        const h = this.hit(X, Y, e.pointerType); this.hoverH = h; cv.style.cursor = h ? 'grab' : (this.static ? 'crosshair' : 'move'); this.render();
+      }
+    });
+    const end = () => { this.drag = null; this.cv.style.cursor = ''; this.render(); };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    cv.addEventListener('pointerleave', () => { if (!this.drag) { this.mouse = null; this.hoverH = null; this.render(); } });
+    cv.addEventListener('wheel', e => {
+      if (this.static) return; e.preventDefault();
+      const [X, Y] = this.ev(e); this.zoomAt(X, Y, Math.exp(-e.deltaY * 0.0015));
+    }, { passive: false });
+  }
+  zoomAt(X, Y, f) {
+    const np = Math.min(Math.max(this.ppu * f, 6), 260); const wx = (X - this.W / 2) / this.ppu + this.cx, wy = -(Y - this.H / 2) / (this.ppu * this.ky) + this.cy;
+    this.ppu = np; this.cx = wx - (X - this.W / 2) / np; this.cy = wy + (Y - this.H / 2) / (np * this.ky); this.render();
+  }
+  zoomUI() {
+    const box = document.querySelector(`.zoom[data-for="${this.cv.id}"]`); if (!box) return;
+    box.innerHTML = '<button type="button" aria-label="Збільшити">+</button><button type="button" aria-label="Зменшити">−</button><button type="button" aria-label="Початковий вигляд" style="font-size:14px">⌂</button>';
+    const [bp, bm, bh] = box.children;
+    bp.onclick = () => this.zoomAt(this.W / 2, this.H / 2, 1.25); bm.onclick = () => this.zoomAt(this.W / 2, this.H / 2, 0.8);
+    bh.onclick = () => { Object.assign(this, this.home); this.render(); };
+  }
+}
+
+/* ================= введення ================= */
+function bindNum(id, obj, key, cb) {
+  const el = document.getElementById(id); el.value = numIn(obj[key]); el.setAttribute('autocomplete', 'off'); el.spellcheck = false;
+  el.addEventListener('input', () => { const v = parseNum(el.value); if (isNaN(v)) { el.classList.add('bad'); return; } el.classList.remove('bad'); obj[key] = v; cb(); });
+  el.addEventListener('blur', () => { if (!el.classList.contains('bad')) el.value = numIn(obj[key]); });
+  return el;
+}
+function setIn(id, v) { const el = document.getElementById(id); if (document.activeElement !== el) el.value = numIn(v); el.classList.remove('bad'); }
+document.addEventListener('keydown', e => {
+  const el = e.target; if (!(el instanceof HTMLInputElement) || !el.classList.contains('num')) return;
+  if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+  const v = parseNum(el.value); if (isNaN(v)) return; e.preventDefault();
+  const st = e.shiftKey ? 0.1 : 1; el.value = numIn(+(v + (e.key === 'ArrowUp' ? st : -st)).toFixed(6)); el.dispatchEvent(new Event('input'));
+});
+function segBind(id, attr, get, set) {
+  const box = document.getElementById(id);
+  const sync = () => $$('button', box).forEach(b => b.setAttribute('aria-pressed', String(b.dataset[attr] === get())));
+  box.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; set(b.dataset[attr]); sync(); });
+  sync(); return sync;
+}
+function omegaBind(prefix, board, cb) {
+  const r = document.getElementById(prefix + '-om'), v = document.getElementById(prefix + '-omv'), badge = document.getElementById(prefix + '-badge');
+  const apply = () => { const d = +r.value; v.textContent = d + '°'; board.omega = d * Math.PI / 180; if (badge) badge.hidden = d === 90; cb && cb(d); board.render(); };
+  r.value = 90; r.addEventListener('input', apply);
+  document.getElementById(prefix + '-om90').onclick = () => { r.value = 90; apply(); };
+  apply();
+}
+function lineFromGeneral(A, B, C) { const s = A * A + B * B; return { p: [-C * A / s, -C * B / s], d: [-B, A] }; }
+function okChip(el, ok, txtOk, txtBad) { el.className = 'chip ' + (ok ? 'ok' : 'bad'); el.textContent = ok ? txtOk : txtBad; }
+
+/* ================= 1. КОНСТРУКТОР ================= */
+const T1 = { mode: 'pd', x0: 2, y0: -1, l: 3, m: 4, x1: 1, y1: 2, x2: 4, y2: -4, A: 2, B: -3, C: 6, px: 5, py: 3, t: 1, rect: true };
+let R1 = null;
+const b1 = new Board($('#cv1'), { ppu: 34, basis: true });
+function t1Compute() {
+  const S = T1; let x0, y0, l, m;
+  if (S.mode === 'pd') { if (isZ(S.l) && isZ(S.m)) return { err: 'Напрямний вектор має бути ненульовим: хоча б одна з координат l, m відмінна від нуля.' }; x0 = S.x0; y0 = S.y0; l = S.l; m = S.m; }
+  else if (S.mode === 'tp') { const dl = S.x2 - S.x1, dm = S.y2 - S.y1; if (isZ(dl) && isZ(dm)) return { err: 'Точки M₁ і M₂ збігаються; через одну точку проходить безліч прямих. Задайте дві різні точки.' }; x0 = S.x1; y0 = S.y1;[l, m] = intCo([dl, dm]); }
+  else { if (isZ(S.A) && isZ(S.B)) return { err: 'Має виконуватися умова A² + B² ≠ 0, інакше рівняння не задає пряму.' }; if (!isZ(S.B)) { x0 = 0; y0 = -S.C / S.B; } else { x0 = -S.C / S.A; y0 = 0; }[l, m] = intCo([-S.B, S.A]); }
+  const raw = S.mode === 'ge' ? [S.A, S.B, S.C] : [m, -l, -m * x0 + l * y0];
+  const [A, B, C] = normABC(...raw);
+  return { x0, y0, l, m, A, B, C };
+}
+function t1Update(fromDrag) {
+  R1 = t1Compute(); const err = $('#t1-err'), forms = $('#t1-forms');
+  if (R1.err) { err.hidden = false; err.textContent = R1.err; forms.innerHTML = ''; forms._raw = ''; b1.render(); return; }
+  err.hidden = true;
+  const { x0, y0, l, m, A, B, C } = R1; const rect = T1.rect; const S = T1;
+  let h = '';
+  // напрямний вектор
+  let dnote = '';
+  if (S.mode === 'tp') { const dl = S.x2 - S.x1, dm = S.y2 - S.y1; dnote = `\\(\\overrightarrow{M_1M_2} = (${numTex(dl)},\\ ${numTex(dm)})\\)` + ((isZ(dl - l) && isZ(dm - m)) ? '' : `, скорочуємо до колінеарного вектора \\(\\vec a\\).`); }
+  if (S.mode === 'ge') dnote = `За загальним рівнянням \\(\\vec a = (-B,\\ A) = (${numTex(-S.B)},\\ ${numTex(S.A)})\\)` + ((isZ(-S.B - l) && isZ(S.A - m)) ? '.' : '; беремо колінеарний йому вектор з меншими координатами.');
+  h += row('Напрямний вектор і точка', `\\(\\vec a = (${numTex(l)},\\ ${numTex(m)}),\\quad ${ptTex('M_0', x0, y0)}\\)`, dnote);
+  h += row('Параметричні рівняння', `\\(\\begin{cases} x = ${lin([[x0, ''], [l, 't']])},\\\\ y = ${lin([[y0, ''], [m, 't']])}, \\end{cases}\\quad t\\in\\mathbb{R}\\)`);
+  let cnote = '';
+  if (isZ(l)) cnote = `Знаменник \\(l = 0\\), тому пропорцію розуміємо як \\(${shiftT('x', x0)} = 0\\): пряма паралельна осі \\(Oy\\).`;
+  if (isZ(m)) cnote = `Знаменник \\(m = 0\\), тому пропорцію розуміємо як \\(${shiftT('y', y0)} = 0\\): пряма паралельна осі \\(Ox\\).`;
+  h += row('Канонічне рівняння', `\\(\\dfrac{${shiftT('x', x0)}}{${numTex(l)}} = \\dfrac{${shiftT('y', y0)}}{${numTex(m)}}\\)`, cnote);
+  let gnote = '';
+  if (S.mode === 'ge') { const n = normABC(S.A, S.B, S.C); if (!(isZ(n[0] - S.A) && isZ(n[1] - S.B) && isZ(n[2] - S.C))) gnote = `Задане рівняння \\(${eqABC(S.A, S.B, S.C)}\\) рівносильне скороченому.`; }
+  else gnote = `Розкриваємо пропорцію: \\(${numTex(m)}\\,(${shiftT('x', x0)}) = ${numTex(l)}\\,(${shiftT('y', y0)})\\). Перевірка для \\(M_0\\): \\(${substTex([[A, par(x0)], [B, par(y0)], [C, null]])} = 0\\).`;
+  h += row('Загальне рівняння', `\\(${eqABC(A, B, C)}\\)`, gnote);
+  if (!isZ(B)) {
+    const k = -A / B, b = -C / B;
+    h += row('З кутовим коефіцієнтом', `\\(y = ${lin([[k, 'x'], [b, '']])},\\qquad k = -\\dfrac{A}{B} = ${numTex(k)},\\ \\ b = ${numTex(b)}\\)`,
+      rect ? `Кут нахилу до осі \\(Ox\\): \\(\\varphi = \\operatorname{arctg} k \\approx ${apxTex(((Math.atan(k) * 180 / Math.PI) + 180) % 180, 2)}^\\circ\\).` : 'В афінній системі \\(k\\) лишається відношенням \\(m/l\\), але вже не є тангенсом кута нахилу.');
+  } else h += row('З кутовим коефіцієнтом', '', `Не існує: \\(B = 0\\), пряма \\(x = ${numTex(-C / A)}\\) паралельна осі \\(Oy\\)${rect ? ', кут нахилу \\(90^\\circ\\)' : ''}.`);
+  if (!isZ(A) && !isZ(B) && !isZ(C)) {
+    const a = -C / A, b = -C / B;
+    h += row('У відрізках', `\\(\\dfrac{x}{${slash(a)}} + \\dfrac{y}{${slash(b)}} = 1\\)`, `Пряма перетинає осі в точках \\(${ptTex('', a, 0)}\\) і \\(${ptTex('', 0, b)}\\).`);
+  } else {
+    let why = isZ(C) ? 'пряма проходить через початок координат (\\(C = 0\\))' : isZ(A) ? 'пряма паралельна осі \\(Ox\\) (\\(A = 0\\)) і цю вісь не перетинає' : 'пряма паралельна осі \\(Oy\\) (\\(B = 0\\)) і цю вісь не перетинає';
+    h += row('У відрізках', '', 'Не існує: ' + why + '.');
+  }
+  if (rect) h += row('Нормальний вектор', `\\(\\vec n = (A,\\ B) = (${numTex(A)},\\ ${numTex(B)}),\\qquad \\vec n\\cdot\\vec a = ${numTex(A * l + B * m)}\\)`, 'Скалярний добуток дорівнює нулю, тому \\(\\vec n\\perp\\vec a\\).');
+  else h += row('Нормальний вектор', '', `При \\(\\omega = ${Math.round(T1.om)}^\\circ\\) система афінна: скалярного добутку в координатах немає, і вектор \\((A, B)\\) не перпендикулярний до прямої. Поверніть \\(\\omega = 90^\\circ\\).`);
+  // точка P
+  const val = A * S.px + B * S.py + C; const on = isZ(val);
+  let pnote = `\\(${substTex([[A, par(S.px)], [B, par(S.py)], [C, null]])} = ${numTex(val)}${on ? '' : ' \\ne 0'}\\)`;
+  if (on) { const t = Math.abs(l) >= Math.abs(m) ? (S.px - x0) / l : (S.py - y0) / m; pnote += `, точка відповідає значенню параметра \\(t = ${numTex(t)}\\).`; }
+  h += row('Точка P', pnote);
+  okChip($('#t1-pchip'), on, 'належить прямій', 'не належить');
+  // M(t)
+  const Mt = [x0 + S.t * l, y0 + S.t * m];
+  h += row('Точка M(t)', `\\(t = ${numTex(S.t)}:\\quad M(t) = ${ptTex('', Mt[0], Mt[1])}\\)`);
+  setTex(forms, h);
+  setTex($('#t1-note'), `<p>Пряма — це множина кінців векторів \\(\\overrightarrow{OM_0} + t\\vec a\\). Рухаючи повзунок \\(t\\), ви бачите, як параметр «пробігає» пряму: при \\(t = 1\\) точка зсувається рівно на один вектор \\(\\vec a\\), при \\(t = -1\\) на один вектор у протилежному напрямку. Відношення катетів трикутника нахилу \\(m : l\\) і є кутовим коефіцієнтом.</p>${rect ? '' : '<p>Система координат зараз афінна. Зверніть увагу: рівняння прямої не змінилися, хоча рисунок деформувався. Рівняння пов\'язують координати, а не довжини й кути.</p>'}`);
+  b1.render();
+}
+b1.drawFn = b => {
+  if (!R1 || R1.err) return; const { x0, y0, l, m, A, B, C } = R1; const rect = T1.rect; const p = [x0, y0], d = [l, m];
+  b.line(p, d, COL.chalk, 2.6);
+  if ($('#t1-s-int').checked) {
+    if (!isZ(A)) { const X = [-C / A, 0]; b.dot(X, COL.coral, 4.5); if (!isZ(C) || isZ(B)) b.text(X, ptTxt(X[0], 0), COL.coral, 8, 14, FONT_MONO); }
+    if (!isZ(B)) { const Y = [0, -C / B]; b.dot(Y, COL.coral, 4.5); if (!isZ(C)) b.text(Y, ptTxt(0, Y[1]), COL.coral, -8, -12, FONT_MONO, 'right'); }
+  }
+  if (rect && $('#t1-s-slope').checked && !isZ(l) && !isZ(m)) {
+    const q1 = [x0 + l, y0], q2 = [x0 + l, y0 + m];
+    b.poly([p, q1, q2], alpha(COL.gold, .08), null);
+    b.seg(p, q1, alpha(COL.gold, .8), 1.4, [5, 4]); b.seg(q1, q2, alpha(COL.gold, .8), 1.4, [5, 4]);
+    b.text([x0 + l / 2, y0], 'l = ' + numTxt(l), COL.gold, 0, m > 0 ? 14 : -14, FONT_MONO, 'center');
+    b.text([x0 + l, y0 + m / 2], 'm = ' + numTxt(m), COL.gold, l > 0 ? 10 : -10, 0, FONT_MONO, l > 0 ? 'left' : 'right');
+    const dd = m > 0 ? d : [-l, -m];
+    b.angArc(p, [1, 0], dd, 26, COL.gold, 'φ');
+  }
+  if (rect && $('#t1-s-n').checked) {
+    const s = Math.hypot(A, B), la = Math.hypot(l, m); const sc = Math.max(1, la) / s * 1.0; const nn = [A * sc, B * sc];
+    b.arrow(p, [x0 + nn[0], y0 + nn[1]], COL.sky, 2.4);
+    b.rightMark(p, d, nn, 10, alpha(COL.sky, .9));
+    const e = b.toS(x0 + nn[0] * 1.08, y0 + nn[1] * 1.08); b.vlabel(e[0] + 10, e[1] - 4, 'n', COL.sky);
+  }
+  b.arrow(p, [x0 + l, y0 + m], COL.gold, 3);
+  b.vlabelAt(p, [x0 + l, y0 + m], 'a', COL.gold, '', -1);
+  if ($('#t1-s-t').checked && !isZ(T1.t)) {
+    const q = [x0 + T1.t * l, y0 + T1.t * m];
+    b.arrow(p, q, COL.lilac, 2, 10); b.dot(q, COL.lilac, 5);
+    b.text(q, 'M(t)', COL.lilac, 10, 14);
+  }
+  const P = [T1.px, T1.py]; const on = isZ(A * P[0] + B * P[1] + C);
+  b.dot(P, on ? COL.mint : COL.coral, 5, true); b.text(P, on ? 'P ✓' : 'P', on ? COL.mint : COL.coral, 10, -12);
+  if (T1.mode === 'tp') { b.dot([T1.x1, T1.y1], COL.chalk, 5.5, true); b.text([T1.x1, T1.y1], 'M₁', COL.chalk, -10, -12, FONT_LBL, 'right'); b.dot([T1.x2, T1.y2], COL.chalk, 5.5, true); b.text([T1.x2, T1.y2], 'M₂', COL.chalk, 10, -12); }
+  else { b.dot(p, COL.chalk, 5.5, true); b.text(p, 'M₀', COL.chalk, -10, -12, FONT_LBL, 'right'); }
+};
+b1.handles = [
+  { on: () => T1.mode === 'pd', pos: () => [T1.x0, T1.y0], set: (x, y) => { T1.x0 = x; T1.y0 = y; setIn('t1-x0', x); setIn('t1-y0', y); t1Update(true); } },
+  { on: () => T1.mode === 'pd', pos: () => [T1.x0 + T1.l, T1.y0 + T1.m], set: (x, y) => { const l = +(x - T1.x0).toFixed(4), m = +(y - T1.y0).toFixed(4); if (isZ(l) && isZ(m)) return; T1.l = l; T1.m = m; setIn('t1-l', l); setIn('t1-m', m); t1Update(true); } },
+  { on: () => T1.mode === 'tp', pos: () => [T1.x1, T1.y1], set: (x, y) => { T1.x1 = x; T1.y1 = y; setIn('t1-x1', x); setIn('t1-y1', y); t1Update(true); } },
+  { on: () => T1.mode === 'tp', pos: () => [T1.x2, T1.y2], set: (x, y) => { T1.x2 = x; T1.y2 = y; setIn('t1-x2', x); setIn('t1-y2', y); t1Update(true); } },
+  { pos: () => [T1.px, T1.py], set: (x, y) => { T1.px = x; T1.py = y; setIn('t1-px', x); setIn('t1-py', y); t1Update(true); } },
+];
+['x0', 'y0', 'l', 'm', 'x1', 'y1', 'x2', 'y2', 'A', 'B', 'C', 'px', 'py'].forEach(k => bindNum('t1-' + k, T1, k, t1Update));
+const t1ModeSync = segBind('t1-mode', 'mode', () => T1.mode, v => { T1.mode = v; ['pd', 'tp', 'ge'].forEach(m => { $('#t1-g-' + m).hidden = m !== v; }); t1Update(); });
+(function () {
+  const r = $('#t1-t'), tv = $('#t1-tv'); r.value = T1.t; tv.value = numIn(T1.t);
+  r.addEventListener('input', () => { T1.t = +r.value; tv.value = numIn(T1.t); t1Update(); });
+  tv.addEventListener('input', () => { const v = parseNum(tv.value); if (isNaN(v)) { tv.classList.add('bad'); return; } tv.classList.remove('bad'); T1.t = v; r.value = v; t1Update(); });
+  let anim = null; const btn = $('#t1-play');
+  btn.onclick = () => {
+    if (anim) { cancelAnimationFrame(anim); anim = null; btn.textContent = '▶ Рух'; return; }
+    btn.textContent = '❚❚ Пауза'; let last = performance.now(), dir = 1;
+    const tick = now => { const dt = (now - last) / 1000; last = now; T1.t += dir * dt * 0.9; if (T1.t > 3) { T1.t = 3; dir = -1; } if (T1.t < -3) { T1.t = -3; dir = 1; } T1.t = +T1.t.toFixed(3); r.value = T1.t; tv.value = apx(T1.t, 2).replace('−', '-'); t1Update(); anim = requestAnimationFrame(tick); };
+    anim = requestAnimationFrame(tick);
+  };
+})();
+omegaBind('t1', b1, d => { T1.rect = d === 90; T1.om = d; t1Update(); });
+['t1-s-int', 't1-s-slope', 't1-s-n', 't1-s-t'].forEach(id => $('#' + id).addEventListener('change', () => b1.render()));
+const P1 = {
+  1: { mode: 'pd', x0: 2, y0: -1, l: 3, m: 4, px: 5, py: 3, t: -2 },
+  2: { mode: 'pd', x0: -1, y0: 3, l: 2, m: -5, px: 1, py: -2, t: 1 },
+  3: { mode: 'tp', x1: 1, y1: 2, x2: 4, y2: -4, px: 2, py: 0, t: 1 },
+  4: { mode: 'tp', x1: -3, y1: 5, x2: 1, y2: -1, px: 3, py: -4, t: 1 },
+  5: { mode: 'ge', A: 2, B: -3, C: 6, px: -3, py: 0, t: -1 },
+  6: { mode: 'ge', A: 4, B: 5, C: -20, px: 0, py: 4, t: 1 },
+};
+$('#t1-presets').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; const p = P1[b.dataset.p]; Object.assign(T1, p);
+  Object.keys(p).forEach(k => { if (k !== 'mode' && k !== 't') setIn('t1-' + k, p[k]); });
+  $('#t1-t').value = T1.t; $('#t1-tv').value = numIn(T1.t);
+  ['pd', 'tp', 'ge'].forEach(m => { $('#t1-g-' + m).hidden = m !== T1.mode; }); t1ModeSync(); t1Update();
+});
+
+/* ================= 2. РОЗТАШУВАННЯ ================= */
+const T2 = { L: [{ type: 'ge', A: 2, B: -1, C: 3, x0: 0, y0: 3, l: 1, m: 2 }, { type: 'ge', A: 1, B: 1, C: -6, x0: 2, y0: 3, l: 4, m: 2 }] };
+let R2 = null;
+const b2 = new Board($('#cv2'), { ppu: 32, basis: true });
+function t2Line(L, i) {
+  if (L.type === 'ge') { if (isZ(L.A) && isZ(L.B)) return { err: `У рівнянні прямої l${i + 1} має бути A² + B² ≠ 0.` }; const g = lineFromGeneral(L.A, L.B, L.C); return { A: L.A, B: L.B, C: L.C, p: g.p, d: [-L.B, L.A], par: false }; }
+  if (isZ(L.l) && isZ(L.m)) return { err: `Напрямний вектор прямої l${i + 1} має бути ненульовим.` };
+  return { A: L.m, B: -L.l, C: -L.m * L.x0 + L.l * L.y0, p: [L.x0, L.y0], d: [L.l, L.m], par: true, x0: L.x0, y0: L.y0, l: L.l, m: L.m };
+}
+function t2Update() {
+  const L1 = t2Line(T2.L[0], 0), L2 = t2Line(T2.L[1], 1); const err = $('#t2-err');
+  if (L1.err || L2.err) { err.hidden = false; err.textContent = L1.err || L2.err; R2 = null; setTex($('#t2-steps'), ''); setTex($('#t2-ans'), ''); b2.render(); return; }
+  err.hidden = true;
+  const det = L1.d[0] * L2.d[1] - L1.d[1] * L2.d[0];
+  let steps = [], status, X = null;
+  const geTex = L => eqABC(L.A, L.B, L.C);
+  const parTex = (L, v) => `x = ${lin([[L.x0, ''], [L.l, v]])},\\ y = ${lin([[L.y0, ''], [L.m, v]])}`;
+  if (!L1.par && !L2.par) {
+    const { A: A1, B: B1, C: C1 } = L1, { A: A2, B: B2, C: C2 } = L2;
+    const D = A1 * B2 - A2 * B1;
+    steps.push(`Порівнюємо коефіцієнти при змінних. Визначник \\(\\Delta = A_1B_2 - A_2B_1 = ${substTex([[A1, par(B2)]])} - ${par(A2)}\\cdot ${par(B1)} = ${numTex(D)}\\).`);
+    if (!isZ(D)) {
+      status = 'int';
+      const x = (B1 * C2 - B2 * C1) / D, y = (C1 * A2 - C2 * A1) / D; X = [x, y];
+      steps.push(`\\(\\Delta \\ne 0\\), тобто \\(\\dfrac{A_1}{A_2} \\ne \\dfrac{B_1}{B_2}\\): напрямні вектори неколінеарні, прямі перетинаються.`);
+      steps.push(`Розв'язуємо систему за формулами Крамера: \\(x = \\dfrac{B_1C_2 - B_2C_1}{\\Delta} = \\dfrac{${numTex(B1 * C2 - B2 * C1)}}{${numTex(D)}} = ${numTex(x)},\\quad y = \\dfrac{C_1A_2 - C_2A_1}{\\Delta} = \\dfrac{${numTex(C1 * A2 - C2 * A1)}}{${numTex(D)}} = ${numTex(y)}\\).`);
+      steps.push(`Перевірка: \\(${substTex([[A1, par(x)], [B1, par(y)], [C1, null]])} = 0\\) і \\(${substTex([[A2, par(x)], [B2, par(y)], [C2, null]])} = 0\\).`);
+    } else {
+      const r1 = A1 * C2 - A2 * C1, r2 = B1 * C2 - B2 * C1;
+      if (isZ(r1) && isZ(r2)) { status = 'same'; steps.push(`\\(\\Delta = 0\\), а також пропорційні вільні члени: усі три коефіцієнти пропорційні. Обидва рівняння рівносильні рівнянню \\(${eqABC(...normABC(A1, B1, C1))}\\).`); }
+      else { status = 'par'; steps.push(`\\(\\Delta = 0\\), тобто коефіцієнти при змінних пропорційні, а вільні члени цій пропорції не підкоряються (\\(A_1C_2 - A_2C_1 = ${numTex(r1)} \\ne 0\\)). Прямі паралельні й різні.`); }
+    }
+  } else {
+    let G, P, gName, pName, v;
+    if (!L1.par) { G = L1; P = L2; gName = 'l_1'; pName = 'l_2'; v = 's'; }
+    else if (!L2.par) { G = L2; P = L1; gName = 'l_2'; pName = 'l_1'; v = 't'; }
+    else { const n = normABC(L1.A, L1.B, L1.C); G = { A: n[0], B: n[1], C: n[2] }; P = L2; gName = 'l_1'; pName = 'l_2'; v = 's';
+      steps.push(`Обидві прямі задані параметрично. Переводимо \\(l_1\\) у загальний вигляд: з \\(\\dfrac{${shiftT('x', L1.x0)}}{${numTex(L1.l)}} = \\dfrac{${shiftT('y', L1.y0)}}{${numTex(L1.m)}}\\) маємо \\(${geTex(G)}\\).`); }
+    const alp = G.A * P.l + G.B * P.m, bet = G.A * P.x0 + G.B * P.y0 + G.C;
+    steps.push(`Підставляємо параметричні рівняння \\(${pName}\\): \\(${parTex(P, v)}\\) у рівняння \\(${gName}\\): \\(${geTex(G)}\\).`);
+    steps.push(`Отримуємо лінійне рівняння відносно \\(${v}\\): \\(${substTex([[G.A, '(' + lin([[P.x0, ''], [P.l, v]]) + ')'], [G.B, '(' + lin([[P.y0, ''], [P.m, v]]) + ')'], [G.C, null]])} = 0\\), тобто \\(${lin([[alp, v], [bet, '']])} = 0\\).`);
+    if (!isZ(alp)) { status = 'int'; const s = -bet / alp; X = [P.x0 + s * P.l, P.y0 + s * P.m]; steps.push(`Рівняння має єдиний розв'язок \\(${v} = ${numTex(s)}\\), отже, прямі перетинаються. Підставляючи його в параметричні рівняння, маємо точку \\(${ptTex('', X[0], X[1])}\\).`); }
+    else if (!isZ(bet)) { status = 'par'; steps.push(`Отримали рівність \\(${numTex(bet)} = 0\\), яка не справджується при жодному \\(${v}\\). Спільних точок немає: прямі паралельні.`); }
+    else { status = 'same'; steps.push(`Рівність справджується тотожно, при всіх \\(${v}\\): кожна точка \\(${pName}\\) лежить на \\(${gName}\\). Прямі збігаються.`); }
+  }
+  const areaTxt = T2.om === 90 || T2.om == null ? `\\(|\\Delta| = ${numTex(Math.abs(det))}\\)` : `\\(|\\Delta|\\sin\\omega \\approx ${apxTex(Math.abs(det) * Math.sin(T2.om * Math.PI / 180), 3)}\\)`;
+  steps.push(`Геометричний зміст: напрямні вектори \\(\\vec a_1 = (${numTex(L1.d[0])},\\ ${numTex(L1.d[1])})\\), \\(\\vec a_2 = (${numTex(L2.d[0])},\\ ${numTex(L2.d[1])})\\), їхній визначник \\(${numTex(det)}\\). Площа паралелограма на них ${areaTxt}${isZ(det) ? ': паралелограм вироджений, вектори колінеарні.' : '.'}`);
+  R2 = { L1, L2, X, status, det };
+  setTex($('#t2-steps'), steps.map(step).join(''));
+  setTex($('#t2-ans'), '<b>Відповідь:</b> ' + (status === 'int' ? `прямі перетинаються в точці \\(${ptTex('', X[0], X[1])}\\).` : status === 'par' ? 'прямі паралельні.' : 'прямі збігаються.'));
+  b2.render();
+}
+b2.drawFn = b => {
+  if (!R2) return; const { L1, L2, X, status } = R2;
+  b.line(L1.p, L1.d, COL.chalk, 2.6);
+  b.line(L2.p, L2.d, COL.coral, status === 'same' ? 2 : 2.6, status === 'same' ? [10, 8] : null);
+  const base = X || L1.p;
+  if (X) {
+    const q1 = [X[0] + L1.d[0], X[1] + L1.d[1]], q2 = [X[0] + L2.d[0], X[1] + L2.d[1]], q3 = [X[0] + L1.d[0] + L2.d[0], X[1] + L1.d[1] + L2.d[1]];
+    b.poly([X, q1, q3, q2], alpha(COL.gold, .16), alpha(COL.gold, .7), 1.2, [5, 4]);
+    b.arrow(X, q1, COL.chalk, 2.6); b.arrow(X, q2, COL.coral, 2.6);
+    b.vlabelAt(X, q1, 'a', COL.chalk, '1', 1); b.vlabelAt(X, q2, 'a', COL.coral, '2', -1);
+    b.dot(X, COL.gold, 6, true); b.text(X, ptTxt(X[0], X[1]), COL.gold, 12, 16, FONT_MONO);
+  } else {
+    b.arrow(L1.p, [L1.p[0] + L1.d[0], L1.p[1] + L1.d[1]], COL.chalk, 2.6); b.vlabelAt(L1.p, [L1.p[0] + L1.d[0], L1.p[1] + L1.d[1]], 'a', COL.chalk, '1', 1);
+    b.arrow(L2.p, [L2.p[0] + L2.d[0], L2.p[1] + L2.d[1]], COL.coral, 2.6); b.vlabelAt(L2.p, [L2.p[0] + L2.d[0], L2.p[1] + L2.d[1]], 'a', COL.coral, '2', -1);
+    b.dot(L1.p, COL.chalk, 4); b.dot(L2.p, COL.coral, 4);
+  }
+};
+[0, 1].forEach(i => {
+  const L = T2.L[i];
+  ['A', 'B', 'C', 'l', 'm'].forEach(k => bindNum(`t2-${k}${i}`, L, k, t2Update));
+  bindNum(`t2-x0${i}`, L, 'x0', t2Update); bindNum(`t2-y0${i}`, L, 'y0', t2Update);
+  T2['sync' + i] = segBind('t2-type' + i, 'type', () => L.type, v => { L.type = v; $('#t2-ge' + i).hidden = v !== 'ge'; $('#t2-par' + i).hidden = v !== 'par'; t2Update(); });
+});
+omegaBind('t2', b2, d => { T2.om = d; t2Update(); });
+const P2 = {
+  '7a': [{ type: 'ge', A: 2, B: -1, C: 3 }, { type: 'ge', A: 1, B: 1, C: -6 }],
+  '7b': [{ type: 'ge', A: 3, B: -6, C: 2 }, { type: 'ge', A: -1, B: 2, C: 5 }],
+  '7c': [{ type: 'ge', A: 1, B: -2, C: 4 }, { type: 'par', x0: 2, y0: 3, l: 4, m: 2 }],
+  '8a': [{ type: 'ge', A: 3, B: 2, C: -7 }, { type: 'ge', A: 1, B: -4, C: 7 }],
+  '8b': [{ type: 'ge', A: 4, B: -10, C: 6 }, { type: 'ge', A: 6, B: -15, C: 9 }],
+  '8c': [{ type: 'ge', A: 1, B: -3, C: 1 }, { type: 'par', x0: 1, y0: -1, l: 6, m: 2 }],
+};
+$('#t2-presets').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; const p = P2[b.dataset.p];
+  [0, 1].forEach(i => { Object.assign(T2.L[i], p[i]); const L = T2.L[i];
+    ['A', 'B', 'C', 'l', 'm'].forEach(k => setIn(`t2-${k}${i}`, L[k])); setIn(`t2-x0${i}`, L.x0); setIn(`t2-y0${i}`, L.y0);
+    $('#t2-ge' + i).hidden = L.type !== 'ge'; $('#t2-par' + i).hidden = L.type !== 'par'; T2['sync' + i](); });
+  t2Update();
+});
+
+/* ================= 3. МЕТРИКА ================= */
+const T3 = { x: 3, y: -2, A: 3, B: -4, C: 5, A2: 7, B2: -1, C2: -2 };
+let R3 = null;
+const b3 = new Board($('#cv3'), { ppu: 46, cx: 1.5, cy: 0 });
+function t3Update() {
+  const err = $('#t3-err'); const S = T3;
+  if (isZ(S.A) && isZ(S.B)) { err.hidden = false; err.textContent = 'У рівнянні прямої l має бути A² + B² ≠ 0.'; R3 = null; setTex($('#t3-steps'), ''); b3.render(); return; }
+  err.hidden = true;
+  const [A, B, C] = normABC(S.A, S.B, S.C); const x0 = S.x, y0 = S.y; const s = A * A + B * B;
+  const v = A * x0 + B * y0 + C; const lam = -v / s; const H = [x0 + lam * A, y0 + lam * B]; const Ms = [2 * H[0] - x0, 2 * H[1] - y0];
+  const pr = normABC(A, B, -(A * x0 + B * y0));
+  const pp = normABC(-B, A, B * x0 - A * y0);
+  const st = [];
+  st.push(`Нормальний вектор прямої \\(l\\colon\\ ${eqABC(A, B, C)}\\) дорівнює \\(\\vec n = (${numTex(A)},\\ ${numTex(B)})\\). Паралельна пряма має той самий нормальний вектор: \\(${numTex(A)}\\,(${shiftT('x', x0)}) ${B < 0 ? '-' : '+'} ${numTex(Math.abs(B))}\\,(${shiftT('y', y0)}) = 0\\), тобто <b>\\(${eqABC(...pr)}\\)</b>.`);
+  st.push(`Для перпендикулярної прямої нормальним вектором слугує напрямний вектор прямої \\(l\\): \\((-B,\\ A) = (${numTex(-B)},\\ ${numTex(A)})\\). Звідси \\(${numTex(-B)}\\,(${shiftT('x', x0)}) ${A < 0 ? '-' : '+'} ${numTex(Math.abs(A))}\\,(${shiftT('y', y0)}) = 0\\), тобто <b>\\(${eqABC(...pp)}\\)</b>. Перевірка: \\(${numTex(A)}\\cdot${par(-B)} + ${par(B)}\\cdot${par(A)} = 0\\).`);
+  st.push(`Проєкцію шукаємо у вигляді \\(H = M + \\lambda\\vec n\\). Підставляючи в рівняння \\(l\\), маємо \\(\\lambda = -\\dfrac{Ax_0 + By_0 + C}{A^2 + B^2} = -\\dfrac{${numTex(v)}}{${numTex(s)}} = ${numTex(lam)}\\), звідки <b>\\(${ptTex('H', H[0], H[1])}\\)</b>. Це та сама точка, що й перетин \\(l\\) з перпендикуляром.`);
+  const dT = overSqrtTex(v, s);
+  st.push(`Відстань від \\(M\\) до прямої: \\(d = \\dfrac{|Ax_0 + By_0 + C|}{\\sqrt{A^2 + B^2}} = \\dfrac{${numTex(Math.abs(v))}}{\\sqrt{${numTex(s)}}}${dT ? ' = ' + dT : ''} \\approx ${apxTex(Math.abs(v) / Math.sqrt(s))}\\)${isZ(v) ? ': точка лежить на прямій' : ''}. Симетрична точка \\(M' = 2H - M = ${ptTex('', Ms[0], Ms[1])}\\).`);
+  let ang = null;
+  if (!(isZ(S.A2) && isZ(S.B2))) {
+    const [A2, B2, C2] = normABC(S.A2, S.B2, S.C2); const dot = A * A2 + B * B2; const s2 = A2 * A2 + B2 * B2;
+    const cosv = Math.abs(dot) / Math.sqrt(s * s2); const phi = Math.acos(Math.min(1, cosv)) * 180 / Math.PI;
+    const cT = overSqrtTex(Math.abs(dot), s * s2);
+    let t = `Кут між \\(l\\) і \\(l_2\\colon\\ ${eqABC(A2, B2, C2)}\\) за нормальними векторами: \\(\\cos\\varphi = \\dfrac{|${numTex(A)}\\cdot${par(A2)} + ${par(B)}\\cdot${par(B2)}|}{\\sqrt{${s}}\\,\\sqrt{${s2}}}${cT ? ' = ' + cT : ''} \\approx ${apxTex(cosv, 4)}\\), тобто <b>\\(\\varphi \\approx ${apxTex(phi, 2)}^\\circ\\)</b>.`;
+    if (!isZ(B) && !isZ(B2)) { const k1 = -A / B, k2 = -A2 / B2; const den = 1 + k1 * k2;
+      t += isZ(den) ? ` Через кутові коефіцієнти: \\(k_1 = ${numTex(k1)},\\ k_2 = ${numTex(k2)}\\), \\(1 + k_1k_2 = 0\\), отже, прямі перпендикулярні.` : ` Перевірка через кутові коефіцієнти \\(k_1 = ${numTex(k1)},\\ k_2 = ${numTex(k2)}\\): \\(\\operatorname{tg}\\varphi = \\left|\\dfrac{k_2 - k_1}{1 + k_1k_2}\\right| = ${numTex(Math.abs((k2 - k1) / den))}\\).`; }
+    st.push(t);
+    ang = { A2, B2, C2, phi };
+  }
+  R3 = { A, B, C, H, Ms, ang, x0, y0, pr, pp };
+  setTex($('#t3-steps'), st.map(step).join(''));
+  b3.render();
+}
+b3.drawFn = b => {
+  if (!R3) return; const { A, B, C, H, Ms, ang, x0, y0 } = R3; const M = [x0, y0];
+  b.lineABC(A, B, C, COL.chalk, 2.6);
+  if (ang && $('#t3-s-ang').checked) {
+    b.lineABC(ang.A2, ang.B2, ang.C2, COL.coral, 2.2);
+    const D = A * ang.B2 - ang.A2 * B;
+    if (!isZ(D)) { const X = [(B * ang.C2 - ang.B2 * C) / D, (C * ang.A2 - ang.C2 * A) / D];
+      let d1 = [-B, A], d2 = [-ang.B2, ang.A2]; if (d1[0] * d2[0] + d1[1] * d2[1] < 0) d2 = [-d2[0], -d2[1]];
+      b.angArc(X, d1, d2, 34, COL.coral, 'φ'); b.dot(X, COL.coral, 3.5); }
+  }
+  if ($('#t3-s-par').checked) b.line(M, [-B, A], COL.faint, 1.6, [8, 6]);
+  if ($('#t3-s-perp').checked) { b.line(M, [A, B], alpha(COL.sky, .75), 1.8); b.rightMark(H, [-B, A], [x0 - H[0], y0 - H[1]].every(isZ) ? [A, B] : [x0 - H[0], y0 - H[1]], 11, COL.sky);
+    const sc = 1 / Math.hypot(A, B) * 1.6; b.arrow(H, [H[0] + A * sc, H[1] + B * sc], COL.sky, 2.4); const e = b.toS(H[0] + A * sc * 1.15, H[1] + B * sc * 1.15); b.vlabel(e[0] + 12, e[1], 'n', COL.sky); }
+  if ($('#t3-s-sym').checked) { b.seg(M, Ms, alpha(COL.lilac, .8), 1.4, [4, 4]); b.dot(Ms, COL.lilac, 5); b.text(Ms, 'M′', COL.lilac, 10, -12); }
+  b.seg(M, H, COL.gold, 2.6);
+  const mid = [(x0 + H[0]) / 2, (y0 + H[1]) / 2]; const d = Math.abs(A * x0 + B * y0 + C) / Math.hypot(A, B);
+  if (d > 0.3) b.text(mid, 'd ≈ ' + apx(d, 2), COL.gold, 10, 0, FONT_MONO);
+  b.dot(H, COL.gold, 5.5, true); b.text(H, 'H', COL.gold, 10, 14);
+  b.dot(M, COL.chalk, 6, true); b.text(M, 'M', COL.chalk, -10, -12, FONT_LBL, 'right');
+};
+b3.handles = [{ pos: () => [T3.x, T3.y], set: (x, y) => { T3.x = x; T3.y = y; setIn('t3-x', x); setIn('t3-y', y); t3Update(); } }];
+['x', 'y', 'A', 'B', 'C', 'A2', 'B2', 'C2'].forEach(k => bindNum('t3-' + k, T3, k, t3Update));
+['t3-s-par', 't3-s-perp', 't3-s-ang', 't3-s-sym'].forEach(id => $('#' + id).addEventListener('change', () => b3.render()));
+const P3 = { 9: { x: 3, y: -2, A: 3, B: -4, C: 5, A2: 7, B2: -1, C2: -2 }, 10: { x: -1, y: 4, A: 2, B: 1, C: -3, A2: 1, B2: 3, C2: -5 } };
+$('#t3-presets').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; Object.assign(T3, P3[b.dataset.p]); Object.keys(T3).forEach(k => setIn('t3-' + k, T3[k])); t3Update(); });
+
+/* ================= 4. МЕДІАНИ ================= */
+const T4 = { x: 1, y: 3, A1: 0, B1: 1, C1: -1, A2: 1, B2: -2, C2: 1 };
+let R4 = null;
+const b4 = new Board($('#cv4'), { ppu: 36, cx: 1, cy: 0.5, basis: true });
+function t4Update() {
+  const S = T4; const err = $('#t4-err'); const fail = m => { err.hidden = false; err.textContent = m; R4 = null; setTex($('#t4-steps'), ''); setTex($('#t4-ans'), ''); b4.render(); };
+  if ((isZ(S.A1) && isZ(S.B1)) || (isZ(S.A2) && isZ(S.B2))) return fail('У рівняннях медіан має бути A² + B² ≠ 0.');
+  const A = [S.x, S.y];
+  const vB = S.A1 * A[0] + S.B1 * A[1] + S.C1, vC = S.A2 * A[0] + S.B2 * A[1] + S.C2;
+  if (isZ(vB) || isZ(vC)) return fail('Вершина A лежить на одній із заданих прямих. Медіана з B або C може проходити через A лише у виродженому трикутнику; змініть дані.');
+  const D = S.A1 * S.B2 - S.A2 * S.B1; if (isZ(D)) return fail('Прямі медіан паралельні, а медіани трикутника завжди перетинаються в центроїді. Таких даних не буває.');
+  err.hidden = true;
+  const G = [(S.B1 * S.C2 - S.B2 * S.C1) / D, (S.C1 * S.A2 - S.C2 * S.A1) / D];
+  const g1 = lineFromGeneral(S.A1, S.B1, S.C1), g2 = lineFromGeneral(S.A2, S.B2, S.C2);
+  const PB = !isZ(S.B1) ? [0, -S.C1 / S.B1] : [-S.C1 / S.A1, 0], dB = intCo([-S.B1, S.A1]);
+  const PC = !isZ(S.B2) ? [0, -S.C2 / S.B2] : [-S.C2 / S.A2, 0], dC = intCo([-S.B2, S.A2]);
+  const rhs = [3 * G[0] - A[0] - PB[0] - PC[0], 3 * G[1] - A[1] - PB[1] - PC[1]];
+  const det = dB[0] * dC[1] - dB[1] * dC[0];
+  const sB = (rhs[0] * dC[1] - rhs[1] * dC[0]) / det, uC = (dB[0] * rhs[1] - dB[1] * rhs[0]) / det;
+  const Bv = [PB[0] + sB * dB[0], PB[1] + sB * dB[1]], Cv = [PC[0] + uC * dC[0], PC[1] + uC * dC[1]];
+  const mAB = [(A[0] + Bv[0]) / 2, (A[1] + Bv[1]) / 2], mAC = [(A[0] + Cv[0]) / 2, (A[1] + Cv[1]) / 2], mBC = [(Bv[0] + Cv[0]) / 2, (Bv[1] + Cv[1]) / 2];
+  const side = (P, Q) => { const d = intCo([Q[0] - P[0], Q[1] - P[1]]); return normABC(d[1], -d[0], -d[1] * P[0] + d[0] * P[1]); };
+  const AB = side(A, Bv), BC = side(Bv, Cv), AC = side(A, Cv);
+  const st = [];
+  st.push(`Перевіряємо, що вершина \\(A\\) не лежить на заданих прямих: \\(${numTex(vB)} \\ne 0\\), \\(${numTex(vC)} \\ne 0\\). Отже, медіани проведено з двох інших вершин; нехай \\(B\\) лежить на прямій \\(m_B\\colon ${eqABC(S.A1, S.B1, S.C1)}\\), а \\(C\\) на прямій \\(m_C\\colon ${eqABC(S.A2, S.B2, S.C2)}\\).`);
+  st.push(`Медіани перетинаються в центроїді. Розв'язуючи систему рівнянь \\(m_B\\) і \\(m_C\\), отримуємо \\(${ptTex('G', G[0], G[1])}\\).`);
+  st.push(`Записуємо вершини через параметри: \\(B = ${ptTex('', PB[0], PB[1])} + s\\,(${numTex(dB[0])},\\ ${numTex(dB[1])})\\), \\(C = ${ptTex('', PC[0], PC[1])} + u\\,(${numTex(dC[0])},\\ ${numTex(dC[1])})\\).`);
+  st.push(`Координати центроїда є середнім арифметичним координат вершин: \\(A + B + C = 3G\\). Звідси \\(s\\,(${numTex(dB[0])},\\ ${numTex(dB[1])}) + u\\,(${numTex(dC[0])},\\ ${numTex(dC[1])}) = (${numTex(rhs[0])},\\ ${numTex(rhs[1])})\\), тобто \\(s = ${numTex(sB)},\\ u = ${numTex(uC)}\\) і \\(${ptTex('B', Bv[0], Bv[1])},\\ ${ptTex('C', Cv[0], Cv[1])}\\).`);
+  st.push(`Перевірка: середина \\(AC\\), точка \\(${ptTex('', mAC[0], mAC[1])}\\), лежить на \\(m_B\\), а середина \\(AB\\), точка \\(${ptTex('', mAB[0], mAB[1])}\\), лежить на \\(m_C\\).`);
+  st.push(`Складаємо рівняння сторін як прямих через дві точки: \\(AB\\colon ${eqABC(...AB)}\\), \\(BC\\colon ${eqABC(...BC)}\\), \\(AC\\colon ${eqABC(...AC)}\\). Задача афінна: медіана, центроїд і середина відрізка не потребують довжин і кутів, тому відповідь не залежить від \\(\\omega\\).`);
+  R4 = { A, Bv, Cv, G, mAB, mAC, mBC, g1, g2 };
+  setTex($('#t4-steps'), st.map(step).join(''));
+  setTex($('#t4-ans'), `<b>Відповідь:</b> \\(AB\\colon ${eqABC(...AB)},\\quad BC\\colon ${eqABC(...BC)},\\quad AC\\colon ${eqABC(...AC)}\\).`);
+  b4.render();
+}
+b4.drawFn = b => {
+  if (!R4) return; const { A, Bv, Cv, G, mAB, mAC, mBC, g1, g2 } = R4;
+  b.line(g1.p, g1.d, COL.faint, 1.4, [8, 6]); b.line(g2.p, g2.d, COL.faint, 1.4, [8, 6]);
+  b.poly([A, Bv, Cv], alpha(COL.gold, .13), COL.chalk, 2.4);
+  b.seg(Bv, mAC, COL.chalk, 1.6); b.seg(Cv, mAB, COL.chalk, 1.6); b.seg(A, mBC, alpha(COL.chalk, .5), 1.4, [4, 4]);
+  [mAB, mAC, mBC].forEach(p => b.dot(p, COL.sky, 4));
+  b.dot(G, COL.gold, 6, true); b.text(G, 'G', COL.gold, 10, 14);
+  b.dot(A, COL.chalk, 6, true); b.text(A, 'A', COL.chalk, 10, -14);
+  b.dot(Bv, COL.coral, 5.5); b.text(Bv, 'B ' + ptTxt(...Bv), COL.coral, 10, -14);
+  b.dot(Cv, COL.coral, 5.5); b.text(Cv, 'C ' + ptTxt(...Cv), COL.coral, -10, 14, FONT_LBL, 'right');
+};
+b4.handles = [{ pos: () => [T4.x, T4.y], set: (x, y) => { T4.x = x; T4.y = y; setIn('t4-x', x); setIn('t4-y', y); t4Update(); } }];
+['x', 'y', 'A1', 'B1', 'C1', 'A2', 'B2', 'C2'].forEach(k => bindNum('t4-' + k, T4, k, t4Update));
+omegaBind('t4', b4, () => {});
+$('#t4-reset').onclick = () => { Object.assign(T4, { x: 1, y: 3, A1: 0, B1: 1, C1: -1, A2: 1, B2: -2, C2: 1 }); Object.keys(T4).forEach(k => setIn('t4-' + k, T4[k])); t4Update(); };
+
+/* ================= 5a. СУДНА ================= */
+const SH = { x1: -9, y1: -4, vx1: 3, vy1: 2, x2: 4, y2: -9, vx2: -1, vy2: 3, t: 0 };
+let RS = null;
+const b5 = new Board($('#cv5'), { ppu: 22, cx: -1, cy: 1, names: ['x, км', 'y, км'] });
+function shUpdate() {
+  const S = SH; const r1 = [S.x1, S.y1], v1 = [S.vx1, S.vy1], r2 = [S.x2, S.y2], v2 = [S.vx2, S.vy2];
+  const dr = [r1[0] - r2[0], r1[1] - r2[1]], dv = [v1[0] - v2[0], v1[1] - v2[1]];
+  const dv2 = dv[0] ** 2 + dv[1] ** 2; let tc = dv2 > 1e-12 ? -(dr[0] * dv[0] + dr[1] * dv[1]) / dv2 : 0; if (tc < 0) tc = 0;
+  const dmin = Math.hypot(dr[0] + dv[0] * tc, dr[1] + dv[1] * tc);
+  const det = v1[0] * (-v2[1]) - (-v2[0]) * v1[1]; let X = null, t1 = null, t2 = null;
+  if (!isZ(det) && !(isZ(v1[0]) && isZ(v1[1])) && !(isZ(v2[0]) && isZ(v2[1]))) { const w = [r2[0] - r1[0], r2[1] - r1[1]]; t1 = (w[0] * (-v2[1]) - (-v2[0]) * w[1]) / det; t2 = (v1[0] * w[1] - v1[1] * w[0]) / det; X = [r1[0] + v1[0] * t1, r1[1] + v1[1] * t1]; }
+  const p1 = [r1[0] + v1[0] * S.t, r1[1] + v1[1] * S.t], p2 = [r2[0] + v2[0] * S.t, r2[1] + v2[1] * S.t];
+  RS = { r1, v1, r2, v2, tc, dmin, X, t1, t2, p1, p2 };
+  const n1 = normABC(v1[1], -v1[0], -v1[1] * r1[0] + v1[0] * r1[1]), n2 = normABC(v2[1], -v2[0], -v2[1] * r2[0] + v2[0] * r2[1]);
+  let h = '';
+  h += row('Закони руху', `\\(\\vec r_1(t) = (${lin([[r1[0], ''], [v1[0], 't']])},\\ ${lin([[r1[1], ''], [v1[1], 't']])}),\\quad \\vec r_2(t) = (${lin([[r2[0], ''], [v2[0], 't']])},\\ ${lin([[r2[1], ''], [v2[1], 't']])})\\)`);
+  h += row('Траєкторії (без часу)', `\\(${eqABC(...n1)},\\qquad ${eqABC(...n2)}\\)`);
+  h += row('Перетин траєкторій', X ? `\\(${ptTex('X', X[0], X[1])}\\)` : '', X ? `Судно 1 проходить точку \\(X\\) при \\(t = ${numTex(t1)}\\) год \\(\\approx ${apxTex(t1, 2)}\\), судно 2 при \\(t = ${numTex(t2)}\\) год \\(\\approx ${apxTex(t2, 2)}\\). ${isZ(t1 - t2) ? '<b>Моменти збігаються: зіткнення!</b>' : 'Моменти різні, тож перетин траєкторій не є зіткненням.'}` : 'Траєкторії паралельні або збігаються.');
+  h += row('Найбільше зближення', `\\(t_* = -\\dfrac{\\Delta\\vec r\\cdot\\Delta\\vec v}{|\\Delta\\vec v|^2} \\approx ${apxTex(tc, 2)}\\ \\text{год},\\qquad d_{\\min} \\approx ${apxTex(dmin, 2)}\\ \\text{км}\\)`, `Тут \\(\\Delta\\vec r = \\vec r_1(0) - \\vec r_2(0)\\), \\(\\Delta\\vec v = \\vec v_1 - \\vec v_2\\): відстань між суднами є відстанню від початку координат до прямої відносного руху \\(\\Delta\\vec r + \\Delta\\vec v\\,t\\).`);
+  h += row('Зараз', '', `\\(t = ${apxTex(S.t, 2)}\\) год, відстань між суднами \\(\\approx ${apxTex(Math.hypot(p1[0] - p2[0], p1[1] - p2[1]), 2)}\\) км.`);
+  setTex($('#s-out'), h);
+  b5.render();
+}
+b5.drawFn = b => {
+  if (!RS) return; const { r1, v1, r2, v2, tc, X, t1, t2, p1, p2, dmin } = RS; const t = SH.t;
+  if (!(isZ(v1[0]) && isZ(v1[1]))) b.line(r1, v1, alpha(COL.chalk, .28), 1.4, [6, 6]);
+  if (!(isZ(v2[0]) && isZ(v2[1]))) b.line(r2, v2, alpha(COL.coral, .35), 1.4, [6, 6]);
+  b.seg(r1, p1, COL.chalk, 2.6); b.seg(r2, p2, COL.coral, 2.6);
+  for (let k = 1; k <= 8; k++) { b.dot([r1[0] + v1[0] * k, r1[1] + v1[1] * k], alpha(COL.chalk, .5), 2); b.dot([r2[0] + v2[0] * k, r2[1] + v2[1] * k], alpha(COL.coral, .55), 2); }
+  if (X) { b.dot(X, COL.gold, 5.5, true); b.text(X, `t₁≈${apx(t1, 2)}, t₂≈${apx(t2, 2)}`, COL.gold, 12, -14, FONT_MONO); }
+  const c1 = [r1[0] + v1[0] * tc, r1[1] + v1[1] * tc], c2 = [r2[0] + v2[0] * tc, r2[1] + v2[1] * tc];
+  b.seg(c1, c2, COL.lilac, 1.6, [4, 4]); b.dot(c1, alpha(COL.lilac, .8), 3.5); b.dot(c2, alpha(COL.lilac, .8), 3.5);
+  b.text([(c1[0] + c2[0]) / 2, (c1[1] + c2[1]) / 2], 'd_min≈' + apx(dmin, 2), COL.lilac, 10, 12, FONT_MONO);
+  b.seg(p1, p2, alpha(COL.gold, .55), 1.2, [2, 4]);
+  b.arrow(p1, [p1[0] + v1[0], p1[1] + v1[1]], COL.chalk, 2.2, 10); b.arrow(p2, [p2[0] + v2[0], p2[1] + v2[1]], COL.coral, 2.2, 10);
+  b.dot(p1, COL.chalk, 6.5, true); b.dot(p2, COL.coral, 6.5, true);
+  b.text(p1, '1', COL.chalk, -12, -12); b.text(p2, '2', COL.coral, -12, -12);
+  b.text(r1, 't = 0', COL.faint, 8, 14, FONT_MONO);
+};
+['x1', 'y1', 'vx1', 'vy1', 'x2', 'y2', 'vx2', 'vy2'].forEach(k => bindNum('s-' + k, SH, k, shUpdate));
+(function () {
+  const r = $('#s-t'), tv = $('#s-tv'); r.value = 0;
+  const set = v => { SH.t = v; r.value = v; tv.textContent = apx(v, 2) + ' год'; shUpdate(); };
+  r.addEventListener('input', () => set(+r.value));
+  let anim = null; const btn = $('#s-play');
+  btn.onclick = () => {
+    if (anim) { cancelAnimationFrame(anim); anim = null; btn.textContent = '▶ Пуск'; return; }
+    if (SH.t >= 7.99) set(0);
+    btn.textContent = '❚❚ Пауза'; let last = performance.now();
+    const tick = now => { const v = Math.min(8, SH.t + (now - last) / 1000 * 0.8); last = now; set(+v.toFixed(3)); if (v >= 8) { anim = null; btn.textContent = '▶ Пуск'; return; } anim = requestAnimationFrame(tick); };
+    anim = requestAnimationFrame(tick);
+  };
+  tv.textContent = '0 год';
+})();
+
+/* ================= 5b. ЕКОНОМІКА ================= */
+const EC = { F: 12000, c: 150, p: 270 };
+let RE = null;
+const b6 = new Board($('#cv6'), { static: true, names: ['q, шт', 'грн'], onResize: b => ecFit(b) });
+function ecFit(b) {
+  if (!RE || !b.W) return; const qm = RE.qmax, ym = RE.ymax;
+  b.ppu = (b.W - 70) / qm; b.ky = ((b.H - 46) / ym) / b.ppu;
+  b.cx = (b.W / 2 - 56) / b.ppu; b.cy = (b.H / 2 - 28) / (b.ppu * b.ky);
+}
+function ecUpdate() {
+  const { F, c, p } = EC; let q = null;
+  if (p > c) q = F / (p - c);
+  const qmax = q ? Math.max(q * 2, 10) : Math.max(F / Math.max(c, 1) * 2, 10);
+  const ymax = Math.max(p * qmax, F + c * qmax) * 1.05;
+  RE = { F, c, p, q, qmax, ymax };
+  ecFit(b6);
+  let h = '';
+  h += row('Прямі', `\\(C(q) = ${lin([[c, 'q'], [F, '']])},\\qquad R(q) = ${lin([[p, 'q']])}\\)`, 'Кутові коефіцієнти: граничні витрати \\(c\\) і ціна \\(p\\); відрізок на осі ординат прямої витрат дорівнює \\(F\\).');
+  if (q != null) h += row('Точка беззбитковості', `\\(F + cq = pq\\ \\Rightarrow\\ q^* = \\dfrac{F}{p - c} = \\dfrac{${numTex(F)}}{${numTex(p - c)}} \\approx ${apxTex(q, 2)}\\ \\text{шт}\\)`, `Виторг у цій точці \\(\\approx ${apxTex(p * q, 0)}\\) грн. Кожна наступна одиниця дає прибуток \\(p - c = ${numTex(p - c)}\\) грн.`);
+  else h += row('Точка беззбитковості', '', p === c ? 'При \\(p = c\\) прямі паралельні: виторг ніколи не покриє постійних витрат.' : 'При \\(p < c\\) прямі перетинаються лише при від\'ємному \\(q\\), економічного змісту це не має.');
+  setTex($('#e-out'), h);
+  b6.render();
+}
+b6.drawFn = b => {
+  if (!RE) return; const { F, c, p, q, qmax } = RE; const C0 = [0, F], R0 = [0, 0];
+  if (q != null) {
+    const Y = p * q;
+    b.poly([[0, 0], [0, F], [q, Y]], alpha(COL.coral, .16), null);
+    b.poly([[q, Y], [qmax * 1.2, p * qmax * 1.2], [qmax * 1.2, F + c * qmax * 1.2]], alpha(COL.mint, .16), null);
+  }
+  b.line(C0, [1, c], COL.coral, 2.6); b.line(R0, [1, p], COL.mint, 2.6);
+  b.dot(C0, COL.coral, 4.5); b.text(C0, 'F', COL.coral, 10, -4);
+  if (q != null) { const Y = p * q; b.seg([q, 0], [q, Y], alpha(COL.gold, .7), 1.2, [4, 4]); b.dot([q, Y], COL.gold, 6, true); b.text([q, Y], 'q* ≈ ' + apx(q, 1), COL.gold, -12, -14, FONT_MONO, 'right');
+    b.text([q * 0.45, F * 0.55], 'збиток', alpha(COL.coral, .95), 0, 0, "500 13px Commissioner, sans-serif", 'center');
+    b.text([q * 1.6, (F + c * q * 1.6 + p * q * 1.6) / 2], 'прибуток', COL.mint, 0, 0, "500 13px Commissioner, sans-serif", 'center'); }
+  if (b.mouse) {
+    const [qq] = b.fromS(...b.mouse); if (qq > 0 && qq < qmax * 1.1) {
+      const cc = F + c * qq, rr = p * qq; b.seg([qq, 0], [qq, Math.max(cc, rr)], alpha(COL.chalk, .5), 1, [2, 3]);
+      b.dot([qq, cc], COL.coral, 3.5); b.dot([qq, rr], COL.mint, 3.5);
+      const c2 = b.ctx; const [X] = b.toS(qq, 0); const lines = [`q = ${nf.format(Math.round(qq))} шт`, `C = ${nf.format(Math.round(cc))} грн`, `R = ${nf.format(Math.round(rr))} грн`, `R − C = ${nf.format(Math.round(rr - cc)).replace('-', '−')} грн`];
+      const bx = X + 170 > b.W ? X - 164 : X + 10; c2.fillStyle = alpha('#000000', .35); c2.fillRect(bx - 6, 10, 158, 74);
+      c2.font = FONT_MONO; c2.textAlign = 'left'; c2.textBaseline = 'top'; lines.forEach((s, i) => { c2.fillStyle = [COL.chalk, COL.coral, COL.mint, COL.gold][i]; c2.fillText(s, bx, 16 + i * 16); });
+    }
+  }
+};
+['F', 'c', 'p'].forEach(k => bindNum('e-' + k, EC, k, ecUpdate));
+
+/* ================= 5c. ГАФ / RANSAC ================= */
+const HG = { x1: -4, y1: -2, x2: 4, y2: 3, eps: 0.5 };
+const HPTS = (() => { const r = mulberry32(11); const a = []; for (let i = 0; i < 20; i++) { const x = -5.5 + 11 * r(); a.push([x, 0.5 * x + 1 + (r() - 0.5) * 0.8]); } for (let i = 0; i < 12; i++) a.push([-6 + 12 * r(), -5 + 10 * r()]); return a; })();
+let RH = null;
+const b7 = new Board($('#cv7'), { ppu: 30, cx: 0, cy: 0.5 });
+function hgUpdate() {
+  const S = HG; const err = isZ(S.x2 - S.x1) && isZ(S.y2 - S.y1);
+  if (err) { RH = null; setTex($('#h-out'), row('Помилка', '', 'Точки P₁ і P₂ мають бути різними.')); b7.render(); hDraw(); return; }
+  const [A, B, C] = normABC(S.y2 - S.y1, -(S.x2 - S.x1), -(S.y2 - S.y1) * S.x1 + (S.x2 - S.x1) * S.y1);
+  const nn = Math.hypot(A, B); let th = Math.atan2(B, A); if (th < 0) th += Math.PI; if (th >= Math.PI - 1e-12) th -= Math.PI;
+  const rho = S.x1 * Math.cos(th) + S.y1 * Math.sin(th);
+  const inl = HPTS.map(p => Math.abs(A * p[0] + B * p[1] + C) / nn < S.eps);
+  const cnt = inl.filter(Boolean).length;
+  RH = { A, B, C, th, rho, inl, cnt, nn };
+  let h = '';
+  h += row('Загальне рівняння', `\\(${eqABC(A, B, C)},\\qquad \\sqrt{A^2 + B^2} = ${sqrtTex(A * A + B * B)}\\)`);
+  h += row('Нормальне рівняння', `\\(x\\cos\\theta + y\\sin\\theta = \\rho,\\quad \\theta \\approx ${apxTex(th * 180 / Math.PI, 1)}^\\circ,\\ \\ \\rho \\approx ${apxTex(rho, 3)}\\)`, 'У перетворенні Гафа зручно брати \\(\\theta\\in[0,\\pi)\\) і \\(\\rho\\in\\mathbb R\\); у класичному нормальному рівнянні вимагають \\(\\rho \\ge 0\\).');
+  h += row('Точки в смузі', `\\(\\#\\{\\,M_i : d(M_i, l) < \\varepsilon\\,\\} = ${cnt}\\ \\text{з}\\ ${HPTS.length}\\)`, 'RANSAC обирає пряму, для якої ця кількість найбільша.');
+  setTex($('#h-out'), h);
+  b7.render(); hDraw();
+}
+b7.drawFn = b => {
+  if (!RH) { b.dot([HG.x1, HG.y1], COL.chalk, 6, true); return; } const { A, B, C, th, rho, inl } = RH; const eps = HG.eps;
+  const u = [Math.cos(th), Math.sin(th)]; const p0 = [u[0] * rho, u[1] * rho]; const d = [-u[1], u[0]];
+  const S = b.toS(p0[0] + u[0] * eps, p0[1] + u[1] * eps), S2 = b.toS(p0[0] - u[0] * eps, p0[1] - u[1] * eps);
+  const L = 60; b.poly([[p0[0] + u[0] * eps - d[0] * L, p0[1] + u[1] * eps - d[1] * L], [p0[0] + u[0] * eps + d[0] * L, p0[1] + u[1] * eps + d[1] * L], [p0[0] - u[0] * eps + d[0] * L, p0[1] - u[1] * eps + d[1] * L], [p0[0] - u[0] * eps - d[0] * L, p0[1] - u[1] * eps - d[1] * L]], alpha(COL.gold, .12), null);
+  b.line([p0[0] + u[0] * eps, p0[1] + u[1] * eps], d, alpha(COL.gold, .4), 1, [4, 4]); b.line([p0[0] - u[0] * eps, p0[1] - u[1] * eps], d, alpha(COL.gold, .4), 1, [4, 4]);
+  HPTS.forEach((p, i) => b.dot(p, inl[i] ? COL.gold : alpha(COL.chalk, .45), inl[i] ? 4 : 3.2));
+  b.lineABC(A, B, C, COL.chalk, 2.4);
+  b.arrow([0, 0], p0, COL.sky, 2.2, 10); if (Math.abs(rho) > 0.2) { b.rightMark(p0, d, [-p0[0], -p0[1]], 9, COL.sky); b.text([p0[0] / 2, p0[1] / 2], 'ρ', COL.sky, 10, -8); }
+  b.angArc([0, 0], [1, 0], u, 22, COL.sky, 'θ');
+  b.dot([HG.x1, HG.y1], COL.coral, 6, true); b.text([HG.x1, HG.y1], 'P₁', COL.coral, -10, -12, FONT_LBL, 'right');
+  b.dot([HG.x2, HG.y2], COL.coral, 6, true); b.text([HG.x2, HG.y2], 'P₂', COL.coral, 10, -12);
+};
+b7.handles = [
+  { pos: () => [HG.x1, HG.y1], set: (x, y) => { HG.x1 = x; HG.y1 = y; setIn('h-x1', x); setIn('h-y1', y); hgUpdate(); } },
+  { pos: () => [HG.x2, HG.y2], set: (x, y) => { HG.x2 = x; HG.y2 = y; setIn('h-x2', x); setIn('h-y2', y); hgUpdate(); } },
+];
+['x1', 'y1', 'x2', 'y2'].forEach(k => bindNum('h-' + k, HG, k, hgUpdate));
+(function () { const r = $('#h-eps'), v = $('#h-epsv'); r.value = HG.eps; const f = () => { HG.eps = +r.value; v.textContent = apx(HG.eps, 2); hgUpdate(); }; r.addEventListener('input', f); v.textContent = apx(HG.eps, 2); })();
+// простір Гафа
+const cv8 = $('#cv8'), c8 = cv8.getContext('2d'); let W8 = 0, H8 = 0;
+new ResizeObserver(() => { const r = cv8.getBoundingClientRect(); if (r.width < 10) return; const d = window.devicePixelRatio || 1; W8 = r.width; H8 = r.height; cv8.width = W8 * d; cv8.height = H8 * d; c8.setTransform(d, 0, 0, d, 0, 0); hDraw(); }).observe(cv8);
+function hDraw() {
+  if (!W8) return; const c = c8; const pl = 44, pr = 12, pt = 12, pb = 26; const Rr = 9;
+  const X = th => pl + th / Math.PI * (W8 - pl - pr), Y = r => pt + (1 - (r + Rr) / (2 * Rr)) * (H8 - pt - pb);
+  c.fillStyle = COL.board; c.fillRect(0, 0, W8, H8);
+  c.strokeStyle = COL.grid; c.lineWidth = 1; c.beginPath();
+  [0, 45, 90, 135, 180].forEach(d => { c.moveTo(X(d * Math.PI / 180), pt); c.lineTo(X(d * Math.PI / 180), H8 - pb); });
+  [-8, -4, 0, 4, 8].forEach(r => { c.moveTo(pl, Y(r)); c.lineTo(W8 - pr, Y(r)); }); c.stroke();
+  c.strokeStyle = COL.axis; c.beginPath(); c.moveTo(pl, Y(0)); c.lineTo(W8 - pr, Y(0)); c.moveTo(pl, pt); c.lineTo(pl, H8 - pb); c.stroke();
+  c.font = FONT_MONO; c.fillStyle = COL.faint; c.textAlign = 'center'; c.textBaseline = 'top';
+  [0, 45, 90, 135, 180].forEach(d => c.fillText(d + '°', X(d * Math.PI / 180), H8 - pb + 6));
+  c.textAlign = 'right'; c.textBaseline = 'middle'; [-8, -4, 0, 4, 8].forEach(r => c.fillText(String(r).replace('-', '−'), pl - 6, Y(r)));
+  c.font = "italic 600 15px Spectral, Georgia, serif"; c.fillStyle = COL.axis; c.fillText('ρ', pl - 26, pt + 6); c.textAlign = 'right'; c.fillText('θ', W8 - pr - 4, Y(0) - 10);
+  const curve = (p, col, w) => { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); for (let i = 0; i <= 180; i++) { const th = i / 180 * Math.PI; const r = p[0] * Math.cos(th) + p[1] * Math.sin(th); i ? c.lineTo(X(th), Y(r)) : c.moveTo(X(th), Y(r)); } c.stroke(); };
+  HPTS.forEach((p, i) => curve(p, RH && RH.inl[i] ? alpha(COL.gold, .38) : alpha(COL.chalk, .13), 1));
+  curve([HG.x1, HG.y1], COL.coral, 2); curve([HG.x2, HG.y2], COL.coral, 2);
+  if (RH) { const px = X(RH.th), py = Y(RH.rho); c.beginPath(); c.arc(px, py, 6, 0, 7); c.fillStyle = COL.gold; c.fill(); c.lineWidth = 2; c.strokeStyle = COL.board; c.stroke();
+    c.font = FONT_MONO; c.textAlign = px > W8 - 150 ? 'right' : 'left'; c.textBaseline = 'bottom'; c.fillStyle = COL.gold; c.fillText(`(${apx(RH.th * 180 / Math.PI, 1)}°; ${apx(RH.rho, 2)})`, px + (px > W8 - 150 ? -10 : 10), py - 6); }
+}
+
+/* ================= 5d. КАЛІБРУВАННЯ ================= */
+const KB = { u1: 0.5, t1: 0, u2: 2.3, t2: 100, u: 1.4 };
+function kbUpdate() {
+  const { u1, t1, u2, t2, u } = KB; let h;
+  if (isZ(u2 - u1)) h = row('Помилка', '', 'Покази в двох еталонних точках мають бути різними.');
+  else {
+    const k = (t2 - t1) / (u2 - u1), T = t1 + k * (u - u1); const outside = u < Math.min(u1, u2) || u > Math.max(u1, u2);
+    h = row('Рівняння через дві точки', `\\(\\dfrac{T - ${par(t1)}}{${numTex(t2)} - ${par(t1)}} = \\dfrac{U - ${par(u1)}}{${numTex(u2)} - ${par(u1)}}\\ \\Rightarrow\\ T = ${lin([[k, 'U'], [t1 - k * u1, '']])}\\)`, `Кутовий коефіцієнт \\(k \\approx ${apxTex(k, 3)}\\) °C/В — чутливість, обернена до чутливості датчика.`)
+      + row('Результат', `\\(U = ${apxTex(u, 3)}\\ \\text{В}\\ \\Rightarrow\\ T \\approx ${apxTex(T, 2)}\\ ^\\circ\\text{C}\\)`, outside ? 'Показ поза відрізком калібрування: це екстраполяція.' : 'Показ усередині відрізка калібрування: це інтерполяція.');
+  }
+  setTex($('#k-out'), h);
+}
+['u1', 't1', 'u2', 't2', 'u'].forEach(k => bindNum('k-' + k, KB, k, kbUpdate));
+
+/* ================= вкладки, тема ================= */
+const TABS = ['konstruktor', 'roztashuvannia', 'metryka', 'mediany', 'prykladni', 'teoriia'];
+function openTab(id, push) {
+  if (!TABS.includes(id)) id = 'konstruktor';
+  $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === id)));
+  TABS.forEach(t => { $('#p-' + t).hidden = t !== id; });
+  requestAnimationFrame(() => { BOARDS.forEach(b => b.resize()); });
+  if (push) { try { history.replaceState(null, '', '#' + id); } catch (_) {} }
+}
+$$('.tab').forEach(t => t.addEventListener('click', () => { openTab(t.dataset.tab, true); window.scrollTo({ top: Math.min(window.scrollY, $('.tabsbar').offsetTop), behavior: 'auto' }); }));
+$$('.toc a').forEach(a => a.addEventListener('click', e => { e.preventDefault(); const el = document.querySelector(a.getAttribute('href')); if (el) el.scrollIntoView({ block: 'start' }); }));
+function rerenderAll() { readCol(); BOARDS.forEach(b => b.render()); hDraw(); }
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rerenderAll); } catch (_) {}
+new MutationObserver(rerenderAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(rerenderAll);
+
+readCol();
+t1Update(); t2Update(); t3Update(); t4Update(); shUpdate(); ecUpdate(); hgUpdate(); kbUpdate();
+const h0 = (location.hash || '').replace('#', '');
+openTab(TABS.includes(h0) ? h0 : 'konstruktor', false);
+</script>
+
+</body>
+</html>
