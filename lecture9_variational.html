@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Варіаційне числення та опукла оптимізація</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{--g:#345a53;--g-d:#27443e;--g-l:#e7efec;--gold:#ca9d48;--gold-l:#f6eddb;--bg:#f7f4ec;--card:#fffdf8;--ink:#1d2a27;--muted:#5f6d69;--line:#e4dcc8;--red:#b4493b;--blue:#3b6ea5;--vio:#7a5aa6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.62 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+header{background:var(--g);color:#fff;border-bottom:4px solid var(--gold)}
+.hwrap{max-width:1240px;margin:0 auto;padding:18px 16px;display:flex;gap:18px;align-items:center}
+.logo{width:78px;height:78px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+.logo svg,.flogo svg{width:100%;height:100%;display:block}
+h1{font-family:Lora,serif;font-weight:600;font-size:clamp(20px,3.2vw,30px);margin:0;line-height:1.2}
+.sub{opacity:.9;font-size:13.5px;margin-top:5px}
+.sub b{color:var(--gold);font-weight:600}
+nav{position:sticky;top:0;z-index:20;background:var(--g-d);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+nav .tabs{max-width:1240px;margin:0 auto;display:flex;overflow-x:auto;padding:0 8px;scrollbar-width:thin}
+nav button{background:none;border:0;color:#d5e2de;font:500 14px 'IBM Plex Sans',sans-serif;padding:12px 13px;white-space:nowrap;cursor:pointer;border-bottom:3px solid transparent}
+nav button:hover{color:#fff}
+nav button.on{color:#fff;border-bottom-color:var(--gold)}
+main{max-width:1240px;margin:0 auto;padding:18px 16px 40px}
+section.tab{display:none}section.tab.on{display:block}
+h2{font-family:Lora,serif;color:var(--g);font-size:25px;margin:8px 0 6px;font-weight:600}
+h3{font-family:Lora,serif;color:var(--g);font-size:18px;margin:2px 0 8px;font-weight:600}
+h4{font-family:Lora,serif;color:var(--g-d);font-size:16px;margin:14px 0 4px}
+.intro{max-width:920px;font-size:15.5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.grid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:16px;align-items:start}
+.grid>.card{margin:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.grid,.two{grid-template-columns:1fr}}
+.ctrl label{display:block;font-size:13px;color:var(--muted);margin:11px 0 3px;font-weight:500}
+.ctrl label:first-child{margin-top:0}
+input[type=text],input[type=number],select,textarea{width:100%;font:14px 'IBM Plex Mono',monospace;padding:7px 9px;border:1px solid #cfc6af;border-radius:7px;background:#fff;color:var(--ink)}
+textarea{resize:vertical;min-height:70px}
+input.badin{border-color:var(--red);background:#fff5f3}
+.err{color:var(--red);font-size:12.5px;min-height:0}
+input[type=range]{width:100%;accent-color:var(--g);margin:2px 0}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.val{float:right;font-family:'IBM Plex Mono',monospace;color:var(--g);font-weight:500}
+canvas.plot{width:100%;height:320px;display:block;background:#fff;border:1px solid var(--line);border-radius:8px;touch-action:none}
+canvas.sq{height:auto;aspect-ratio:1/1;max-width:520px;margin:0 auto}
+.readout{font:13px/1.6 'IBM Plex Mono',monospace;background:var(--g-l);border-radius:8px;padding:10px 12px;margin-top:12px;white-space:pre-wrap;word-break:break-word}
+.note{border-left:3px solid var(--gold);background:var(--gold-l);padding:10px 14px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chips button,.seg button{border:1px solid #d3c9b0;background:#fff;border-radius:999px;padding:3px 10px;font:12.5px 'IBM Plex Sans',sans-serif;cursor:pointer;color:var(--ink)}
+.chips button:hover{border-color:var(--g);color:var(--g)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.seg button{padding:6px 14px;font-size:14px}
+.seg button.on{background:var(--g);color:#fff;border-color:var(--g)}
+.btn{background:var(--g);color:#fff;border:0;border-radius:7px;padding:8px 14px;font:500 14px 'IBM Plex Sans',sans-serif;cursor:pointer;margin-top:12px}
+.btn:hover{background:var(--g-d)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:18px;height:3px;display:inline-block;border-radius:2px}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)!important;height:2px}
+.legend i.pt{width:9px;height:9px;border-radius:50%}
+.ok{color:#2e7d4f;font-weight:600}.bad{color:var(--red);font-weight:600}
+.imgs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.imgs figure{margin:0}.imgs figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:4px}
+canvas.img{width:100%;aspect-ratio:1/1;image-rendering:pixelated;border-radius:6px;border:1px solid var(--line);display:block;background:#ddd}
+@media(max-width:700px){.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.theory p,.app p{max-width:900px}
+.thsec{border-top:1px solid var(--line);padding-top:6px;margin-top:18px}
+.formula{background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 12px;margin:10px 0;overflow-x:auto}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:10px}
+.map button{text-align:left;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px;cursor:pointer;font:14px/1.45 'IBM Plex Sans',sans-serif;color:var(--ink)}
+.map button:hover{border-color:var(--gold);box-shadow:0 2px 8px rgba(202,157,72,.18)}
+.map b{display:block;font-family:Lora,serif;color:var(--g);font-size:15.5px;margin-bottom:2px}
+.app .card h3{display:flex;align-items:center;gap:10px}
+.app .tag{font:500 12px 'IBM Plex Sans',sans-serif;background:var(--g-l);color:var(--g);border-radius:999px;padding:2px 9px;cursor:pointer;border:0}
+.status{font-size:12.5px;color:var(--muted);margin-left:8px}
+footer{background:var(--g-d);color:#d5e2de;font-size:13px}
+footer .fw{max-width:1240px;margin:0 auto;padding:16px;display:flex;gap:12px;align-items:center}
+.flogo{width:36px;height:36px;flex:none}
+.katex{font-size:1.05em}
+kbd{font:12.5px 'IBM Plex Mono',monospace;background:#fff;border:1px solid #d3c9b0;border-radius:4px;padding:0 4px}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+  <div class="logo" id="logoTop"></div>
+  <div>
+    <h1>Варіаційне числення та опукла оптимізація в нескінченновимірних просторах</h1>
+    <div class="sub">Інтерактивний посібник до курсу <b>«Функціональний аналіз для аналізу даних»</b> · Кафедра фундаментальної математики, ХНУ імені В. Н. Каразіна</div>
+  </div>
+</div></header>
+
+<nav><div class="tabs" id="tabs">
+  <button data-t="theory">Довідка</button>
+  <button data-t="convex">Опуклість і субградієнти</button>
+  <button data-t="weak">Слабка збіжність</button>
+  <button data-t="el">Рівняння Ейлера–Лагранжа</button>
+  <button data-t="prox">Проксимальні оператори</button>
+  <button data-t="l1">ℓ¹, медіана та Lasso</button>
+  <button data-t="img">Зображення</button>
+  <button data-t="alg">Алгоритми</button>
+  <button data-t="app">Прикладні задачі</button>
+</div></nav>
+
+<main>
+
+<!-- ======================= ДОВІДКА ======================= -->
+<section class="tab theory" id="t-theory">
+<h2>Коротка теоретична довідка</h2>
+<p class="intro">Ця сторінка супроводжує тему про опуклу оптимізацію та варіаційне числення в банахових і гільбертових просторах. Головна думка теми проста: розв'язок багатьох задач аналізу даних — регресії, класифікації, очищення й сегментації зображень — є точкою мінімуму функціонала на просторі функцій, і саме геометрія цього простору визначає, чи існує розв'язок, як його впізнати і як його знайти. Нижче зібрано основні означення й факти, а в сусідніх вкладках кожен із них можна «покрутити руками».</p>
+
+<div class="map" id="tabMap">
+  <button data-go="convex"><b>Опуклість і субградієнти</b>Хорди, надграфік, опорні прямі, графік субдиференціала, правило Ферма.</button>
+  <button data-go="weak"><b>Слабка збіжність</b>Осциляції та концентрація, напівнеперервність знизу, роль опуклості (теорема Мазура).</button>
+  <button data-go="el"><b>Рівняння Ейлера–Лагранжа</b>Енергія струни, природні крайові умови, друга варіація.</button>
+  <button data-go="prox"><b>Проксимальні оператори</b>М'який поріг, проєкція, еластична сітка, блоковий поріг на площині.</button>
+  <button data-go="l1"><b>ℓ¹, медіана та Lasso</b>Стійкість до викидів, розрідженість, шлях Lasso та траєкторія ISTA.</button>
+  <button data-go="img"><b>Зображення</b>Тихонов проти повної варіації, модель ROF, опукла сегментація Чана–Везе.</button>
+  <button data-go="alg"><b>Алгоритми</b>Градієнтний спуск і передобумовлення, рання зупинка, функціональний градієнтний спуск.</button>
+  <button data-go="app"><b>Прикладні задачі</b>Де все це працює: медицина, фото, супутники, генетика, бустинг.</button>
+</div>
+
+<div class="thsec">
+<h3>1. Опуклі множини та функціонали</h3>
+<p>Нехай $E$ — дійсний банахів простір. Множина $C\subset E$ опукла, якщо разом із точками $u,v$ вона містить відрізок $tu+(1-t)v$, $t\in[0,1]$. Функціонали зручно розглядати зі значеннями в $(-\infty,+\infty]$: тоді задача з обмеженням $u\in C$ записується як мінімізація $F+\delta_C$, де індикаторна функція $\delta_C$ дорівнює $0$ на $C$ і $+\infty$ поза $C$. Функціонал $F$ опуклий, якщо</p>
+<div class="formula">$$F\big(tu+(1-t)v\big)\le tF(u)+(1-t)F(v),\qquad u,v\in E,\ t\in[0,1],$$</div>
+<p>тобто на кожному відрізку графік лежить не вище за хорду. Опуклими є лінійні функціонали, будь-яка норма, квадрат гільбертової норми (навіть строго опуклий завдяки тотожності $\|tu+(1-t)v\|^2=t\|u\|^2+(1-t)\|v\|^2-t(1-t)\|u-v\|^2$), функціонал Діріхле $\int_\Omega|\nabla u|^2$ і повна варіація $\int_\Omega|\nabla u|$. Головна користь опуклості: <i>кожен локальний мінімум глобальний, множина мінімумів опукла, а строго опуклий функціонал має не більше однієї точки мінімуму.</i></p>
+</div>
+
+<div class="thsec">
+<h3>2. Слабка збіжність та існування мінімуму</h3>
+<p>У нескінченновимірному просторі обмежена мінімізуюча послідовність не мусить мати збіжної підпослідовності: ортонормовані вектори $e_n$ в $\ell^2$ попарно віддалені на $\sqrt2$. Тому послаблюють збіжність: $u_n\rightharpoonup u$, якщо $\varphi(u_n)\to\varphi(u)$ для кожного $\varphi\in E^*$ (у гільбертовому просторі — $\langle u_n,w\rangle\to\langle u,w\rangle$ для всіх $w$). У рефлексивному просторі (гільбертові простори, $L^p$, $W^{1,p}$ при $1\lt p\lt\infty$) з обмеженої послідовності можна вибрати слабко збіжну підпослідовність. Функціонал напівнеперервний знизу, якщо $F(u)\le\liminf F(u_n)$ при $u_n\to u$; за теоремою Мазура для опуклих функціоналів ця властивість зберігається і для слабкої збіжності.</p>
+<div class="formula"><b>Пряма теорема варіаційного числення.</b> Власний опуклий напівнеперервний знизу коерцитивний ($F(u)\to+\infty$ при $\|u\|\to\infty$) функціонал на рефлексивному просторі досягає мінімуму; якщо він строго опуклий, точка мінімуму єдина.</div>
+<p>Рефлексивність суттєва: у $C[0,1]$ мінімізуюча послідовність може «хотіти» утворити стрибок, якого простір не допускає. У задачах обробки зображень стрибки — це контури, тому простір функцій обмеженої варіації $BV(\Omega)$ (нерефлексивний) обирають саме для того, щоб розв'язок мав право бути розривним.</p>
+</div>
+
+<div class="thsec">
+<h3>3. Похідні Гато і Фреше, градієнт</h3>
+<p>Варіація $\delta F(u;h)=\frac{d}{dt}F(u+th)\big|_{t=0}$ обчислюється як похідна функції однієї змінної. Якщо $h\mapsto\delta F(u;h)$ лінійний неперервний функціонал, це похідна Гато $F'(u)\in E^*$; похідна Фреше вимагає рівномірного наближення $F(u+h)=F(u)+F'(u)h+o(\|h\|)$. У гільбертовому просторі за теоремою Ріса $F'(u)h=\langle\nabla F(u),h\rangle$, і градієнт <i>залежить від вибору скалярного добутку</i>. Корисні формули:</p>
+<div class="formula">$$\nabla\|Au-b\|^2=2A^*(Au-b),\qquad \nabla_f\big(f(x)-y\big)^2=2\big(f(x)-y\big)K_x\ \text{ у RKHS }H_K.$$</div>
+<p>Якщо $u^*$ — локальний мінімум, то $F'(u^*)=0$; для опуклого $F$ ця умова і достатня, бо $F(v)\ge F(u)+F'(u)(v-u)$: опуклий диференційовний функціонал лежить вище за свою дотичну.</p>
+</div>
+
+<div class="thsec">
+<h3>4. Рівняння Ейлера–Лагранжа</h3>
+<p>Для інтегрального функціонала $F(u)=\int_\Omega L(x,u,\nabla u)\,dx$ інтегрування частинами дає $\delta F(u;h)=\int_\Omega(L_z-\operatorname{div}L_p)\,h\,dx$ для фінітних $h$, і за основною лемою варіаційного числення мінімум задовольняє</p>
+<div class="formula">$$L_z(x,u,\nabla u)-\operatorname{div}L_p(x,u,\nabla u)=0,\qquad \langle L_p,n\rangle=0\ \text{ на вільній частині межі}.$$</div>
+<p>Ліва частина — це $L^2$-градієнт (варіаційна похідна $\delta F/\delta u$). Наприклад, для функціонала Діріхле $\frac12\int|\nabla u|^2$ отримуємо $-\Delta u=0$; той самий функціонал у скалярному добутку $H^1_0$ має градієнт $u$. Перший градієнт «шорсткий», другий гладкий — і це вирішально впливає на швидкість градієнтних методів.</p>
+</div>
+
+<div class="thsec">
+<h3>5. Субдиференціал і правило Ферма</h3>
+<p>Для опуклого $F$ субградієнт у точці $u$ — це $g$ з $F(v)\ge F(u)+\langle g,v-u\rangle$ для всіх $v$, тобто нахил афінної мінoранти, що торкається графіка. Множина $\partial F(u)$ опукла й замкнена; для диференційовного $F$ вона складається з одного градієнта. Приклади: $\partial|t|=\{\operatorname{sign}t\}$ при $t\ne0$ і $[-1,1]$ при $t=0$; $\partial\|\cdot\|(0)$ — одинична куля, а $\partial\|\cdot\|(u)=\{u/\|u\|\}$ у гільбертовому просторі; $\partial\delta_C(u)$ — нормальний конус.</p>
+<div class="formula">$$u^*\in\arg\min F\iff 0\in\partial F(u^*),\qquad \partial(F+G)=\partial F+\partial G\ \ (\text{Моро–Рокафеллар}).$$</div>
+<p>З цього правила одразу випливають умови Каруша–Куна–Таккера для SVM (точки поза смугою не впливають на розв'язок, точки всередині мають $\alpha_i=C$, точки на межі — $0<\alpha_i<C$) і розрідженість $\ell^1$-регуляризації.</p>
+</div>
+
+<div class="thsec">
+<h3>6. Проксимальний оператор</h3>
+<div class="formula">$$\operatorname{prox}_{\tau G}(v)=\arg\min_{u\in H}\Big\{G(u)+\tfrac1{2\tau}\|u-v\|^2\Big\},\qquad u=\operatorname{prox}_{\tau G}(v)\iff \tfrac{v-u}{\tau}\in\partial G(u).$$</div>
+<p>Це «крок, що враховує злами». Для $G=\lambda|\cdot|$ — м'який поріг $S_{\tau\lambda}(a)=\operatorname{sign}(a)\max\{|a|-\tau\lambda,0\}$, для $\delta_C$ — метрична проєкція на $C$, для норми гільбертового простору — блоковий поріг $\max\{1-\tau/\|v\|,0\}\,v$.</p>
+</div>
+
+<div class="thsec">
+<h3>7. Регуляризація зображень</h3>
+<p>Спостерігаємо $f=Au_0+\eta$ ($A=I$ для шуму, згортка для розмиття). Задача некоректна, тому мінімізують $E(u)=\frac12\|Au-f\|^2+\lambda R(u)$. Регуляризатор Тихонова $R=\frac12\int|\nabla u|^2$ дає рівняння $u-\lambda\Delta u=f$, у частотах $\hat u=\hat f/(1+\lambda|\omega|^2)$ — фільтр нижніх частот, що розмиває контури. Повна варіація $\mathrm{TV}(u)=\int|\nabla u|$ штрафує висоту стрибка, а не його крутизну, тому модель Рудіна–Ошера–Фатемі</p>
+<div class="formula">$$\min_u\ \tfrac12\int_\Omega(u-f)^2\,dx+\lambda\,\mathrm{TV}(u)$$</div>
+<p>видаляє шум, зберігаючи контури (ціна — «сходинки» на плавних градієнтах). Сегментацію Чана–Везе $\mathrm{Per}(\Sigma)+\mu\int_\Sigma(f-c_1)^2+\mu\int_{\Omega\setminus\Sigma}(f-c_2)^2$ можна опукло релаксувати: $\min\{\mathrm{TV}(u)+\mu\int u\,r:\ 0\le u\le1\}$, $r=(f-c_1)^2-(f-c_2)^2$; майже кожна множина рівня $\{u^*>t\}$ є глобальним мінімумом початкової задачі (Чан, Есєдоглу, Ніколова).</p>
+</div>
+
+<div class="thsec">
+<h3>8. Алгоритми</h3>
+<p>Якщо $E$ опуклий, а $\nabla E$ ліпшицевий зі сталою $L$, то градієнтний спуск $u_{k+1}=u_k-\tau\nabla E(u_k)$ з $0<\tau\le1/L$ задовольняє</p>
+<div class="formula">$$E(u_k)-E(u^*)\le\frac{\|u_0-u^*\|^2}{2\tau k}.$$</div>
+<p>Для $E=F+G$ з гладким $F$ і опуклим $G$ працює проксимальний градієнтний метод $u_{k+1}=\operatorname{prox}_{\tau G}(u_k-\tau\nabla F(u_k))$ (ISTA, з прискоренням — FISTA, швидкість $1/k^2$). Після дискретизації зображення стала $L$ для функціонала Діріхле росте як $1/h^2$, тож вибір скалярного добутку (передобумовлення) стає вирішальним. Градієнтний спуск у RKHS $f_{k+1}=(1-2\tau\lambda)f_k-\tau\sum_i\partial_tL(y_i,f_k(x_i))K_{x_i}$ не виходить з $\operatorname{span}\{K_{x_i}\}$, а при $\lambda=0$ кількість кроків $k$ відіграє роль параметра Тихонова $\lambda\approx1/(2\tau k)$ — рання зупинка є регуляризацією. Заміна точного функціонального градієнта найкращим наближенням деревом рішень дає градієнтний бустинг.</p>
+</div>
+
+<div class="thsec">
+<h3>Як вводити вирази</h3>
+<p>У текстових полях можна писати формули: <kbd>+ − * / ^</kbd>, дужки, функції <kbd>sin cos tan exp ln log sqrt abs sign sinh cosh tanh atan max min</kbd>, функцію Гевісайда <kbd>H(x)</kbd> (дорівнює 1 при $x\ge0$ і 0 інакше), <kbd>clip(x,a,b)</kbd>, сталі <kbd>pi</kbd> і <kbd>e</kbd>. Знак множення можна пропускати: <kbd>2x</kbd>, <kbd>3sin(x)</kbd>, <kbd>2pi n x</kbd>. Числові поля теж приймають вирази, наприклад <kbd>pi/2</kbd>.</p>
+</div>
+</section>
+
+<!-- ======================= ОПУКЛІСТЬ ======================= -->
+<section class="tab" id="t-convex">
+<h2>Опуклість, опорні прямі та субдиференціал</h2>
+<p class="intro">Опуклість має наочний зміст: надграфік функції (заштрихована область) — опукла множина, і будь-яка хорда лежить над графіком. Субградієнт у точці $x_0$ — це нахил прямої, яка торкається графіка в $x_0$ і ніде не піднімається над ним. У гладкій точці така пряма одна (дотична), у точці зламу їх ціле «віяло», і їхні нахили утворюють відрізок $\partial f(x_0)$. Внизу намальовано графік багатозначного відображення $x\mapsto\partial f(x)$: для опуклої функції він монотонний, а точки мінімуму — це саме ті $x$, де він перетинає нуль (правило Ферма).</p>
+<div class="grid">
+<div class="card ctrl">
+  <label>Функція f(x)</label>
+  <input type="text" id="cvF" value="abs(x-1) + 0.3x^2"><div class="err" id="cvFErr"></div>
+  <div class="chips" id="cvPre"></div>
+  <div class="row"><div><label>a</label><input type="text" id="cvA" value="-3"></div><div><label>b</label><input type="text" id="cvB" value="3"></div></div>
+  <label>Точка x₀ <span class="val" id="cvX0V"></span></label><input type="range" id="cvX0" min="0" max="1" step="0.001" value="0.6667">
+  <label>Кінець хорди u <span class="val" id="cvUV"></span></label><input type="range" id="cvU" min="0" max="1" step="0.001" value="0.12">
+  <label>Кінець хорди v <span class="val" id="cvVV"></span></label><input type="range" id="cvV" min="0" max="1" step="0.001" value="0.9">
+  <label>Параметр t точки tu + (1−t)v <span class="val" id="cvTV"></span></label><input type="range" id="cvT" min="0" max="1" step="0.01" value="0.4">
+  <div class="readout" id="cvOut"></div>
+</div>
+<div class="card">
+  <canvas class="plot" id="cvP1" style="height:360px"></canvas>
+  <div class="legend"><span><i style="background:var(--g)"></i>графік f</span><span><i style="background:rgba(52,90,83,.25);height:9px"></i>надграфік</span><span><i style="background:var(--gold)"></i>опорні прямі (нахили з ∂f(x₀))</span><span><i style="background:var(--blue)"></i>хорда</span><span><i class="pt" style="background:var(--vio)"></i>мінімум</span></div>
+  <h4>Графік субдиференціала x ↦ ∂f(x)</h4>
+  <canvas class="plot" id="cvP2" style="height:220px"></canvas>
+  <div class="legend"><span><i style="background:var(--g)"></i>нахили f</span><span><i style="background:var(--gold);height:6px"></i>відрізок ∂f(x₀)</span><span><i class="dash" style="color:var(--red)"></i>рівень 0: тут 0 ∈ ∂f(x)</span></div>
+</div>
+</div>
+<div class="note">Спробуйте: для <b>|x|</b> поставте x₀ = 0 і побачите віяло прямих з нахилами від −1 до 1; для <b>hinge</b> злам у x = 1 — це саме ті «точки на межі смуги» з лекції про SVM; для <b>|x| + |x−1|</b> мінімум досягається на цілому відрізку, бо функція опукла, але не строго; для <b>неопуклої</b> функції дотична перетинає графік (червоні ділянки), і субдиференціал порожній.</div>
+</section>
+
+<!-- ======================= СЛАБКА ЗБІЖНІСТЬ ======================= -->
+<section class="tab" id="t-weak">
+<h2>Слабка збіжність: «усі вимірювання збігаються», а норма — ні</h2>
+<p class="intro">Послідовність $u_n$ слабко збігається до $u$, якщо для кожного «приладу» $w\in L^2$ покази $\langle u_n,w\rangle=\int u_n w$ прямують до $\langle u,w\rangle$. Фізично: швидкі коливання струни або композитного матеріалу з дрібною структурою будь-який повільний датчик бачить як середнє значення. Тому $\operatorname{sign}\sin(2\pi nx)\rightharpoonup0$, хоча $\|u_n\|=1$. Друга можливість — концентрація: $\sqrt n\,\mathbb 1_{[0,1/n]}$ «стискається» в точку. Нижній графік показує функціонал $\Phi(u)=\int g(u(x))\,dx$ на цій послідовності: якщо $g$ опукла, то $\Phi(\lim u_n)\le\liminf\Phi(u_n)$ (теорема Мазура), а для неопуклої подвійної ями $(|z|-1)^2$ енергія коливань дорівнює 0, тоді як енергія їхньої слабкої границі дорівнює 1. Саме так у фізиці матеріалів виникає мікроструктура, а мінімум неопуклої енергії може не існувати.</p>
+<div class="grid">
+<div class="card ctrl">
+  <label>Послідовність u_n(x) на [0, 1] (змінні n, x)</label>
+  <input type="text" id="wkU" value="sign(sin(2pi n x))"><div class="err" id="wkUErr"></div>
+  <div class="chips" id="wkPreU"></div>
+  <label>Слабка границя u(x)</label>
+  <input type="text" id="wkL" value="0"><div class="err" id="wkLErr"></div>
+  <label>Тестова функція («прилад») w(x)</label>
+  <input type="text" id="wkW" value="exp(x)"><div class="err" id="wkWErr"></div>
+  <div class="chips" id="wkPreW"></div>
+  <label>Підінтегральна функція g(z) у Φ(u) = ∫ g(u) dx</label>
+  <input type="text" id="wkG" value="(abs(z)-1)^2"><div class="err" id="wkGErr"></div>
+  <div class="chips" id="wkPreG"></div>
+  <label>n <span class="val" id="wkNV"></span></label><input type="range" id="wkN" min="1" max="100" step="1" value="5">
+  <div class="readout" id="wkOut"></div>
+</div>
+<div class="card">
+  <canvas class="plot" id="wkP1" style="height:300px"></canvas>
+  <div class="legend"><span><i style="background:var(--gold)"></i>u_n</span><span><i class="dash" style="color:var(--blue)"></i>слабка границя u</span><span><i style="background:var(--g)"></i>w</span><span><i style="background:rgba(52,90,83,.25);height:9px"></i>u_n·w &gt; 0</span><span><i style="background:rgba(180,73,59,.25);height:9px"></i>u_n·w &lt; 0</span></div>
+  <div class="two" style="margin-top:12px">
+    <div><h4>Вимірювання ⟨u_n, w⟩</h4><canvas class="plot" id="wkP2" style="height:230px"></canvas></div>
+    <div><h4>Φ(u_n), ‖u_n − u‖ та Φ(u)</h4><canvas class="plot" id="wkP3" style="height:230px"></canvas></div>
+  </div>
+  <div class="legend"><span><i class="pt" style="background:var(--g)"></i>⟨u_n,w⟩</span><span><i class="pt" style="background:var(--gold)"></i>Φ(u_n)</span><span><i class="pt" style="background:var(--blue)"></i>‖u_n − u‖</span><span><i class="dash" style="color:var(--red)"></i>значення для границі</span></div>
+</div>
+</div>
+</section>
+
+<!-- ======================= ЕЙЛЕР–ЛАГРАНЖ ======================= -->
+<section class="tab" id="t-el">
+<h2>Рівняння Ейлера–Лагранжа як баланс сил</h2>
+<p class="intro">Розглянемо енергію пружної струни на $[a,b]$:
+$$E(u)=\int_a^b\Big(\tfrac12p(x)\,u'(x)^2+\tfrac12q(x)\big(u(x)-g(x)\big)^2-\varphi(x)\,u(x)\Big)dx .$$
+Тут $p$ — натяг (жорсткість), $q$ — жорсткість пружин, що тягнуть струну до положення $g$ (у задачах обробки сигналів $g$ — це дані, а $q$ відповідає вазі точності), $\varphi$ — зовнішнє навантаження. Рівняння Ейлера–Лагранжа $-(pu')'+q(u-g)=\varphi$ — це умова рівноваги сил. На закріпленому кінці значення задане, а на вільному виникає природна крайова умова $p\,u'=0$: сила натягу на вільному кінці дорівнює нулю. Праворуч показано, що будь-яке допустиме збурення $u^*+\varepsilon h$ лише збільшує енергію: $E(u^*+\varepsilon h)=E(u^*)+0\cdot\varepsilon+Q(h)\,\varepsilon^2$ — перша варіація нульова, друга додатна.</p>
+<div class="grid">
+<div class="card ctrl">
+  <label>Готові приклади</label>
+  <select id="elPre"></select>
+  <div class="row"><div><label>p(x) — жорсткість</label><input type="text" id="elP"></div><div><label>q(x) — прив'язка</label><input type="text" id="elQ"></div></div>
+  <div class="row"><div><label>g(x) — дані/положення</label><input type="text" id="elG"></div><div><label>φ(x) — навантаження</label><input type="text" id="elPhi"></div></div>
+  <div class="err" id="elErr"></div>
+  <div class="row"><div><label>a</label><input type="text" id="elA"></div><div><label>b</label><input type="text" id="elB"></div></div>
+  <div class="row"><div><label>Лівий кінець</label><select id="elLt"><option value="D">закріплений</option><option value="N">вільний</option></select></div><div><label>u(a)</label><input type="text" id="elLv"></div></div>
+  <div class="row"><div><label>Правий кінець</label><select id="elRt"><option value="D">закріплений</option><option value="N">вільний</option></select></div><div><label>u(b)</label><input type="text" id="elRv"></div></div>
+  <label>Напрямок збурення h</label>
+  <select id="elH"><option value="bump">горбик sin(πs)</option><option value="osc">коливання sin(3πs)</option><option value="cos">cos(πs)</option><option value="lin">лінійна s</option><option value="custom">власна h(x)…</option></select>
+  <input type="text" id="elHc" value="x^2 (1 - x)" style="margin-top:6px">
+  <label>Амплітуда збурення ε <span class="val" id="elEpsV"></span></label><input type="range" id="elEps" min="-1" max="1" step="0.01" value="0.4">
+  <div class="readout" id="elOut"></div>
+</div>
+<div class="card">
+  <canvas class="plot" id="elP1" style="height:340px"></canvas>
+  <div class="legend"><span><i style="background:var(--g)"></i>мінімум u*</span><span><i style="background:var(--gold)"></i>u* + εh</span><span><i class="dash" style="color:var(--blue)"></i>точний розв'язок (для готових прикладів)</span><span><i style="background:rgba(202,157,72,.45)"></i>g(x)</span><span>■ закріплений кінець · ○ вільний кінець</span></div>
+  <h4>Енергія вздовж прямої ε ↦ E(u* + εh)</h4>
+  <canvas class="plot" id="elP2" style="height:220px"></canvas>
+</div>
+</div>
+<div class="note">Порівняйте приклади «закріплені кінці» і «вільні кінці»: на вільному кінці розв'язок завжди підходить горизонтально. У прикладі зі стрибком у даних функціонал Діріхле розмазує контур, бо функція зі стрибком має нескінченну енергію $\int u'^2$. Останній приклад показує, що буває без коерцитивності: якщо обидва кінці вільні і $q\equiv0$, енергію можна змінити, додавши до $u$ сталу, тож мінімум або не єдиний, або взагалі не існує.</div>
+</section>
+
+<!-- ======================= PROX ======================= -->
+<section class="tab" id="t-prox">
+<h2>Проксимальний оператор: пружина проти штрафу</h2>
+<p class="intro">Точку $\operatorname{prox}_{\tau G}(v)$ зручно уявляти як положення кульки, яку пружина жорсткості $1/\tau$ тягне до $v$, а потенціал $G$ — у свій мінімум. Рівновага настає там, де сила пружини $(v-u)/\tau$ «вміщується» в субдиференціал $\partial G(u)$. У точці зламу $G$ субдиференціал — цілий відрізок, тому кулька може «застрягнути» в зламі для цілого інтервалу значень $v$: так виникає мертва зона м'якого порогу і, як наслідок, розрідженість розв'язків з $\ell^1$-штрафом.</p>
+<div class="grid">
+<div class="card ctrl">
+  <label>Функціонал G(u)</label>
+  <select id="pxG">
+    <option value="l1">λ|u| — м'який поріг</option>
+    <option value="en">λ|u| + μu²/2 — еластична сітка</option>
+    <option value="box">індикатор відрізка [0, 1] — проєкція</option>
+    <option value="hinge">λ·max(0, 1 − u) — hinge-втрата</option>
+    <option value="sq">λu²/2 — гребенева регуляризація</option>
+    <option value="custom">власний G(u, lam, mu)…</option>
+  </select>
+  <input type="text" id="pxC" value="lam*max(abs(u)-1, 0)" style="margin-top:6px"><div class="err" id="pxCErr"></div>
+  <label>λ <span class="val" id="pxLamV"></span></label><input type="range" id="pxLam" min="0" max="3" step="0.01" value="1">
+  <label>μ <span class="val" id="pxMuV"></span></label><input type="range" id="pxMu" min="0" max="3" step="0.01" value="1">
+  <label>τ (крок, 1/τ — жорсткість пружини) <span class="val" id="pxTauV"></span></label><input type="range" id="pxTau" min="0.05" max="3" step="0.01" value="1">
+  <label>v <span class="val" id="pxVV"></span></label><input type="range" id="pxV" min="-4" max="4" step="0.01" value="2.3">
+  <div class="readout" id="pxOut"></div>
+</div>
+<div class="card">
+  <div class="two">
+    <div><h4>G(u) + (u − v)²/(2τ)</h4><canvas class="plot" id="pxP1" style="height:290px"></canvas></div>
+    <div><h4>Відображення v ↦ prox<sub>τG</sub>(v)</h4><canvas class="plot" id="pxP2" style="height:290px"></canvas></div>
+  </div>
+  <div class="legend"><span><i style="background:var(--g)"></i>G</span><span><i class="dash" style="color:var(--gold)"></i>пружина (u−v)²/(2τ)</span><span><i style="background:var(--gold)"></i>сума</span><span><i class="pt" style="background:var(--vio)"></i>prox</span><span><i class="dash" style="color:var(--blue)"></i>тотожне відображення</span><span><i style="background:rgba(180,73,59,.25);height:9px"></i>мертва зона</span></div>
+</div>
+</div>
+
+<div class="grid" style="margin-top:16px">
+<div class="card ctrl">
+  <h3>Проксимальні кроки на площині</h3>
+  <p style="margin:0;font-size:14px">Перетягуйте точку v мишею або пальцем. Сірі стрілки показують, куди оператор переносить точки сітки.</p>
+  <label>Функціонал</label>
+  <div class="seg" id="px2Mode"><button data-m="l2" class="on">τ‖u‖₂ — блоковий поріг</button><button data-m="l1">τ‖u‖₁ — покоординатний</button><button data-m="box">проєкція на [0,1]²</button></div>
+  <label>τ <span class="val" id="px2TauV"></span></label><input type="range" id="px2Tau" min="0" max="2.5" step="0.01" value="1">
+  <div class="readout" id="px2Out"></div>
+</div>
+<div class="card">
+  <canvas class="plot sq" id="pxP3"></canvas>
+</div>
+</div>
+<div class="note">Порівняйте два пороги: блоковий $\max\{1-\tau/\|v\|,0\}v$ вкорочує вектор, не змінюючи напрямку, і обнуляє всю групу координат одразу (груповий Lasso), а покоординатний м'який поріг «притягує» точки до осей, тобто обнуляє окремі координати (звичайний Lasso).</div>
+</section>
+
+<!-- ======================= L1 / LASSO ======================= -->
+<section class="tab" id="t-l1">
+<h2>ℓ¹: стійкість до викидів і розрідженість</h2>
+<p class="intro">Сума $\sum|t-a_i|$ мінімізується в медіані, а $\sum(t-a_i)^2$ — у середньому арифметичному. Субдиференціал першої функції залежить лише від того, скільки точок лежить ліворуч і праворуч, а не від того, наскільки далеко, тому один викид не зсуває $\ell^1$-розв'язок. Та сама властивість пояснює, чому повна варіація (ℓ¹-норма градієнта) не розмиває стрибків зображення, а штраф $\lambda\|w\|_1$ у задачі Lasso обнуляє слабкі ознаки.</p>
+<div class="grid">
+<div class="card ctrl">
+  <label>Дані a₁, …, a_m</label>
+  <input type="text" id="l1Pts" value="1, 2, 7, 10"><div class="err" id="l1PtsErr"></div>
+  <label>Віднести найбільшу точку далі на Δ <span class="val" id="l1DV"></span></label><input type="range" id="l1D" min="0" max="200" step="0.5" value="0">
+  <div class="readout" id="l1Out"></div>
+  <p style="font-size:13px;color:var(--muted);margin:8px 0 0">Наведіть курсор на графік, щоб побачити субдиференціал ∂F(t).</p>
+</div>
+<div class="card">
+  <h4>F₁(t) = Σ|t − aᵢ|</h4><canvas class="plot" id="l1P1" style="height:230px"></canvas>
+  <h4>F₂(t) = Σ(t − aᵢ)²</h4><canvas class="plot" id="l1P2" style="height:200px"></canvas>
+  <div class="legend"><span><i style="background:rgba(52,90,83,.3);height:9px"></i>множина мінімумів F₁ (медіана)</span><span><i class="pt" style="background:var(--vio)"></i>середнє (мінімум F₂)</span><span><i class="pt" style="background:var(--gold)"></i>дані</span></div>
+</div>
+</div>
+
+<div class="grid" style="margin-top:16px">
+<div class="card ctrl">
+  <h3>Lasso з двома ознаками</h3>
+  <label>Матриця X (рядки — об'єкти, 2 стовпці)</label>
+  <textarea id="lsX">1 0
+0 1
+1 1</textarea>
+  <label>Вектор y</label><input type="text" id="lsY" value="1 2 3">
+  <div class="err" id="lsErr"></div>
+  <label>λ як частка від λ_max = ‖Xᵀy‖∞ <span class="val" id="lsLamV"></span></label><input type="range" id="lsLam" min="0" max="1.2" step="0.005" value="0.8">
+  <label><input type="checkbox" id="lsIsta" checked style="width:auto;vertical-align:-2px"> показати траєкторію ISTA (клацніть по рисунку, щоб змінити старт)</label>
+  <div class="readout" id="lsOut"></div>
+</div>
+<div class="card">
+  <div class="two">
+    <div><h4>Лінії рівня та ромб ℓ¹</h4><canvas class="plot sq" id="lsP1"></canvas></div>
+    <div><h4>Шлях Lasso: w(λ)</h4><canvas class="plot" id="lsP2" style="height:300px"></canvas></div>
+  </div>
+  <div class="legend"><span><i style="background:var(--gold)"></i>рівні ½‖Xw − y‖²</span><span><i style="background:var(--g)"></i>ромб ‖w‖₁ = ‖w*‖₁</span><span><i class="pt" style="background:var(--vio)"></i>розв'язок w*</span><span><i class="pt" style="background:var(--blue)"></i>МНК без штрафу</span><span><i class="pt" style="background:var(--ink)"></i>ітерації ISTA</span></div>
+</div>
+</div>
+<div class="note">Геометрія розрідженості: розв'язок — це точка, де еліпс рівня квадратичної частини торкається ромба $\{\|w\|_1=r\}$. У ромба є кути на осях, і дотик дуже часто відбувається саме в куті, тобто одна з координат дорівнює нулю. Для кулі $\ell^2$ кутів немає, і гребенева регресія розрідженості не дає. Умова $\lambda\ge\|X^\top y\|_\infty$ означає, що $0\in\partial F(0)$: жодна ознака не потрапляє в модель.</div>
+</section>
+
+<!-- ======================= ЗОБРАЖЕННЯ ======================= -->
+<section class="tab" id="t-img">
+<h2>Зображення: шум, контури і сегментація</h2>
+<p class="intro">Зображення — це функція яскравості $u:\Omega\to\mathbb R$. Обидва регуляризатори штрафують зміни яскравості, але по-різному: функціонал Діріхле $\int|\nabla u|^2$ карає <i>крутизну</i> переходу (стрибок має нескінченну енергію), а повна варіація $\int|\nabla u|$ — лише його <i>висоту</i>. Тому Тихонов працює як фільтр нижніх частот і розмиває контури разом із шумом, а модель ROF зберігає контури, натомість перетворює плавні градієнти на «сходинки».</p>
+<div class="seg" id="imMode"><button data-m="1" class="on">Одновимірний сигнал</button><button data-m="2">Зображення 2D</button><button data-m="3">Сегментація Чана–Везе</button></div>
+
+<div id="im1">
+<div class="grid">
+<div class="card ctrl">
+  <label>Сигнал</label>
+  <select id="imSig"><option value="steps">кусково сталий</option><option value="ramp">сходинки та рампа</option><option value="sine">синусоїда зі стрибком</option></select>
+  <label>Рівень шуму σ <span class="val" id="imSigmaV"></span></label><input type="range" id="imSigma" min="0" max="0.3" step="0.005" value="0.1">
+  <label>Зерно генератора шуму</label><input type="number" id="imSeed" value="7">
+  <label>λ Тихонова <span class="val" id="imLTV"></span></label><input type="range" id="imLT" min="-1" max="3" step="0.01" value="1">
+  <label>λ повної варіації <span class="val" id="imLVV"></span></label><input type="range" id="imLV" min="0" max="2" step="0.01" value="0.4">
+  <div class="readout" id="im1Out"></div>
+</div>
+<div class="card">
+  <canvas class="plot" id="imP1" style="height:340px"></canvas>
+  <div class="legend"><span><i class="pt" style="background:#b9bfbb"></i>спостереження f</span><span><i class="dash" style="color:var(--ink)"></i>справжній сигнал</span><span><i style="background:var(--blue)"></i>Тихонов (u − λu″ = f)</span><span><i style="background:var(--gold)"></i>повна варіація (ROF)</span></div>
+  <h4>Тихонов у частотах: множник 1/(1 + 4λ sin²(ω/2))</h4>
+  <canvas class="plot" id="imP2" style="height:170px"></canvas>
+</div>
+</div>
+</div>
+
+<div id="im2" style="display:none">
+<div class="grid">
+<div class="card ctrl">
+  <label>Джерело</label>
+  <select id="imSrc"><option value="synth">синтетична сцена</option><option value="upload">власне зображення…</option></select>
+  <input type="file" id="imFile" accept="image/*" style="margin-top:6px;font-size:13px">
+  <label>Рівень шуму σ <span class="val" id="im2SigV"></span></label><input type="range" id="im2Sig" min="0" max="0.3" step="0.005" value="0.1">
+  <label>λ Тихонова <span class="val" id="im2LTV"></span></label><input type="range" id="im2LT" min="-1" max="1.7" step="0.01" value="0.3">
+  <label>λ повної варіації <span class="val" id="im2LVV"></span></label><input type="range" id="im2LV" min="0" max="0.4" step="0.005" value="0.09">
+  <label>Рядок для профілю <span class="val" id="im2RowV"></span></label><input type="range" id="im2Row" min="0" max="127" step="1" value="40">
+  <button class="btn" id="im2Go">Обчислити</button><span class="status" id="im2St"></span>
+  <div class="readout" id="im2Out"></div>
+</div>
+<div class="card">
+  <div class="imgs">
+    <figure><canvas class="img" id="imC0"></canvas><figcaption>оригінал u₀</figcaption></figure>
+    <figure><canvas class="img" id="imC1"></canvas><figcaption>з шумом f</figcaption></figure>
+    <figure><canvas class="img" id="imC2"></canvas><figcaption>Тихонов</figcaption></figure>
+    <figure><canvas class="img" id="imC3"></canvas><figcaption>ROF (повна варіація)</figcaption></figure>
+  </div>
+  <h4>Профіль яскравості вздовж вибраного рядка</h4>
+  <canvas class="plot" id="imP3" style="height:220px"></canvas>
+  <div class="legend"><span><i class="dash" style="color:var(--ink)"></i>оригінал</span><span><i style="background:#c4c9c6"></i>з шумом</span><span><i style="background:var(--blue)"></i>Тихонов</span><span><i style="background:var(--gold)"></i>ROF</span></div>
+</div>
+</div>
+</div>
+
+<div id="im3" style="display:none">
+<div class="grid">
+<div class="card ctrl">
+  <p style="margin:0 0 4px;font-size:14px">Сегментується зашумлене зображення з вкладки «Зображення 2D» (там можна завантажити власне).</p>
+  <label>Вага даних μ <span class="val" id="sgMuV"></span></label><input type="range" id="sgMu" min="-0.5" max="1.7" step="0.01" value="0.8">
+  <label><input type="checkbox" id="sgAuto" checked style="width:auto;vertical-align:-2px"> підбирати c₁, c₂ автоматично (середні в областях)</label>
+  <div class="row"><div><label>c₁ <span class="val" id="sgC1V"></span></label><input type="range" id="sgC1" min="0" max="1" step="0.01" value="0.75"></div><div><label>c₂ <span class="val" id="sgC2V"></span></label><input type="range" id="sgC2" min="0" max="1" step="0.01" value="0.25"></div></div>
+  <label>Поріг t для множини {u* &gt; t} <span class="val" id="sgTV"></span></label><input type="range" id="sgT" min="0.02" max="0.98" step="0.01" value="0.5">
+  <button class="btn" id="sgGo">Сегментувати</button><span class="status" id="sgSt"></span>
+  <div class="readout" id="sgOut"></div>
+</div>
+<div class="card">
+  <div class="imgs" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+    <figure><canvas class="img" id="sgC1c"></canvas><figcaption>розв'язок опуклої релаксації u* ∈ [0, 1]</figcaption></figure>
+    <figure><canvas class="img" id="sgC2c"></canvas><figcaption>множина Σₜ = {u* &gt; t} на зображенні</figcaption></figure>
+  </div>
+  <div class="two" style="margin-top:12px">
+    <div><h4>Гістограма значень u*</h4><canvas class="plot" id="sgP1" style="height:200px"></canvas></div>
+    <div><h4>Енергія Чана–Везе множини Σₜ</h4><canvas class="plot" id="sgP2" style="height:200px"></canvas></div>
+  </div>
+  <div class="legend"><span><i style="background:var(--gold)"></i>E(𝟙<sub>Σₜ</sub>)</span><span><i class="dash" style="color:var(--g)"></i>мінімум релаксованої задачі</span></div>
+</div>
+</div>
+<div class="note">Теорема Чана–Есєдоглу–Ніколової на екрані: значення $u^*$ майже всі скупчуються біля 0 і 1, а енергія множини рівня $\{u^*>t\}$ майже не залежить від порогу $t$ і збігається з мінімумом опуклої задачі. Невелика різниця пов'язана з дискретизацією повної варіації на сітці пікселів. Неопукла комбінаторна задача вибору множини розв'язана глобально, через опуклу задачу в просторі функцій.</div>
+</div>
+</section>
+
+<!-- ======================= АЛГОРИТМИ ======================= -->
+<section class="tab" id="t-alg">
+<h2>Алгоритми: геометрія, в якій рахують градієнт</h2>
+<p class="intro">Теорема про збіжність градієнтного спуску гарантує похибку порядку $L/k$, але для дискретизованого функціонала Діріхле $L\approx1+4\lambda/h^2$ і росте при подрібненні сітки. Причина в тому, що $L^2$-градієнт $u-f-\lambda\Delta u$ «шорсткий». Якщо ж обчислювати градієнт у скалярному добутку $\langle u,v\rangle_M=\langle Mu,v\rangle$, $M=I+\lambda D^\top D$, то перший же крок дає точний розв'язок. Нижче видно, як вибір геометрії перетворює десятки тисяч ітерацій на одну.</p>
+<div class="grid">
+<div class="card ctrl">
+  <h3>Градієнтний спуск і передобумовлення</h3>
+  <label>Розмір сітки n (h = 1/n)</label>
+  <select id="alN"><option>100</option><option>200</option><option selected>500</option><option>1000</option></select>
+  <label>λ <span class="val" id="alLamV"></span></label><input type="range" id="alLam" min="-5" max="-1" step="0.05" value="-3">
+  <label>Ітерація k для знімка <span class="val" id="alKV"></span></label><input type="range" id="alK" min="0" max="4.3" step="0.01" value="2.5">
+  <div class="readout" id="alOut"></div>
+</div>
+<div class="card">
+  <div class="two">
+    <div><h4>Похибка E(u_k) − E(u*) (логарифмічні осі)</h4><canvas class="plot" id="alP1" style="height:280px"></canvas></div>
+    <div><h4>Ітерація u_k проти розв'язку u*</h4><canvas class="plot" id="alP2" style="height:280px"></canvas></div>
+  </div>
+  <div class="legend"><span><i style="background:var(--gold)"></i>градієнтний спуск, τ = 1/L</span><span><i style="background:var(--g)"></i>прискорений (Нестеров)</span><span><i class="dash" style="color:var(--blue)"></i>оцінка L‖u₀−u*‖²/(2k)</span><span><i class="pt" style="background:var(--vio)"></i>передобумовлений: 1 крок</span><span><i class="pt" style="background:#b9bfbb"></i>дані f</span></div>
+</div>
+</div>
+
+<div class="grid" style="margin-top:16px">
+<div class="card ctrl">
+  <h3>Рання зупинка = регуляризація</h3>
+  <p style="margin:0;font-size:14px">Метод Ландвебера після k кроків множить компоненту з власним значенням μ на φ<sub>k</sub>(μ) = 1 − (1 − 2τμ)<sup>k</sup>, Тихонов — на ψ(μ) = μ/(μ + λ). Тут 2τ·μ<sub>max</sub> = 1.</p>
+  <label>Кількість кроків k <span class="val" id="alFkV"></span></label><input type="range" id="alFk" min="0" max="3.5" step="0.01" value="1.5">
+  <div class="readout" id="alFOut"></div>
+</div>
+<div class="card">
+  <canvas class="plot" id="alP3" style="height:260px"></canvas>
+  <div class="legend"><span><i style="background:var(--gold)"></i>φ_k(μ) — k кроків спуску</span><span><i style="background:var(--g)"></i>ψ(μ), λ = 1/(2τk)</span><span><i style="background:rgba(202,157,72,.25);height:9px"></i>смуга (1−e⁻¹)·min{1,s} … min{1,s}</span></div>
+</div>
+</div>
+
+<div class="grid" style="margin-top:16px">
+<div class="card ctrl">
+  <h3>Функціональний градієнтний спуск у RKHS</h3>
+  <label>Справжня залежність f(x) на [0, 1]</label>
+  <input type="text" id="kgF" value="sin(2pi x) + 0.5x"><div class="err" id="kgFErr"></div>
+  <div class="row"><div><label>m <span class="val" id="kgMV"></span></label><input type="range" id="kgM" min="8" max="60" step="1" value="30"></div><div><label>шум <span class="val" id="kgNoiseV"></span></label><input type="range" id="kgNoise" min="0" max="0.6" step="0.01" value="0.25"></div></div>
+  <label>Ширина гауссового ядра σ <span class="val" id="kgWV"></span></label><input type="range" id="kgW" min="0.02" max="0.4" step="0.005" value="0.06">
+  <label>λ <span class="val" id="kgLamV"></span></label><input type="range" id="kgLam" min="-8" max="0" step="0.05" value="-8">
+  <label>Ітерація k <span class="val" id="kgKV"></span></label><input type="range" id="kgK" min="0" max="4.5" step="0.01" value="1.5">
+  <label>Зерно</label><input type="number" id="kgSeed" value="3">
+  <div class="readout" id="kgOut"></div>
+</div>
+<div class="card">
+  <div class="two">
+    <div><h4>Прогноз f_k = Σ αᵢ⁽ᵏ⁾ K(·, xᵢ)</h4><canvas class="plot" id="kgP1" style="height:280px"></canvas></div>
+    <div><h4>Помилка на навчанні та на тесті</h4><canvas class="plot" id="kgP2" style="height:280px"></canvas></div>
+  </div>
+  <div class="legend"><span><i class="pt" style="background:var(--ink)"></i>дані</span><span><i class="dash" style="color:var(--blue)"></i>справжня f</span><span><i style="background:var(--gold)"></i>f_k</span><span><i style="background:var(--g)"></i>ядрова гребенева регресія (G+λI)α = y</span><span><i class="pt" style="background:var(--red)"></i>тестова помилка</span></div>
+</div>
+</div>
+<div class="note">Поставте λ майже нульовим і рухайте k: спершу $f_k$ ловить загальну форму залежності, потім починає «ганятися» за шумом, і тестова помилка росте. Мінімум тестової кривої — момент ранньої зупинки. Збільште λ: ітерації збігаються до розв'язку ядрової гребеневої регресії, і перенавчання зникає.</div>
+</section>
+
+<!-- ======================= ПРИКЛАДНІ ======================= -->
+<section class="tab app" id="t-app">
+<h2>Де це працює в реальних задачах</h2>
+<p class="intro">Майже кожна ідея теми має прямий інженерний відповідник. Нижче коротко описано, як вона виглядає в застосуваннях і в якій вкладці її можна побачити.</p>
+
+<div class="card"><h3>Очищення фото та медичних знімків <button class="tag" data-go="img">Зображення</button></h3>
+<p>Знімок з камери смартфона в темряві, рентгенівський або томографічний знімок з низькою дозою опромінення, кадр з мікроскопа — це завжди $f=u_0+\eta$ з помітним шумом. Модель Рудіна–Ошера–Фатемі та її нащадки (повна варіація вищих порядків, нелокальні варіаційні методи) видаляють шум, не розмиваючи меж органів і дрібних структур. У томографії оператор $A$ — перетворення Радона, у магнітно-резонансній томографії — частина коефіцієнтів Фур'є; реконструкція зі «стисненим зчитуванням» мінімізує $\frac12\|Au-f\|^2+\lambda\,\mathrm{TV}(u)$ і дозволяє отримати якісне зображення з меншої кількості вимірювань, тобто скоротити час сканування. Регуляризатор вибирає, які зображення вважати «природними»: Тихонов — гладкі, повна варіація — кусково сталі з чіткими межами.</p></div>
+
+<div class="card"><h3>Розмиття, деконволюція, астрономія <button class="tag" data-go="alg">Алгоритми</button></h3>
+<p>Якщо камера змістилася під час експозиції або телескоп дивиться крізь атмосферу, спостерігається згортка $f=k*u_0+\eta$. Оператор згортки гасить високі частоти, тому його обернення некоректне, і без регуляризації шум підсилюється катастрофічно. На практиці розв'язують задачу $\min\frac12\|k*u-f\|^2+\lambda R(u)$ проксимальними та прямо-двоїстими методами, а згортки обчислюють через швидке перетворення Фур'є. Для великих зображень (мільйони пікселів) вирішальним стає передобумовлення: ті самі ідеї, що у вкладці «Алгоритми», лежать в основі багатосіткових методів і передобумовленого методу спряжених градієнтів у сучасних розв'язувачах рівнянь з частинними похідними.</p></div>
+
+<div class="card"><h3>Сегментація: медицина, супутники, мікроскопія <button class="tag" data-go="img">Сегментація</button></h3>
+<p>Виділити пухлину на МРТ, водойми чи посіви на супутниковому знімку, окремі клітини на знімку мікроскопа — це задачі вибору множини $\Sigma$ з короткою межею, всередині якої дані однорідні. Моделі Мамфорда–Шаха і Чана–Везе формалізують це як мінімізацію енергії, а опукла релаксація дозволяє знайти глобальний мінімум, не застрягаючи в локальних. Активні контури («змійки»), класичний інструмент комп'ютерного зору, — це крива, що мінімізує енергію і рухається за градієнтним потоком, тобто за рівнянням Ейлера–Лагранжа. Сьогодні сегментацію частіше роблять нейромережами, але варіаційні енергії залишаються у вигляді функцій втрат (наприклад, штраф на довжину межі) і постобробки результату мережі.</p></div>
+
+<div class="card"><h3>Розріджені моделі: генетика, сенсори, відбір ознак <button class="tag" data-go="l1">Lasso</button></h3>
+<p>У біоінформатиці ознак (генів) буває десятки тисяч, а пацієнтів — сотні, і задача найменших квадратів некоректна. Lasso $\min\frac12\|Xw-y\|^2+\lambda\|w\|_1$ одночасно навчає модель і відбирає невелику кількість ознак, які справді впливають на результат; груповий Lasso з блоковим порогом відбирає цілі групи (наприклад, усі змінні, що описують один ген). Ті самі розв'язувачі ISTA/FISTA застосовують у стисненому зчитуванні сигналів, де розріджений сигнал відновлюють з малої кількості лінійних вимірювань. Значення $\lambda_{\max}=\|X^\top y\|_\infty$ використовують на практиці як початкову точку сітки параметрів, на якій будують увесь шлях Lasso.</p></div>
+
+<div class="card"><h3>Стійка статистика і втрати в машинному навчанні <button class="tag" data-go="l1">медіана</button><button class="tag" data-go="prox">prox</button></h3>
+<p>Сенсор, що дав один хибний вимір, або помилка в розмітці даних повністю змінюють розв'язок методу найменших квадратів, але не впливають на медіану. Тому в задачах з викидами використовують середню абсолютну похибку (MAE), функцію Губера (квадратичну біля нуля й лінійну далі), квантильну регресію і медіанні фільтри зображень. Субдиференціал пояснює, чому так: внесок кожної точки обмежений відрізком $[-1,1]$ незалежно від її відстані. Hinge-втрата методу опорних векторів має той самий злам, і точки, де вона недиференційовна, — саме опорні вектори.</p></div>
+
+<div class="card"><h3>Градієнтний бустинг на табличних даних <button class="tag" data-go="alg">функціональний спуск</button></h3>
+<p>Для кредитного скорингу, прогнозування попиту, ранжування в пошуку на табличних даних найчастіше використовують градієнтний бустинг (XGBoost, LightGBM, CatBoost). Це функціональний градієнтний спуск: на кожному кроці обчислюють антиградієнт функції втрат у навчальних точках (для квадратичної втрати — просто залишки), наближають його невеликим деревом рішень і роблять крок $f_{k+1}=f_k+\nu h_k$. Кількість дерев відіграє роль кількості ітерацій, а отже й параметра регуляризації; тому в бібліотеках бустингу рання зупинка за помилкою на валідаційній вибірці є стандартною опцією.</p></div>
+
+<div class="card"><h3>Рання зупинка і вибір геометрії в нейромережах <button class="tag" data-go="alg">Алгоритми</button></h3>
+<p>Навчаючи нейромережу, стежать за помилкою на валідаційних даних і зупиняються, коли вона починає рости, — це та сама рання зупинка, що в методі Ландвебера: кількість кроків замінює параметр $\lambda$. Адаптивні методи оптимізації (Adam, RMSProp) і натуральний градієнт фактично змінюють метрику, в якій обчислюється градієнт, тобто є формами передобумовлення. Для нейромереж функція втрат неопукла, і гарантій глобальності, як для опуклих задач, немає, але інтуїція «правильної геометрії» переноситься повністю.</p></div>
+
+<div class="card"><h3>Фізика, механіка, керування <button class="tag" data-go="el">Ейлер–Лагранж</button></h3>
+<p>Форма струни, мембрани, балки під навантаженням, розподіл температури, електростатичний потенціал — це мінімуми енергії, а рівняння математичної фізики є їхніми рівняннями Ейлера–Лагранжа. Метод скінченних елементів, яким розраховують мости й деталі машин, — це мінімізація тієї ж енергії на скінченновимірному підпросторі (як у вкладці про Ейлера–Лагранжа). У робототехніці траєкторії планують, мінімізуючи функціонали енергії чи ривка, а в матеріалознавстві неопуклі енергії зі слабкою збіжністю пояснюють утворення дрібної мікроструктури в сплавах з пам'яттю форми.</p></div>
+</section>
+</main>
+
+<footer><div class="fw"><div class="flogo" id="logoBot"></div><div>Кафедра фундаментальної математики · Харківський національний університет імені В. Н. Каразіна<br><span style="opacity:.75">Інтерактивні матеріали до курсу функціонального аналізу. Усі обчислення виконуються у браузері.</span></div></div></footer>
+
+<script>
+"use strict";
+/* ================= загальні утиліти ================= */
+const $=id=>document.getElementById(id);
+const C={g:'#345a53',gold:'#ca9d48',blue:'#3b6ea5',red:'#b4493b',vio:'#7a5aa6',ink:'#1d2a27',grey:'#b9bfbb',goldL:'rgba(202,157,72,.42)',ok:'#2e7d4f'};
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=n=>String(n).split('').map(c=>SUP[c]||c).join('');
+function fmt(v,d=4){
+  if(v===Infinity)return'+∞';if(v===-Infinity)return'−∞';if(typeof v!=='number'||!isFinite(v))return'—';
+  const a=Math.abs(v);let s;
+  if(a!==0&&(a<1e-4||a>=1e6)){const e=Math.floor(Math.log10(a));s=(v/Math.pow(10,e)).toFixed(2)+'·10'+sup(e);}
+  else s=String(+v.toFixed(d));
+  return s.replace(/^-/,'−');
+}
+function ticks(a,b,n=6){const span=b-a;if(!(span>0))return[a];const st0=Math.pow(10,Math.floor(Math.log10(span/n)));const m=span/n/st0;const st=st0*(m<1.5?1:m<3.5?2:m<7.5?5:10);const out=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+st*1e-9;v+=st)out.push(Math.abs(v)<st*1e-9?0:v);return out;}
+function tickFmt(v,st){const d=Math.max(0,Math.min(6,-Math.floor(Math.log10(st)+1e-9)));return v.toFixed(d).replace(/^-/,'−');}
+const logTick=v=>Number.isInteger(Math.round(v*1000)/1000)&&Math.abs(v-Math.round(v))<1e-6?('10'+sup(Math.round(v))):'';
+const val=id=>+$(id).value;
+function setV(id,s){const e=$(id+'V');if(e)e.textContent=s;}
+function rng(seed){let a=(seed>>>0)||1;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gaussGen(seed){const r=rng(seed);return()=>{let u=0,v=0;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};}
+const soft=(a,t)=>Math.sign(a)*Math.max(Math.abs(a)-t,0);
+const clip=(x,a,b)=>Math.min(Math.max(x,a),b);
+
+/* ---------- безпечний розбір виразів ---------- */
+const FUN={sin:Math.sin,cos:Math.cos,tan:Math.tan,exp:Math.exp,log:Math.log,ln:Math.log,sqrt:Math.sqrt,abs:Math.abs,sign:Math.sign,sgn:Math.sign,sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,atan:Math.atan,arctan:Math.atan,asin:Math.asin,acos:Math.acos,floor:Math.floor,ceil:Math.ceil,round:Math.round,max:Math.max,min:Math.min,pow:Math.pow,H:x=>x>=0?1:0,clip:(x,a,b)=>Math.min(Math.max(x,a),b)};
+const CONST={pi:Math.PI,PI:Math.PI,e:Math.E,E:Math.E};
+function compile(src,vars=['x']){
+  const s=String(src).replace(/π/g,'pi').replace(/[·×]/g,'*').replace(/[−–]/g,'-').replace(/²/g,'^2').replace(/³/g,'^3');
+  const toks=[];let i=0;
+  while(i<s.length){const c=s[i];if(/\s/.test(c)){i++;continue;}const rest=s.slice(i);let m;
+    if((m=/^(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?/.exec(rest))){toks.push({t:'n',v:parseFloat(m[0])});i+=m[0].length;continue;}
+    if((m=/^[A-Za-z_][A-Za-z_0-9]*/.exec(rest))){toks.push({t:'id',v:m[0]});i+=m[0].length;continue;}
+    if(rest.startsWith('**')){toks.push({t:'^'});i+=2;continue;}
+    if('+-*/^(),'.includes(c)){toks.push({t:c});i++;continue;}
+    throw new Error('недопустимий символ «'+c+'»');}
+  if(!toks.length)throw new Error('порожній вираз');
+  let p=0;const peek=()=>toks[p];
+  const eat=t=>{if(!toks[p]||toks[p].t!==t)throw new Error('очікувалося «'+t+'»');p++;};
+  function expr(){let a=term();while(peek()&&(peek().t==='+'||peek().t==='-')){const op=toks[p++].t,b=term(),A=a;a=op==='+'?e=>A(e)+b(e):e=>A(e)-b(e);}return a;}
+  function term(){let a=unary();for(;;){const q=peek();if(q&&(q.t==='*'||q.t==='/')){p++;const b=unary(),A=a;a=q.t==='*'?e=>A(e)*b(e):e=>A(e)/b(e);}else if(q&&(q.t==='n'||q.t==='id'||q.t==='(')){const b=power(),A=a;a=e=>A(e)*b(e);}else break;}return a;}
+  function unary(){const q=peek();if(q&&q.t==='-'){p++;const b=unary();return e=>-b(e);}if(q&&q.t==='+'){p++;return unary();}return power();}
+  function power(){const b=primary();if(peek()&&peek().t==='^'){p++;const ex=unary();return e=>Math.pow(b(e),ex(e));}return b;}
+  function primary(){const q=toks[p++];if(!q)throw new Error('неочікуваний кінець виразу');
+    if(q.t==='n'){const v=q.v;return()=>v;}
+    if(q.t==='('){const a=expr();eat(')');return a;}
+    if(q.t==='id'){const k=vars.indexOf(q.v);if(k>=0)return e=>e[k];
+      if(Object.prototype.hasOwnProperty.call(FUN,q.v)){if(!peek()||peek().t!=='(')throw new Error('після '+q.v+' потрібні дужки');p++;const args=[];if(peek()&&peek().t!==')'){args.push(expr());while(peek()&&peek().t===','){p++;args.push(expr());}}eat(')');const f=FUN[q.v];
+        if(args.length===1){const a0=args[0];return e=>f(a0(e));}return e=>f(...args.map(g=>g(e)));}
+      if(Object.prototype.hasOwnProperty.call(CONST,q.v)){const v=CONST[q.v];return()=>v;}
+      throw new Error('невідоме ім\'я «'+q.v+'»'+(vars.length?' (змінні: '+vars.join(', ')+')':''));}
+    throw new Error('неочікуваний символ «'+q.t+'»');}
+  const root=expr();if(p<toks.length)throw new Error('зайві символи наприкінці');
+  return(...a)=>root(a);
+}
+function cf(id,vars,errId){const el=$(id),er=$(errId||id+'Err');try{const f=compile(el.value,vars);el.classList.remove('badin');if(er)er.textContent='';return f;}catch(e){el.classList.add('badin');if(er)er.textContent='Помилка: '+e.message;return null;}}
+function num(id,def){try{const v=compile($(id).value,[])();return isFinite(v)?v:def;}catch(e){return def;}}
+const safe=f=>x=>{try{const y=f(x);return(typeof y==='number'&&isFinite(y))?y:NaN;}catch(e){return NaN;}};
+
+/* ---------- полотно для графіків ---------- */
+class Plot{
+  constructor(id,pad){this.c=$(id);this.g=this.c.getContext('2d');this.pad=Object.assign({l:50,r:14,t:12,b:28},pad||{});}
+  begin(x0,x1,y0,y1){const c=this.c,d=window.devicePixelRatio||1,r=c.getBoundingClientRect();this.W=r.width||600;this.H=r.height||300;
+    const w=Math.round(this.W*d),h=Math.round(this.H*d);if(c.width!==w||c.height!==h){c.width=w;c.height=h;}
+    const g=this.g;g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,this.W,this.H);
+    if(!isFinite(x0)||!isFinite(x1)||x1<=x0){x0=0;x1=1;}if(!isFinite(y0)||!isFinite(y1)){y0=-1;y1=1;}if(y1-y0<1e-12*(1+Math.abs(y0))){y0-=1;y1+=1;}
+    this.x0=x0;this.x1=x1;this.y0=y0;this.y1=y1;return this;}
+  get l(){return this.pad.l}get r(){return this.W-this.pad.r}get t(){return this.pad.t}get b(){return this.H-this.pad.b}
+  X(v){return this.l+(v-this.x0)/(this.x1-this.x0)*(this.r-this.l)}
+  Y(v){return this.b-(v-this.y0)/(this.y1-this.y0)*(this.b-this.t)}
+  iX(p){return this.x0+(p-this.l)/(this.r-this.l)*(this.x1-this.x0)}
+  iY(p){return this.y0+(this.b-p)/(this.b-this.t)*(this.y1-this.y0)}
+  axes(o={}){const g=this.g,fx=o.fx||tickFmt,fy=o.fy||tickFmt;g.save();g.fillStyle='#fff';g.fillRect(this.l,this.t,this.r-this.l,this.b-this.t);
+    g.font='11px "IBM Plex Mono",monospace';g.strokeStyle='#efe9da';g.lineWidth=1;g.fillStyle='#6b7773';
+    const tx=o.xt||ticks(this.x0,this.x1,o.nx||7),ty=o.yt||ticks(this.y0,this.y1,o.ny||6);const sx=tx.length>1?tx[1]-tx[0]:1,sy=ty.length>1?ty[1]-ty[0]:1;
+    g.textAlign='center';g.textBaseline='top';for(const v of tx){const p=Math.round(this.X(v))+.5;g.beginPath();g.moveTo(p,this.t);g.lineTo(p,this.b);g.stroke();g.fillText(fx(v,sx),p,this.b+5);}
+    g.textAlign='right';g.textBaseline='middle';for(const v of ty){const p=Math.round(this.Y(v))+.5;g.beginPath();g.moveTo(this.l,p);g.lineTo(this.r,p);g.stroke();g.fillText(fy(v,sy),this.l-6,p);}
+    g.strokeStyle='#a4ada9';if(o.zero!==false){if(this.y0<0&&this.y1>0){const p=Math.round(this.Y(0))+.5;g.beginPath();g.moveTo(this.l,p);g.lineTo(this.r,p);g.stroke();}if(this.x0<0&&this.x1>0){const p=Math.round(this.X(0))+.5;g.beginPath();g.moveTo(p,this.t);g.lineTo(p,this.b);g.stroke();}}
+    g.strokeStyle='#d6cdb6';g.strokeRect(this.l+.5,this.t+.5,this.r-this.l-1,this.b-this.t-1);
+    g.fillStyle='#46524e';g.font='italic 13px Lora,serif';if(o.xl){g.textAlign='right';g.textBaseline='bottom';g.fillText(o.xl,this.r-5,this.b-4);}if(o.yl){g.textAlign='left';g.textBaseline='top';g.fillText(o.yl,this.l+6,this.t+4);}
+    g.restore();return this;}
+  clip(){const g=this.g;g.save();g.beginPath();g.rect(this.l,this.t,this.r-this.l,this.b-this.t);g.clip();}
+  line(xs,ys,col,w=2,dash){const g=this.g;this.clip();g.strokeStyle=col;g.lineWidth=w;g.lineJoin='round';g.lineCap='round';if(dash)g.setLineDash(dash);g.beginPath();let pen=false;
+    for(let i=0;i<xs.length;i++){const y=ys[i];if(!isFinite(y)||!isFinite(xs[i])){pen=false;continue;}const py=Math.max(-1e4,Math.min(1e4,this.Y(y))),px=this.X(xs[i]);if(pen)g.lineTo(px,py);else{g.moveTo(px,py);pen=true;}}g.stroke();g.restore();return this;}
+  fn(f,col,w,dash,n=400){const xs=[],ys=[];for(let i=0;i<=n;i++){const x=this.x0+(this.x1-this.x0)*i/n;xs.push(x);let y;try{y=f(x);}catch(e){y=NaN;}ys.push(y);}return this.line(xs,ys,col,w,dash);}
+  seg(a,b,c,d,col,w=1.5,dash){return this.line([a,c],[b,d],col,w,dash);}
+  hline(y,col,w=1,dash){return this.seg(this.x0,y,this.x1,y,col,w,dash);}
+  vline(x,col,w=1,dash){return this.seg(x,this.y0,x,this.y1,col,w,dash);}
+  dot(x,y,col,r=4,ring='#fff'){if(!isFinite(x)||!isFinite(y))return this;const g=this.g;this.clip();g.beginPath();g.arc(this.X(x),this.Y(y),r,0,7);g.fillStyle=col;g.fill();if(ring){g.lineWidth=1.4;g.strokeStyle=ring;g.stroke();}g.restore();return this;}
+  sqr(x,y,col,s=5){const g=this.g;this.clip();g.fillStyle=col;g.fillRect(this.X(x)-s,this.Y(y)-s,2*s,2*s);g.restore();return this;}
+  ring(x,y,col,r=5){const g=this.g;this.clip();g.beginPath();g.arc(this.X(x),this.Y(y),r,0,7);g.fillStyle='#fff';g.fill();g.lineWidth=2;g.strokeStyle=col;g.stroke();g.restore();return this;}
+  poly(xs,ys,fill){const g=this.g;this.clip();g.beginPath();let st=false;for(let i=0;i<xs.length;i++){if(!isFinite(ys[i]))continue;const px=this.X(xs[i]),py=Math.max(-1e4,Math.min(1e4,this.Y(ys[i])));if(st)g.lineTo(px,py);else{g.moveTo(px,py);st=true;}}g.closePath();g.fillStyle=fill;g.fill();g.restore();return this;}
+  vband(a,b,fill){const g=this.g;this.clip();g.fillStyle=fill;const p=this.X(a),q=this.X(b);g.fillRect(Math.min(p,q)-1,this.t,Math.max(2.5,Math.abs(q-p)+2),this.b-this.t);g.restore();return this;}
+  text(x,y,s,col=C.ink,al='left',bl='bottom',font='12px "IBM Plex Sans",sans-serif'){const g=this.g;g.save();g.font=font;g.fillStyle=col;g.textAlign=al;g.textBaseline=bl;g.fillText(s,this.X(x),this.Y(y));g.restore();return this;}
+  arrow(x1,y1,x2,y2,col,w=2){const g=this.g;const a=this.X(x1),b=this.Y(y1),c=this.X(x2),d=this.Y(y2);const L=Math.hypot(c-a,d-b);if(L<1)return this;this.clip();g.strokeStyle=col;g.fillStyle=col;g.lineWidth=w;g.beginPath();g.moveTo(a,b);g.lineTo(c,d);g.stroke();const ang=Math.atan2(d-b,c-a),hs=Math.min(4+3*w,L*.45);g.beginPath();g.moveTo(c,d);g.lineTo(c-hs*Math.cos(ang-.4),d-hs*Math.sin(ang-.4));g.lineTo(c-hs*Math.cos(ang+.4),d-hs*Math.sin(ang+.4));g.closePath();g.fill();g.restore();return this;}
+}
+function rangeOf(arrs,pad=0.08){let lo=Infinity,hi=-Infinity;for(const a of arrs)for(const v of a)if(isFinite(v)){if(v<lo)lo=v;if(v>hi)hi=v;}if(!isFinite(lo)){lo=-1;hi=1;}const s=(hi-lo)||Math.max(1,Math.abs(lo));return[lo-pad*s,hi+pad*s];}
+
+function tridiag(a,b,c,d){const n=b.length,cp=new Float64Array(n),dp=new Float64Array(n),x=new Float64Array(n);let m=b[0];if(Math.abs(m)<1e-300)return null;cp[0]=c[0]/m;dp[0]=d[0]/m;
+  for(let i=1;i<n;i++){m=b[i]-a[i]*cp[i-1];if(Math.abs(m)<=1e-9*(Math.abs(b[i])+Math.abs(a[i])+1e-300))return null;cp[i]=i<n-1?c[i]/m:0;dp[i]=(d[i]-a[i]*dp[i-1])/m;}
+  x[n-1]=dp[n-1];for(let i=n-2;i>=0;i--)x[i]=dp[i]-cp[i]*x[i+1];return x;}
+
+function chips(id,list,pick){const c=$(id);list.forEach(([l,v])=>{const b=document.createElement('button');b.type='button';b.textContent=l;b.onclick=()=>pick(v);c.appendChild(b);});}
+function bind(ids,fn,delay=0){let tm=0;const run=()=>{clearTimeout(tm);tm=setTimeout(fn,delay);};ids.forEach(id=>{const e=$(id);if(!e)return;e.addEventListener('input',run);e.addEventListener('change',run);});return run;}
+function segBtns(id,cb){const c=$(id);c.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{c.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.m);}));}
+
+/* ---------- логотип кафедри ---------- */
+function logoSVG(){
+  let s='<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Логотип кафедри фундаментальної математики">';
+  s+='<circle cx="100" cy="100" r="96" fill="#ca9d48"/><circle cx="100" cy="100" r="90.8" fill="#345a53"/>';
+  s+='<rect x="97.7" y="5" width="4.6" height="190" fill="#ca9d48"/><rect x="5" y="97.7" width="190" height="4.6" fill="#ca9d48"/>';
+  const rows=[[0,3],[0,4],[0,5],[0,6],[0,4],[2,3],[3,3]],P=2.98,S=2.5,o=2.75;
+  for(let r=0;r<rows.length;r++)for(let c=rows[r][0];c<=rows[r][1];c++)for(const sx of[-1,1])for(const sy of[-1,1]){
+    const x=sx<0?100-o-c*P-S:100+o+c*P,y=sy<0?100-o-r*P-S:100+o+r*P;s+=`<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${S}" height="${S}" fill="#ca9d48"/>`;}
+  const ft='font-family="\'Times New Roman\',\'STIX Two Text\',Times,serif" fill="#fff" text-anchor="middle" dominant-baseline="central"';
+  s+=`<text x="62.5" y="61" font-size="50" ${ft}>∀</text>`;
+  s+=`<g transform="translate(140 0) scale(-1 1) translate(-140 0)"><text x="140" y="58" font-size="56" ${ft}>ε</text></g>`;
+  s+=`<text x="61" y="140" font-size="50" ${ft}>∃</text>`;
+  s+=`<text x="138.5" y="140" font-size="54" font-style="italic" ${ft}>δ</text>`;
+  return s+'</svg>';
+}
+const LOGO='data:image/png;base64,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';
+for(const id of['logoTop','logoBot'])$(id).innerHTML='<img src="'+LOGO+'" alt="Логотип кафедри фундаментальної математики" style="width:100%;height:100%;display:block">';
+
+/* ---------- вкладки ---------- */
+const R={};let cur='theory';
+function show(t){if(!$('t-'+t))t='theory';cur=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));
+  if(R[t])requestAnimationFrame(()=>R[t]());try{history.replaceState(null,'','#'+t);}catch(e){}}
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>show(b.dataset.t)));
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{show(b.dataset.go);window.scrollTo({top:0,behavior:'smooth'});}));
+let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(R[cur])R[cur]();},160);});
+
+/* ================= 1. ОПУКЛІСТЬ ================= */
+const cvP1=new Plot('cvP1'),cvP2=new Plot('cvP2');
+chips('cvPre',[['|x|','abs(x)'],['x²','x^2'],['hinge','max(0, 1 - x)'],['|x−1| + 0.3x²','abs(x-1) + 0.3x^2'],['|x| + |x−1|','abs(x) + abs(x-1)'],['softplus','ln(1 + exp(x))'],['√(1+x²)','sqrt(1 + x^2)'],['max(|x|, x²)','max(abs(x), x^2)'],['неопукла','x^4/4 - x^2']],v=>{$('cvF').value=v;renderConvex();});
+function renderConvex(){
+  const f0=cf('cvF',['x']);if(!f0)return;const F=safe(f0);
+  let a=num('cvA',-3),b=num('cvB',3);if(!(b>a))b=a+1;
+  const at=id=>a+val(id)*(b-a);const x0=at('cvX0'),u=at('cvU'),v=at('cvV'),t=val('cvT');
+  setV('cvX0',fmt(x0,3));setV('cvU',fmt(u,3));setV('cvV',fmt(v,3));setV('cvT',fmt(t,2));
+  const N=700,xs=[],ys=[];for(let i=0;i<=N;i++){xs.push(a+(b-a)*i/N);ys.push(F(xs[i]));}
+  const fin=ys.filter(isFinite);if(!fin.length){$('cvOut').textContent='Функція не визначена на [a, b].';return;}
+  const scale=1+Math.max(...fin.map(Math.abs)),tol=1e-9*scale;
+  const M=161,gx=[],gy=[];for(let i=0;i<M;i++){gx.push(a+(b-a)*i/(M-1));gy.push(F(gx[i]));}
+  let convex=true,bad=null;
+  outer:for(let i=0;i<M;i++)for(let k=i+2;k<M;k+=2){const m=(i+k)/2;if(!(gy[m]<=(gy[i]+gy[k])/2+tol)){convex=false;bad=[gx[i],gx[k]];break outer;}}
+  const dd=x=>{const h=1e-6*(1+Math.abs(x));return[(F(x)-F(x-h))/h,(F(x+h)-F(x))/h];};
+  let[ymin,ymax]=[Math.min(...fin),Math.max(...fin)];const yr=(ymax-ymin)||1;
+  const P=cvP1.begin(a,b,ymin-0.12*yr,ymax+0.15*yr).axes({xl:'x',yl:'f(x)'});
+  P.poly([a,...xs,b],[P.y1,...ys,P.y1],'rgba(52,90,83,.09)');
+  const fx0=F(x0);const[dm,dp]=dd(x0);const smooth=Math.abs(dp-dm)<=1e-4*(1+Math.abs(dp)+Math.abs(dm));
+  const supports=s=>ys.every((y,i)=>!isFinite(y)||y>=fx0+s*(xs[i]-x0)-1e-6*scale);
+  let subTxt;
+  if(convex&&isFinite(dm)&&isFinite(dp)){const K=smooth?1:9;for(let j=0;j<K;j++){const s=K===1?(dm+dp)/2:dm+(dp-dm)*j/(K-1);const edge=K===1||j===0||j===K-1;P.fn(x=>fx0+s*(x-x0),edge?C.gold:C.goldL,edge?2:1.2);}
+    subTxt='∂f(x₀) = '+(smooth?'{ '+fmt((dm+dp)/2)+' }   (f диференційовна в x₀)':'[ '+fmt(dm)+', '+fmt(dp)+' ]   (точка зламу)');}
+  else{const s=(dm+dp)/2;const sp=isFinite(s)&&supports(s);P.fn(x=>fx0+s*(x-x0),sp?C.gold:C.red,1.7,sp?null:[6,4]);
+    if(!sp)P.line(xs,ys.map((y,i)=>y<fx0+s*(xs[i]-x0)-1e-6*scale?y:NaN),C.red,4.5);
+    subTxt=sp?'∂f(x₀) ∋ '+fmt(s)+'  (дотична тут опорна)':'∂f(x₀) = ∅ на [a, b]: дотична з нахилом '+fmt(s)+' перетинає графік';}
+  const fu=F(u),fv=F(v),w=t*u+(1-t)*v,fw=F(w),ch=t*fu+(1-t)*fv,okc=fw<=ch+tol;
+  P.seg(u,fu,v,fv,C.blue,1.8).dot(u,fu,C.blue,3.5).dot(v,fv,C.blue,3.5).seg(w,fw,w,ch,okc?C.ok:C.red,3).dot(w,ch,C.blue,4).dot(w,fw,okc?C.ok:C.red,4);
+  P.dot(x0,fx0,C.gold,5.5,C.ink).text(x0,fx0,'  x₀',C.ink,'left','bottom','italic 13px Lora,serif');
+  let im=0;for(let i=1;i<=N;i++)if(isFinite(ys[i])&&(!isFinite(ys[im])||ys[i]<ys[im]))im=i;let xm=xs[im];
+  if(im>0&&im<N){let lo=xs[im-1],hi=xs[im+1];const gr=(Math.sqrt(5)-1)/2;for(let q=0;q<90;q++){const c1=hi-gr*(hi-lo),c2=lo+gr*(hi-lo);if(F(c1)<=F(c2))hi=c2;else lo=c1;}xm=(lo+hi)/2;}const ym=F(xm);
+  P.dot(xm,ym,C.vio,5.5).text(xm,ym,' x*',C.vio,'left','top','italic 13px Lora,serif');
+  // графік субдиференціала
+  const sx=[],sy=[];for(let i=0;i<N;i++){sx.push((xs[i]+xs[i+1])/2);sy.push((ys[i+1]-ys[i])/(xs[i+1]-xs[i]));}
+  const fs=sy.filter(isFinite).concat([dm,dp].filter(isFinite),[0]);let s0=Math.min(...fs),s1=Math.max(...fs);const sr=(s1-s0)||1;
+  const Q=cvP2.begin(a,b,s0-0.1*sr,s1+0.12*sr).axes({xl:'x',yl:'∂f(x)'});
+  Q.hline(0,C.red,1.3,[5,4]).line(sx,sy,C.g,2.4);
+  if(isFinite(dm)&&isFinite(dp))Q.seg(x0,dm,x0,dp,C.gold,6).dot(x0,dm,C.gold,3.5).dot(x0,dp,C.gold,3.5);
+  const[mm,mp]=dd(xm);const zeroIn=mm<=2e-3*(1+Math.abs(mm))&&mp>=-2e-3*(1+Math.abs(mp));const atEdge=im===0||im===N;
+  let h=convex?'<span class="ok">✓ f опукла на [a, b]</span> (перевірено нерівність для середин хорд на сітці)':'<span class="bad">✗ f не опукла</span>: f((u+v)/2) > (f(u)+f(v))/2 при u = '+fmt(bad[0],3)+', v = '+fmt(bad[1],3);
+  h+='\n\nf(x₀) = '+fmt(fx0)+'\nf′₋(x₀) = '+fmt(dm)+',  f′₊(x₀) = '+fmt(dp)+'\n'+subTxt;
+  h+='\n\nхорда: f(tu+(1−t)v) = '+fmt(fw)+(okc?' ≤ ':' > ')+fmt(ch)+' = t·f(u)+(1−t)·f(v)';
+  h+='\n\nмінімум на сітці: x* ≈ '+fmt(xm,3)+', f(x*) ≈ '+fmt(ym)+'\n∂f(x*) ≈ ['+fmt(mm,3)+', '+fmt(mp,3)+'] '+(atEdge?'— мінімум на краю відрізка, правило Ферма тут не застосовне':(zeroIn?'∋ 0 ✓ (правило Ферма)':'∌ 0 — локальний, але не глобальний мінімум?'));
+  $('cvOut').innerHTML=h;
+}
+bind(['cvF','cvA','cvB','cvX0','cvU','cvV','cvT'],renderConvex);R.convex=renderConvex;
+
+/* ================= 2. СЛАБКА ЗБІЖНІСТЬ ================= */
+const wkP1=new Plot('wkP1'),wkP2=new Plot('wkP2',{l:46}),wkP3=new Plot('wkP3',{l:46});
+chips('wkPreU',[['sign sin(2πnx)','sign(sin(2pi n x))|0'],['√2 sin(2πnx)','sqrt(2) sin(2pi n x)|0'],['1 + sign sin(2πnx)','1 + sign(sin(2pi n x))|1'],['√n·𝟙[0,1/n] (концентрація)','sqrt(n) H(1/n - x)|0'],['sin²(πnx)','sin(pi n x)^2|1/2']],v=>{const[a,b]=v.split('|');$('wkU').value=a;$('wkL').value=b;renderWeak();});
+chips('wkPreW',[['1','1'],['x','x'],['eˣ','exp(x)'],['𝟙[0.3, 0.6]','H(x-0.3) - H(x-0.6)'],['cos 2πx','cos(2pi x)']],v=>{$('wkW').value=v;renderWeak();});
+chips('wkPreG',[['z² (опукла)','z^2'],['|z| (опукла)','abs(z)'],['(|z|−1)² (неопукла)','(abs(z)-1)^2'],['(z²−1)² (подвійна яма)','(z^2-1)^2'],['max(z, 0)','max(z, 0)']],v=>{$('wkG').value=v;renderWeak();});
+const WK={key:''};
+function renderWeak(){
+  const fu=cf('wkU',['n','x']),fl=cf('wkL',['x']),fw=cf('wkW',['x']),fg=cf('wkG',['z']);if(!fu||!fl||!fw||!fg)return;
+  const n=Math.round(val('wkN'));setV('wkN',n);const NM=100,M=4000,dx=1/M;
+  const key=[$('wkU').value,$('wkL').value,$('wkW').value,$('wkG').value].join('§');
+  if(WK.key!==key){const xs=new Float64Array(M),W=new Float64Array(M),Lm=new Float64Array(M);
+    for(let i=0;i<M;i++){xs[i]=(i+.5)*dx;W[i]=safe(fw)(xs[i]);Lm[i]=safe(fl)(xs[i]);}
+    const G=z=>{const y=fg(z);return isFinite(y)?y:NaN;};
+    let ipL=0,nL=0,phiL=0;for(let i=0;i<M;i++){ipL+=Lm[i]*W[i]*dx;nL+=Lm[i]*Lm[i]*dx;phiL+=G(Lm[i])*dx;}
+    const ip=[],nr=[],ds=[],ph=[];
+    for(let k=1;k<=NM;k++){let s=0,q=0,d=0,p=0;for(let i=0;i<M;i++){let u=fu(k,xs[i]);if(!isFinite(u))u=0;s+=u*W[i];q+=u*u;d+=(u-Lm[i])*(u-Lm[i]);p+=G(u);}ip.push(s*dx);nr.push(Math.sqrt(q*dx));ds.push(Math.sqrt(d*dx));ph.push(p*dx);}
+    let wn=0;for(let i=0;i<M;i++)wn+=W[i]*W[i]*dx;
+    let conv=true;const zs=[];for(let i=0;i<=120;i++)zs.push(-3+6*i/120);const gz=zs.map(G);for(let i=0;i<=120&&conv;i++)for(let k=i+2;k<=120;k+=2){if(gz[(i+k)/2]>(gz[i]+gz[k])/2+1e-9*(1+Math.abs(gz[i])+Math.abs(gz[k]))){conv=false;break;}}
+    Object.assign(WK,{key,ip,nr,ds,ph,ipL,nL:Math.sqrt(nL),phiL,wn:Math.sqrt(wn),conv});}
+  // графік 1
+  const K=2400,xs=[],us=[],ws=[],ls=[],pos=[],neg=[];for(let i=0;i<=K;i++){const x=i/K;xs.push(x);let u=safe(xx=>fu(n,xx))(x);us.push(u);ws.push(safe(fw)(x));ls.push(safe(fl)(x));const pr=u*ws[i];pos.push(isFinite(pr)?Math.max(pr,0):0);neg.push(isFinite(pr)?Math.min(pr,0):0);}
+  let[y0,y1]=rangeOf([us,ws,ls,pos,neg],0.08);const cap=12;if(y1>cap)y1=cap;if(y0<-cap)y0=-cap;
+  const P=wkP1.begin(0,1,y0,y1).axes({xl:'x'});
+  P.poly([0,...xs,1],[0,...pos,0],'rgba(52,90,83,.18)').poly([0,...xs,1],[0,...neg,0],'rgba(180,73,59,.18)');
+  P.line(xs,us,C.gold,1.6).line(xs,ws,C.g,2.4).line(xs,ls,C.blue,2,[7,5]);
+  // графік 2
+  const ns=WK.ip.map((_,i)=>i+1);const[a2,b2]=rangeOf([WK.ip,[WK.ipL]],0.12);
+  const P2=wkP2.begin(0,NM+1,a2,b2).axes({xl:'n'});P2.hline(WK.ipL,C.red,1.4,[6,4]);
+  WK.ip.forEach((v,i)=>P2.dot(i+1,v,i+1===n?C.gold:C.g,i+1===n?5:2.6,i+1===n?C.ink:null));
+  // графік 3
+  const[a3,b3]=rangeOf([WK.ph,WK.ds,[WK.phiL,0]],0.1);const P3=wkP3.begin(0,NM+1,a3,Math.min(b3,50)).axes({xl:'n'});
+  P3.hline(WK.phiL,C.red,1.4,[6,4]);WK.ph.forEach((v,i)=>P3.dot(i+1,v,C.gold,2.6,null));WK.ds.forEach((v,i)=>P3.dot(i+1,v,C.blue,2.2,null));
+  P3.dot(n,WK.ph[n-1],C.gold,5,C.ink).dot(n,WK.ds[n-1],C.blue,5,C.ink);
+  const tail=WK.ph.slice(60),lim=Math.min(...tail);const lsc=WK.phiL<=lim+1e-6*(1+Math.abs(lim));
+  const ipTail=Math.max(...WK.ip.slice(70).map(v=>Math.abs(v-WK.ipL)));const dTail=Math.min(...WK.ds.slice(70));
+  let h='n = '+n+'\n⟨u_n, w⟩ = '+fmt(WK.ip[n-1],5)+'   →  ⟨u, w⟩ = '+fmt(WK.ipL,5)+'\nmax |⟨u_n,w⟩ − ⟨u,w⟩| при n > 70: '+fmt(ipTail)+(ipTail<0.05*(1+WK.wn)?'  <span class="ok">✓ слабка збіжність</span>':'  <span class="bad">? границя вказана неточно</span>');
+  h+='\n\n‖u_n‖ = '+fmt(WK.nr[n-1])+',   ‖u‖ = '+fmt(WK.nL)+'\n‖u_n − u‖ = '+fmt(WK.ds[n-1])+(dTail>0.05?'  — не прямує до 0: збіжності за нормою немає':'  — прямує до 0: збіжність навіть за нормою');
+  h+='\n\nΦ(u_n) = '+fmt(WK.ph[n-1])+',   Φ(u) = '+fmt(WK.phiL)+'\nliminf Φ(u_n) ≈ '+fmt(lim)+'\n'+(lsc?'<span class="ok">Φ(u) ≤ liminf Φ(u_n)</span> — напівнеперервність знизу виконується':'<span class="bad">Φ(u) > liminf Φ(u_n)</span> — слабка напівнеперервність знизу порушена!')+'\ng(z) на [−3, 3]: '+(WK.conv?'опукла — за теоремою Мазура порушення неможливе':'неопукла — усереднення може збільшити енергію');
+  $('wkOut').innerHTML=h;
+}
+bind(['wkU','wkL','wkW','wkG','wkN'],renderWeak,60);R.weak=renderWeak;
+
+/* ================= 3. ЕЙЛЕР–ЛАГРАНЖ ================= */
+const elP1=new Plot('elP1'),elP2=new Plot('elP2');
+const EL_PRE=[
+  {n:'Закріплені кінці: ∫(u′² + u²) dx → min',p:'2',q:'2',g:'0',f:'0',a:'0',b:'1',L:['D','0'],R:['D','1'],ex:x=>Math.sinh(x)/Math.sinh(1)},
+  {n:'Тихонов, вільні кінці: ½∫(u − x)² + ½∫u′²',p:'1',q:'1',g:'x',f:'0',a:'0',b:'1',L:['N','0'],R:['N','0'],ex:x=>x+Math.tanh(.5)*Math.cosh(x)-Math.sinh(x)},
+  {n:'Натягнута струна без навантаження (гармонічна)',p:'1',q:'0',g:'0',f:'0',a:'0',b:'1',L:['D','0'],R:['D','1'],ex:x=>x},
+  {n:'Струна під рівномірним навантаженням',p:'1',q:'0',g:'0',f:'1',a:'0',b:'1',L:['D','0'],R:['D','0'],ex:x=>x*(1-x)/2},
+  {n:'Неоднорідна жорсткість p = 1 + x²',p:'1 + x^2',q:'0',g:'0',f:'0',a:'0',b:'1',L:['D','0'],R:['D','1'],ex:x=>Math.atan(x)/Math.atan(1)},
+  {n:'Згладжування стрибка в даних',p:'0.003',q:'1',g:'H(x - 0.5)',f:'0',a:'0',b:'1',L:['N','0'],R:['N','0']},
+  {n:'Один кінець вільний, навантаження',p:'1',q:'0',g:'0',f:'1',a:'0',b:'1',L:['D','0'],R:['N','0'],ex:x=>x-x*x/2},
+  {n:'Некоерцитивний випадок: q = 0, кінці вільні',p:'1',q:'0',g:'0',f:'sin(2pi x)',a:'0',b:'1',L:['N','0'],R:['N','0']}
+];
+EL_PRE.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p.n;$('elPre').appendChild(o);});
+let elExact=null;
+function elLoad(i){const p=EL_PRE[i];$('elP').value=p.p;$('elQ').value=p.q;$('elG').value=p.g;$('elPhi').value=p.f;$('elA').value=p.a;$('elB').value=p.b;$('elLt').value=p.L[0];$('elLv').value=p.L[1];$('elRt').value=p.R[0];$('elRv').value=p.R[1];elExact=p.ex||null;renderEL();}
+$('elPre').addEventListener('change',e=>elLoad(+e.target.value));
+function renderEL(){
+  const er=$('elErr');let pf,qf,gf,ff;
+  try{pf=compile($('elP').value,['x']);qf=compile($('elQ').value,['x']);gf=compile($('elG').value,['x']);ff=compile($('elPhi').value,['x']);er.textContent='';}catch(e){er.textContent='Помилка: '+e.message;return;}
+  let a=num('elA',0),b=num('elB',1);if(!(b>a))b=a+1;
+  const Lt=$('elLt').value,Rt=$('elRt').value,Lv=num('elLv',0),Rv=num('elRv',0);
+  $('elLv').disabled=Lt!=='D';$('elRv').disabled=Rt!=='D';$('elHc').style.display=$('elH').value==='custom'?'':'none';
+  const N=400,h=(b-a)/N,xs=[],P=[],Q=[],Gd=[],Ph=[],Wt=[];
+  for(let i=0;i<=N;i++){const x=a+i*h;xs.push(x);Q.push(safe(qf)(x)||0);Gd.push(safe(gf)(x)||0);Ph.push(safe(ff)(x)||0);Wt.push(i===0||i===N?.5:1);}
+  for(let i=0;i<N;i++)P.push(safe(pf)(a+(i+.5)*h));
+  let warn='';if(P.some(v=>!(v>0)))warn+='Увага: p(x) має бути додатною, інакше функціонал не опуклий.\n';if(Q.some(v=>v<0))warn+='Увага: q(x) < 0 — функціонал може бути неопуклим.\n';
+  const A=new Float64Array(N+1),B=new Float64Array(N+1),Cc=new Float64Array(N+1),D=new Float64Array(N+1);
+  for(let i=0;i<=N;i++){const pl=i>0?P[i-1]:0,pr=i<N?P[i]:0;A[i]=-pl/h;Cc[i]=-pr/h;B[i]=(pl+pr)/h+Wt[i]*h*Q[i];D[i]=Wt[i]*h*(Q[i]*Gd[i]+Ph[i]);}
+  if(Lt==='D'){A[0]=0;B[0]=1;Cc[0]=0;D[0]=Lv;}if(Rt==='D'){A[N]=0;B[N]=1;Cc[N]=0;D[N]=Rv;}
+  const u=tridiag(A,B,Cc,D);
+  const energy=w=>{let s=0;for(let i=0;i<N;i++)s+=P[i]*(w[i+1]-w[i])*(w[i+1]-w[i])/(2*h);for(let i=0;i<=N;i++)s+=Wt[i]*h*(Q[i]*(w[i]-Gd[i])*(w[i]-Gd[i])/2-Ph[i]*w[i]);return s;};
+  if(!u||u.some(v=>!isFinite(v))){
+    const R1=elP1.begin(a,b,-1,1).axes({xl:'x'});R1.text((a+b)/2,0,'Мінімум не визначається однозначно',C.red,'center','middle','15px "IBM Plex Sans",sans-serif');elP2.begin(-1,1,0,1).axes({xl:'ε'});
+    let s=0;for(let i=0;i<=N;i++)s+=Wt[i]*h*Ph[i];
+    $('elOut').innerHTML=warn+'<span class="bad">Система рівнянь вироджена.</span>\nФункціонал не коерцитивний: додавання сталої c до u змінює енергію на −c·∫φ = '+fmt(-s)+'.\n'+(Math.abs(s)<1e-8?'Оскільки ∫φ = 0, мінімум існує, але визначений лише з точністю до сталої (не єдиний).':'Оскільки ∫φ ≠ 0, енергія необмежена знизу — мінімуму немає.')+'\nСпробуйте закріпити один кінець або взяти q > 0.';return;}
+  // збурення
+  const s=xs.map(x=>(x-a)/(b-a));let hh;const ht=$('elH').value;
+  if(ht==='bump')hh=s.map(t=>Math.sin(Math.PI*t));else if(ht==='osc')hh=s.map(t=>Math.sin(3*Math.PI*t));else if(ht==='cos')hh=s.map(t=>Math.cos(Math.PI*t));else if(ht==='lin')hh=s.map(t=>t);
+  else{const fh=cf('elHc',['x'],'elErr');if(!fh)return;hh=xs.map(x=>safe(fh)(x)||0);}
+  const h0=hh[0],h1=hh[N];if(Lt==='D'&&Rt==='D')hh=hh.map((v,i)=>v-h0*(1-s[i])-h1*s[i]);else if(Lt==='D')hh=hh.map(v=>v-h0);else if(Rt==='D')hh=hh.map(v=>v-h1);
+  const hm=Math.max(...hh.map(Math.abs));let adm=true;if(hm<1e-9){hh=hh.map(()=>0);adm=false;}else hh=hh.map(v=>v/hm);
+  const umin=Math.min(...u),umax=Math.max(...u),amp=Math.max(0.25,0.5*(umax-umin));
+  const eps=val('elEps');setV('elEps',fmt(eps,2));
+  const ue=Array.from(u,(v,i)=>v+eps*amp*hh[i]);const E0=energy(u);
+  const ex=elExact?xs.map(elExact):null;
+  const showG=Q.some(v=>Math.abs(v)>1e-12);
+  const[y0,y1]=rangeOf([u,ue,ex||[],showG?Gd:[]],0.1);
+  const R1=elP1.begin(a,b,y0,y1).axes({xl:'x',yl:'u(x)'});
+  if(showG)R1.line(xs,Gd,'rgba(202,157,72,.5)',2.2);
+  R1.line(xs,ue,C.gold,2.2).line(xs,Array.from(u),C.g,3);if(ex)R1.line(xs,ex,C.blue,2,[6,5]);
+  const mark=(x,y,t)=>t==='D'?R1.sqr(x,y,C.g,5):R1.ring(x,y,C.g,6);mark(a,u[0],Lt);mark(b,u[N],Rt);
+  // енергія по ε
+  const es=[],Es=[];for(let k=0;k<=80;k++){const e=-1+2*k/80;es.push(e);Es.push(energy(Array.from(u,(v,i)=>v+e*amp*hh[i])));}
+  const[z0,z1]=rangeOf([Es],0.12);const R2=elP2.begin(-1,1,Math.min(z0,E0-0.02*(Math.abs(E0)+1)),z1).axes({xl:'ε',yl:'E(u*+εh)'});
+  R2.hline(E0,C.g,1.2,[5,4]).line(es,Es,C.gold,2.6).dot(0,E0,C.g,5).dot(eps,energy(ue),C.gold,5.5,C.ink);
+  const d=1e-3,dE=(energy(Array.from(u,(v,i)=>v+d*amp*hh[i]))-energy(Array.from(u,(v,i)=>v-d*amp*hh[i])))/(2*d);
+  const Qh=(Es[80]+Es[0])/2-E0;
+  let out=warn+'E(u*) = '+fmt(E0,6)+'\nE(u* + εh) = '+fmt(energy(ue),6)+'   (ε = '+fmt(eps,2)+')\nперша варіація δE(u*; h) ≈ '+fmt(dE,3)+'\nE(u*+εh) ≈ E(u*) + ε·0 + ε²·'+fmt(Qh,4)+(adm?'':'\n(напрямок h не допустимий при цих умовах — вибрано h = 0)');
+  out+='\n\nграничні значення: u(a) = '+fmt(u[0],4)+', u(b) = '+fmt(u[N],4)+'\nнахили: u′(a) ≈ '+fmt((u[1]-u[0])/h,3)+', u′(b) ≈ '+fmt((u[N]-u[N-1])/h,3)+(Lt==='N'||Rt==='N'?'  (на вільному кінці p·u′ = 0)':'');
+  if(ex){let e=0;xs.forEach((x,i)=>{e=Math.max(e,Math.abs(u[i]-ex[i]));});out+='\nmax |u_h − u_точне| = '+fmt(e,3);}
+  $('elOut').innerHTML=out;
+}
+['elP','elQ','elG','elPhi','elA','elB','elLt','elLv','elRt','elRv'].forEach(id=>$(id).addEventListener('input',()=>{elExact=null;}));
+['elLt','elRt'].forEach(id=>$(id).addEventListener('change',()=>{elExact=null;}));
+bind(['elP','elQ','elG','elPhi','elA','elB','elLt','elLv','elRt','elRv','elH','elHc','elEps'],renderEL,30);R.el=renderEL;
+elLoad(0);
+
+/* ================= 4. PROX ================= */
+const pxP1=new Plot('pxP1',{l:44}),pxP2=new Plot('pxP2',{l:44}),pxP3=new Plot('pxP3',{l:38,r:12,t:12,b:26});
+function proxNum(G,v,t){const obj=u=>G(u)+(u-v)*(u-v)/(2*t);const lo=v-12,hi=v+12,K=600;let best=v,bv=Infinity;for(let i=0;i<=K;i++){const u=lo+(hi-lo)*i/K,o=obj(u);if(o<bv){bv=o;best=u;}}
+  let a=best-(hi-lo)/K,b=best+(hi-lo)/K;const r=(Math.sqrt(5)-1)/2;let c=b-r*(b-a),d=a+r*(b-a),fc=obj(c),fd=obj(d);
+  for(let i=0;i<80;i++){if(fc<fd||(fc===fd&&!isFinite(fd)&&obj(a)<obj(b))){b=d;d=c;fd=fc;c=b-r*(b-a);fc=obj(c);}else{a=c;c=d;fc=fd;d=a+r*(b-a);fd=obj(d);}}return(a+b)/2;}
+function pxGet(){const k=$('pxG').value,lam=val('pxLam'),mu=val('pxMu');
+  switch(k){case'l1':return{G:u=>lam*Math.abs(u),prox:(v,t)=>soft(v,t*lam),fx:'S_{τλ}(v)'};
+    case'en':return{G:u=>lam*Math.abs(u)+mu/2*u*u,prox:(v,t)=>soft(v,t*lam)/(1+t*mu)};
+    case'box':return{G:u=>(u>=0&&u<=1)?0:Infinity,prox:v=>clip(v,0,1)};
+    case'hinge':return{G:u=>lam*Math.max(0,1-u),prox:(v,t)=>v<1-t*lam?v+t*lam:(v<=1?1:v)};
+    case'sq':return{G:u=>lam/2*u*u,prox:(v,t)=>v/(1+t*lam)};
+    default:{const f=cf('pxC',['u','lam','mu']);if(!f)return null;const G=u=>{let y;try{y=f(u,lam,mu);}catch(e){y=NaN;}return isFinite(y)?y:Infinity;};return{G,prox:(v,t)=>proxNum(G,v,t)};}}}
+function renderProx(){
+  const k=$('pxG').value;$('pxC').style.display=k==='custom'?'':'none';
+  const O=pxGet();if(!O)return;const lam=val('pxLam'),mu=val('pxMu'),tau=val('pxTau'),v=val('pxV');
+  setV('pxLam',fmt(lam,2));setV('pxMu',fmt(mu,2));setV('pxTau',fmt(tau,2));setV('pxV',fmt(v,2));
+  const u=O.prox(v,tau),obj=x=>O.G(x)+(x-v)*(x-v)/(2*tau);
+  const N=600,xs=[],gs=[],qs=[],ss=[];for(let i=0;i<=N;i++){const x=-4+8*i/N;xs.push(x);const g=O.G(x);gs.push(isFinite(g)?g:NaN);qs.push((x-v)*(x-v)/(2*tau));ss.push(isFinite(g)?g+qs[i]:NaN);}
+  const om=obj(u);const finG=gs.filter(isFinite);let y0=Math.min(0,...finG,om)-0.3,y1=Math.max(om+3,Math.min(Math.max(...finG,0),om+8));
+  const P=pxP1.begin(-4,4,y0,y1).axes({xl:'u'});
+  if(k==='box')P.vband(0,1,'rgba(52,90,83,.10)');
+  P.line(xs,gs,C.g,2.4).line(xs,qs,C.gold,1.5,[6,4]).line(xs,ss,C.gold,2.8);
+  P.vline(u,C.vio,1.2,[3,3]).dot(u,om,C.vio,6).seg(v,y0,v,y0+(y1-y0)*.05,C.ink,2).text(v,y0+(y1-y0)*.06,'v','#1d2a27','center','bottom','italic 13px Lora,serif');
+  // відображення prox
+  const vs=[],ps=[];for(let i=0;i<=240;i++){const w=-4+8*i/240;vs.push(w);ps.push(O.prox(w,tau));}
+  const P2=pxP2.begin(-4,4,Math.min(-4,...ps),Math.max(4,...ps)).axes({xl:'v',yl:'prox(v)'});
+  let z0=null;for(let i=0;i<=240;i++){const z=Math.abs(ps[i])<1e-6;if(z&&z0===null)z0=vs[i];if((!z||i===240)&&z0!==null){P2.vband(z0,vs[z?i:i-1],'rgba(180,73,59,.13)');z0=null;}}
+  P2.line(vs,vs,C.blue,1.4,[6,5]).line(vs,ps,C.g,2.6).dot(v,u,C.vio,6);
+  const h=1e-6,dm=(O.G(u)-O.G(u-h))/h,dp=(O.G(u+h)-O.G(u))/h,force=(v-u)/tau;const inS=force>=dm-1e-3&&force<=dp+1e-3;
+  $('pxOut').innerHTML='prox_τG(v) = u = '+fmt(u,4)+'\nсила пружини (v − u)/τ = '+fmt(force,4)+'\n∂G(u) ≈ [ '+fmt(dm,3)+', '+fmt(dp,3)+' ]\n'+(inS?'<span class="ok">(v − u)/τ ∈ ∂G(u) ✓</span>':'<span class="bad">(v − u)/τ ∉ ∂G(u)</span>')+'\nG(u) + (u−v)²/(2τ) = '+fmt(om,4)+(Math.abs(u)<1e-6&&k!=='box'?'\n\nv потрапила в мертву зону: оптимум у зламі u = 0':'');
+}
+bind(['pxG','pxC','pxLam','pxMu','pxTau','pxV'],renderProx);
+let px2v={x:2.1,y:0.8},px2m='l2';
+segBtns('px2Mode',m=>{px2m=m;renderProx2();});
+const prox2=(x,y,t)=>{if(px2m==='l2'){const n=Math.hypot(x,y),f=n>0?Math.max(1-t/n,0):0;return[f*x,f*y];}if(px2m==='l1')return[soft(x,t),soft(y,t)];return[clip(x,0,1),clip(y,0,1)];};
+function renderProx2(){
+  const t=val('px2Tau');setV('px2Tau',fmt(t,2));const P=pxP3.begin(-3,3,-3,3).axes({xl:'u₁',yl:'u₂'});const g=P.g;
+  P.clip();g.fillStyle='rgba(180,73,59,.12)';
+  if(px2m==='l2'){g.beginPath();g.arc(P.X(0),P.Y(0),Math.abs(P.X(t)-P.X(0)),0,7);g.fill();}
+  else if(px2m==='l1'){g.fillRect(P.X(-t),P.t,P.X(t)-P.X(-t),P.b-P.t);g.fillRect(P.l,P.Y(t),P.r-P.l,P.Y(-t)-P.Y(t));g.fillStyle='rgba(180,73,59,.18)';g.fillRect(P.X(-t),P.Y(t),P.X(t)-P.X(-t),P.Y(-t)-P.Y(t));}
+  else{g.fillStyle='rgba(52,90,83,.16)';g.fillRect(P.X(0),P.Y(1),P.X(1)-P.X(0),P.Y(0)-P.Y(1));}
+  g.restore();
+  for(let i=-6;i<=6;i++)for(let j=-6;j<=6;j++){const x=i*.45,y=j*.45,[a,b]=prox2(x,y,t);if(Math.hypot(a-x,b-y)>1e-3)P.arrow(x,y,a,b,'rgba(95,109,105,.38)',1);else P.dot(x,y,'rgba(95,109,105,.4)',1.4,null);}
+  const[a,b]=prox2(px2v.x,px2v.y,t);P.arrow(px2v.x,px2v.y,a,b,C.gold,2.6).dot(px2v.x,px2v.y,C.gold,7,C.ink).dot(a,b,C.g,6.5);
+  P.text(px2v.x,px2v.y,'  v',C.ink,'left','bottom','italic 14px Lora,serif').text(a,b,'  prox(v)',C.g,'left','top','italic 13px Lora,serif');
+  const nv=Math.hypot(px2v.x,px2v.y);
+  let s='v = ('+fmt(px2v.x,3)+', '+fmt(px2v.y,3)+'),  ‖v‖₂ = '+fmt(nv,3)+'\nprox(v) = ('+fmt(a,3)+', '+fmt(b,3)+')';
+  if(px2m==='l2')s+='\n'+(nv<=t?'‖v‖ ≤ τ ⇒ уся група обнуляється':'вектор вкорочено на τ = '+fmt(t,2)+' без зміни напрямку');
+  else if(px2m==='l1')s+='\nобнулено координат: '+((a===0)+(b===0))+' з 2 (смуги |vᵢ| ≤ τ)';
+  else s+='\nпоточкове обрізання значень до [0, 1] — крок, що використовується в сегментації';
+  $('px2Out').textContent=s;
+}
+(function(){const c=$('pxP3');const set=e=>{const r=c.getBoundingClientRect();px2v={x:clip(pxP3.iX(e.clientX-r.left),-3,3),y:clip(pxP3.iY(e.clientY-r.top),-3,3)};renderProx2();};
+  c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);set(e);});c.addEventListener('pointermove',e=>{if(e.buttons)set(e);});})();
+bind(['px2Tau'],renderProx2);
+R.prox=()=>{renderProx();renderProx2();};
+
+/* ================= 5. ℓ¹ / LASSO ================= */
+const l1P1=new Plot('l1P1'),l1P2=new Plot('l1P2');let l1T=null;
+function renderL1(){
+  const el=$('l1Pts');let pts;try{pts=el.value.split(/[\s;,]+/).filter(s=>s.trim()).map(s=>{const v=compile(s,[])();if(!isFinite(v))throw new Error('не число: '+s);return v;});if(!pts.length)throw new Error('введіть хоча б одне число');$('l1PtsErr').textContent='';el.classList.remove('badin');}
+  catch(e){$('l1PtsErr').textContent='Помилка: '+e.message;el.classList.add('badin');return;}
+  const D=val('l1D');setV('l1D',fmt(D,1));
+  const s0=pts.slice().sort((a,b)=>a-b);const s=s0.slice();s[s.length-1]+=D;const m=s.length;
+  const mean0=s0.reduce((a,b)=>a+b,0)/m,mean=s.reduce((a,b)=>a+b,0)/m;
+  const med=m%2?[s[(m-1)/2],s[(m-1)/2]]:[s[m/2-1],s[m/2]];const med0=m%2?[s0[(m-1)/2],s0[(m-1)/2]]:[s0[m/2-1],s0[m/2]];
+  const lo=Math.min(...s,mean),hi=Math.max(...s,mean),pad=0.12*((hi-lo)||1)+0.5;const x0=lo-pad,x1=hi+pad;
+  const F1=t=>s.reduce((a,b)=>a+Math.abs(t-b),0),F2=t=>s.reduce((a,b)=>a+(t-b)*(t-b),0);
+  const N=600,xs=[],y1=[],y2=[];for(let i=0;i<=N;i++){const t=x0+(x1-x0)*i/N;xs.push(t);y1.push(F1(t));y2.push(F2(t));}
+  const mn1=F1(med[0]);const P=l1P1.begin(x0,x1,mn1-0.08*(Math.max(...y1)-mn1),Math.max(...y1)*1.04).axes({xl:'t'});
+  P.vband(med[0],med[1],'rgba(52,90,83,.18)').line(xs,y1,C.g,2.6);s.forEach(a=>P.dot(a,P.y0+(P.y1-P.y0)*.03,C.gold,4.5,C.ink));P.dot((med[0]+med[1])/2,mn1,C.g,5);
+  const mn2=F2(mean);const Q=l1P2.begin(x0,x1,mn2-0.08*(Math.max(...y2)-mn2),Math.max(...y2)*1.04).axes({xl:'t'});
+  Q.line(xs,y2,C.blue,2.4);s.forEach(a=>Q.dot(a,Q.y0+(Q.y1-Q.y0)*.03,C.gold,4.5,C.ink));Q.dot(mean,mn2,C.vio,6);
+  let sub='';if(l1T!==null){const t=l1T;P.vline(t,C.ink,1,[3,3]);Q.vline(t,C.ink,1,[3,3]);const eq=s.filter(a=>Math.abs(a-t)<(x1-x0)/400).length,nm=s.filter(a=>a<t-(x1-x0)/400).length,np=m-nm-eq;
+    const lo2=nm-np-eq,hi2=nm-np+eq;sub='\n\nкурсор t = '+fmt(t,3)+':  ліворуч '+nm+', праворуч '+np+(eq?', збігається '+eq:'')+'\n∂F₁(t) = '+(eq?'[ '+lo2+', '+hi2+' ]':'{ '+(nm-np)+' }')+(lo2<=0&&hi2>=0?'  ∋ 0 ⇒ мінімум':'')+'\nF₂′(t) = 2Σ(t − aᵢ) = '+fmt(2*(m*t-s.reduce((a,b)=>a+b,0)),3);}
+  $('l1Out').innerHTML='медіана (мінімум F₁): '+(med[0]===med[1]?'t = '+fmt(med[0],3):'весь відрізок ['+fmt(med[0],3)+', '+fmt(med[1],3)+']')+'\nсереднє (мінімум F₂): t = '+fmt(mean,3)+'\n\nвплив викиду Δ = '+fmt(D,1)+':\n  середнє зсунулося на '+fmt(mean-mean0,3)+'\n  медіана зсунулася на '+fmt(Math.max(Math.abs(med[0]-med0[0]),Math.abs(med[1]-med0[1])),3)+sub;
+}
+(function(){[['l1P1',()=>l1P1],['l1P2',()=>l1P2]].forEach(([id,pl])=>{const c=$(id);c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();l1T=pl().iX(e.clientX-r.left);renderL1();});c.addEventListener('pointerleave',()=>{l1T=null;renderL1();});});})();
+bind(['l1Pts','l1D'],renderL1);
+
+const lsP1=new Plot('lsP1',{l:40,r:12,t:12,b:28}),lsP2=new Plot('lsP2');let lsStart=null;
+function lassoCD(A,c,lam,w=[0,0],it=3000){let[w1,w2]=w;for(let k=0;k<it;k++){const o1=w1,o2=w2;w1=A[0]>1e-14?soft(c[0]-A[1]*w2,lam)/A[0]:0;w2=A[3]>1e-14?soft(c[1]-A[2]*w1,lam)/A[3]:0;if(Math.abs(w1-o1)+Math.abs(w2-o2)<1e-13)break;}return[w1,w2];}
+function contourSegs(F,nx,ny,lev){const out=[];for(let j=0;j<ny-1;j++)for(let i=0;i<nx-1;i++){const v=[F[j*nx+i],F[j*nx+i+1],F[(j+1)*nx+i+1],F[(j+1)*nx+i]],pc=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]],pts=[];
+  for(let e=0;e<4;e++){const a=v[e],b=v[(e+1)%4];if((a-lev)*(b-lev)<0){const t=(lev-a)/(b-a),p=pc[e],q=pc[(e+1)%4];pts.push([p[0]+t*(q[0]-p[0]),p[1]+t*(q[1]-p[1])]);}}
+  if(pts.length>=2)out.push([pts[0],pts[1]]);if(pts.length===4)out.push([pts[2],pts[3]]);}return out;}
+function renderLasso(){
+  const er=$('lsErr');let X,y;
+  try{X=$('lsX').value.trim().split(/\n|;/).map(r=>r.trim()).filter(r=>r).map(r=>r.split(/[\s,]+/).map(s=>compile(s,[])()));y=$('lsY').value.trim().split(/[\s,;]+/).map(s=>compile(s,[])());
+    if(X.some(r=>r.length!==2))throw new Error('кожен рядок X повинен мати 2 числа');if(X.length!==y.length)throw new Error('кількість рядків X ('+X.length+') ≠ довжині y ('+y.length+')');if([...X.flat(),...y].some(v=>!isFinite(v)))throw new Error('нечислові значення');er.textContent='';}
+  catch(e){er.textContent='Помилка: '+e.message;return;}
+  let A=[0,0,0,0],c=[0,0],yy=0;X.forEach((r,i)=>{A[0]+=r[0]*r[0];A[1]+=r[0]*r[1];A[2]+=r[1]*r[0];A[3]+=r[1]*r[1];c[0]+=r[0]*y[i];c[1]+=r[1]*y[i];yy+=y[i]*y[i];});
+  const lmax=Math.max(Math.abs(c[0]),Math.abs(c[1]));const fr=val('lsLam'),lam=fr*lmax;setV('lsLam',fmt(fr,3)+' → λ = '+fmt(lam,3));
+  const S=(w1,w2)=>.5*(A[0]*w1*w1+2*A[1]*w1*w2+A[3]*w2*w2)-c[0]*w1-c[1]*w2+.5*yy;
+  const ws=lassoCD(A,c,lam);const det=A[0]*A[3]-A[1]*A[1];const wls=det>1e-12*(A[0]*A[3]+1e-300)?[(A[3]*c[0]-A[1]*c[1])/det,(A[0]*c[1]-A[1]*c[0])/det]:null;
+  const Lp=(A[0]+A[3])/2+Math.sqrt(((A[0]-A[3])/2)**2+A[1]*A[1]);const tau=1/Lp;
+  if(!lsStart)lsStart=[-0.6*Math.max(1,Math.abs(ws[0])+Math.abs(ws[1])),1.2*Math.max(1,Math.abs(ws[1]))];
+  const path=[lsStart.slice()];let w=lsStart.slice();for(let k=0;k<60;k++){const g1=A[0]*w[0]+A[1]*w[1]-c[0],g2=A[2]*w[0]+A[3]*w[1]-c[1];w=[soft(w[0]-tau*g1,tau*lam),soft(w[1]-tau*g2,tau*lam)];path.push(w);}
+  const pts=[[0,0],ws,lsStart];if(wls)pts.push(wls);
+  const bx=pts.map(p=>p[0]),by=pts.map(p=>p[1]);const cx=(Math.min(...bx)+Math.max(...bx))/2,cy=(Math.min(...by)+Math.max(...by))/2;
+  const r0=$('lsP1').getBoundingClientRect();const ratio=((r0.height||400)-40)/((r0.width||400)-52);
+  let half=Math.max(Math.max(...bx)-Math.min(...bx),(Math.max(...by)-Math.min(...by))/ratio)/2*1.3+0.4;
+  const P=lsP1.begin(cx-half,cx+half,cy-half*ratio,cy+half*ratio).axes({xl:'w₁',yl:'w₂'});
+  // фонові смуги цільової функції
+  const G=140,Fv=new Float64Array(G*G),Sv=new Float64Array(G*G);let fmn=Infinity,fmx=-Infinity;
+  for(let j=0;j<G;j++)for(let i=0;i<G;i++){const w1=P.x0+(i+.5)/G*(P.x1-P.x0),w2=P.y1-(j+.5)/G*(P.y1-P.y0),sv=S(w1,w2),fv=sv+lam*(Math.abs(w1)+Math.abs(w2));Sv[j*G+i]=sv;Fv[j*G+i]=fv;if(fv<fmn)fmn=fv;if(fv>fmx)fmx=fv;}
+  const oc=document.createElement('canvas');oc.width=G;oc.height=G;const og=oc.getContext('2d'),id=og.createImageData(G,G);
+  for(let k=0;k<G*G;k++){const t=Math.sqrt((Fv[k]-fmn)/((fmx-fmn)||1)),band=Math.floor(t*16)%2,m=band?0.965:1;id.data[4*k]=(206+(255-206)*t)*m;id.data[4*k+1]=(226+(253-226)*t)*m;id.data[4*k+2]=(219+(248-219)*t)*m;id.data[4*k+3]=255;}
+  og.putImageData(id,0,0);P.clip();P.g.imageSmoothingEnabled=true;P.g.drawImage(oc,P.l,P.t,P.r-P.l,P.b-P.t);P.g.restore();P.axes({xl:'w₁',yl:'w₂'});
+  P.poly([P.x0,P.x1,P.x1,P.x0],[P.y0,P.y0,P.y1,P.y1],'rgba(0,0,0,0)');
+  const toW=([fi,fj])=>[P.x0+(fi+.5)/G*(P.x1-P.x0),P.y1-(fj+.5)/G*(P.y1-P.y0)];
+  const Ss=S(ws[0],ws[1]),Smin=wls?S(wls[0],wls[1]):Math.min(...Sv);const base=Ss-Smin>1e-9?Ss-Smin:(Math.max(...Sv)-Smin)/12;
+  const levs=[0.25,0.55,1,1.7,2.7,4,6,9].map(q=>Smin+q*base);
+  for(const lv of levs)for(const sg of contourSegs(Sv,G,G,lv)){const a=toW(sg[0]),b=toW(sg[1]);P.seg(a[0],a[1],b[0],b[1],Math.abs(lv-Ss)<1e-12?C.gold:'rgba(202,157,72,.6)',Math.abs(lv-Ss)<1e-12?2.6:1.1);}
+  const r1=Math.abs(ws[0])+Math.abs(ws[1]);if(r1>1e-9)P.line([r1,0,-r1,0,r1],[0,r1,0,-r1,0],C.g,2.4);
+  if($('lsIsta').checked){P.line(path.map(p=>p[0]),path.map(p=>p[1]),'rgba(29,42,39,.55)',1.2);path.forEach((p,i)=>P.dot(p[0],p[1],C.ink,i===0?4.5:2.2,i===0?'#fff':null));}
+  if(wls)P.dot(wls[0],wls[1],C.blue,5.5);P.dot(ws[0],ws[1],C.vio,7);
+  // шлях Lasso
+  const ls=[],p1=[],p2=[];let wm=[0,0];for(let k=120;k>=0;k--){const l=1.2*lmax*k/120;wm=lassoCD(A,c,l,wm);ls.unshift(l);p1.unshift(wm[0]);p2.unshift(wm[1]);}
+  const[q0,q1]=rangeOf([p1,p2,[0]],0.1);const Q=lsP2.begin(0,1.2*lmax||1,q0,q1).axes({xl:'λ',yl:'w(λ)'});
+  Q.vline(lmax,C.red,1.2,[6,4]).text(lmax,q1,' λ_max',C.red,'left','top').line(ls,p1,C.g,2.6).line(ls,p2,C.gold,2.6).vline(lam,C.ink,1,[3,3]).dot(lam,ws[0],C.g,5).dot(lam,ws[1],C.gold,5);
+  Q.text(ls[2],p1[2],' w₁',C.g,'left','bottom','italic 13px Lora,serif').text(ls[2],p2[2],' w₂',C.gold,'left','top','italic 13px Lora,serif');
+  const res=[c[0]-(A[0]*ws[0]+A[1]*ws[1]),c[1]-(A[2]*ws[0]+A[3]*ws[1])];
+  const kkt=j=>Math.abs(ws[j])>1e-10?'w'+(j?'₂':'₁')+' ≠ 0:  Xⱼᵀ(y − Xw) = '+fmt(res[j],4)+' = λ·sign wⱼ':'w'+(j?'₂':'₁')+' = 0:  |Xⱼᵀ(y − Xw)| = '+fmt(Math.abs(res[j]),4)+' ≤ λ = '+fmt(lam,4);
+  $('lsOut').innerHTML='Xᵀy = ('+fmt(c[0],3)+', '+fmt(c[1],3)+'),  λ_max = ‖Xᵀy‖∞ = '+fmt(lmax,4)+'\nλ = '+fmt(lam,4)+'\nw* = ('+fmt(ws[0],4)+', '+fmt(ws[1],4)+')'+(wls?'\nМНК без штрафу: ('+fmt(wls[0],3)+', '+fmt(wls[1],3)+')':'\nXᵀX вироджена: МНК-розв\'язок не єдиний')+'\n\nумови оптимальності 0 ∈ ∂F(w*):\n  '+kkt(0)+'\n  '+kkt(1)+'\n\nISTA: τ = 1/L = '+fmt(tau,4)+',  після 60 кроків w = ('+fmt(w[0],4)+', '+fmt(w[1],4)+')';
+}
+$('lsP1').addEventListener('pointerdown',e=>{const r=$('lsP1').getBoundingClientRect();lsStart=[lsP1.iX(e.clientX-r.left),lsP1.iY(e.clientY-r.top)];renderLasso();});
+bind(['lsX','lsY'],()=>{lsStart=null;renderLasso();},120);bind(['lsLam','lsIsta'],renderLasso);
+R.l1=()=>{renderL1();renderLasso();};
+
+/* ================= 6. ЗОБРАЖЕННЯ ================= */
+let imMode='1';segBtns('imMode',m=>{imMode=m;['1','2','3'].forEach(k=>$('im'+k).style.display=k===m?'':'none');R.img();});
+const imP1=new Plot('imP1'),imP2=new Plot('imP2'),imP3=new Plot('imP3'),sgP1=new Plot('sgP1',{l:44}),sgP2=new Plot('sgP2',{l:54});
+function signal(type,n){const a=new Float64Array(n);for(let i=0;i<n;i++){const x=(i+.5)/n;let v;
+  if(type==='steps')v=x<.2?.2:x<.45?.8:x<.6?.4:x<.8?1:.3;else if(type==='ramp')v=x<.2?.2:x<.55?.2+.7*(x-.2)/.35:x<.75?.9:.35;else v=.45+.22*Math.sin(6*Math.PI*x)+(x>.5?.35:0);a[i]=v;}return a;}
+function tikh1d(f,lam){const n=f.length,A=new Float64Array(n),B=new Float64Array(n),Cc=new Float64Array(n);for(let i=0;i<n;i++){const dg=(i>0)+(i<n-1);A[i]=i>0?-lam:0;Cc[i]=i<n-1?-lam:0;B[i]=1+lam*dg;}return tridiag(A,B,Cc,f);}
+function tv1d(f,lam,it=2000){const n=f.length;let p=new Float64Array(n-1),q=new Float64Array(n-1),pn=new Float64Array(n-1),t=1;const u=new Float64Array(n);
+  const uf=pp=>{for(let i=0;i<n;i++)u[i]=f[i]-((i>0?pp[i-1]:0)-(i<n-1?pp[i]:0));};
+  if(lam<=0)return Float64Array.from(f);
+  for(let k=0;k<it;k++){uf(q);for(let i=0;i<n-1;i++)pn[i]=clip(q[i]+.25*(u[i+1]-u[i]),-lam,lam);const tn=(1+Math.sqrt(1+4*t*t))/2,b=(t-1)/tn;for(let i=0;i<n-1;i++){q[i]=pn[i]+b*(pn[i]-p[i]);}const tmp=p;p=pn;pn=tmp;t=tn;}
+  uf(p);return Float64Array.from(u);}
+const mse=(a,b)=>{let s=0;for(let i=0;i<a.length;i++)s+=(a[i]-b[i])**2;return s/a.length;};
+function renderIm1(){
+  const n=256,typ=$('imSig').value,sg=val('imSigma'),seed=Math.round(num('imSeed',7)),lt=Math.pow(10,val('imLT')),lv=val('imLV');
+  setV('imSigma',fmt(sg,3));setV('imLT',fmt(lt,3));setV('imLV',fmt(lv,3));
+  const u0=signal(typ,n),gg=gaussGen(seed),f=u0.map(v=>v+sg*gg());const ut=tikh1d(f,lt),uv=tv1d(f,lv);
+  const xs=Array.from({length:n},(_,i)=>(i+.5)/n);const[y0,y1]=rangeOf([f,u0],0.06);
+  const P=imP1.begin(0,1,y0,y1).axes({xl:'x'});f.forEach((v,i)=>P.dot(xs[i],v,C.grey,1.8,null));
+  P.line(xs,Array.from(u0),C.ink,1.6,[6,4]).line(xs,Array.from(ut),C.blue,2.4).line(xs,Array.from(uv),C.gold,2.8);
+  const ws=[],hs=[];for(let i=0;i<=200;i++){const w=Math.PI*i/200;ws.push(w);hs.push(1/(1+4*lt*Math.sin(w/2)**2));}
+  const Q=imP2.begin(0,Math.PI,0,1.05).axes({xl:'частота ω'});Q.line(ws,hs,C.blue,2.6);
+  let jumps=0;for(let i=0;i<n-1;i++)if(Math.abs(uv[i+1]-uv[i])>1e-4)jumps++;
+  $('im1Out').innerHTML='середньоквадратична похибка (MSE):\n  дані f:   '+fmt(mse(f,u0),5)+'\n  Тихонов:  '+fmt(mse(ut,u0),5)+'\n  ROF (TV): '+fmt(mse(uv,u0),5)+'\n\nTV-розв\'язок має '+jumps+' ненульових приростів з '+(n-1)+' — він кусково сталий.\nТихонов пропускає частоту ω з множником 1/(1+4λ sin²(ω/2)): шум і контури пригнічуються однаково.';
+}
+bind(['imSig','imSigma','imSeed','imLT','imLV'],renderIm1,30);
+
+const NI=128;const IM={up:null,clean:null,noisy:null,tik:null,tv:null,key:''};
+function synth(N){const a=new Float32Array(N*N);const inTri=(x,y)=>{const A=[.52,.47],B=[.86,.74],Cp=[.2,.74];const s=(p,q,r)=>(p[0]-r[0])*(q[1]-r[1])-(q[0]-r[0])*(p[1]-r[1]);const P=[x,y],d1=s(P,A,B),d2=s(P,B,Cp),d3=s(P,Cp,A);return!((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));};
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=(i+.5)/N,y=(j+.5)/N;let v=.22;if(y>.8)v=.12+.76*x;
+    if((x-.3)**2+(y-.33)**2<.17**2)v=.86;if(x>.56&&x<.88&&y>.15&&y<.43)v=.55;if(inTri(x,y))v=.7;if((x-.12)**2+(y-.6)**2<.035**2)v=1;if(Math.abs(y-.07)<.012&&x>.1&&x<.9)v=.9;a[j*N+i]=v;}return a;}
+function grad2(u,N,gx,gy){for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i;gx[k]=i<N-1?u[k+1]-u[k]:0;gy[k]=j<N-1?u[k+N]-u[k]:0;}}
+function div2(px,py,N,o){for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i;o[k]=(i<N-1?px[k]:0)-(i>0?px[k-1]:0)+(j<N-1?py[k]:0)-(j>0?py[k-N]:0);}}
+function tikh2d(f,N,lam){const n=N*N,gx=new Float32Array(n),gy=new Float32Array(n),dv=new Float32Array(n);const Ap=(x,o)=>{grad2(x,N,gx,gy);div2(gx,gy,N,dv);for(let k=0;k<n;k++)o[k]=x[k]-lam*dv[k];};
+  const x=Float32Array.from(f),r=new Float32Array(n),p=new Float32Array(n),q=new Float32Array(n);Ap(x,q);let rr=0;for(let k=0;k<n;k++){r[k]=f[k]-q[k];p[k]=r[k];rr+=r[k]*r[k];}
+  const r0=rr;for(let it=0;it<400&&rr>1e-12*r0+1e-20;it++){Ap(p,q);let pq=0;for(let k=0;k<n;k++)pq+=p[k]*q[k];const al=rr/pq;let rn=0;for(let k=0;k<n;k++){x[k]+=al*p[k];r[k]-=al*q[k];rn+=r[k]*r[k];}const be=rn/rr;rr=rn;for(let k=0;k<n;k++)p[k]=r[k]+be*p[k];}return x;}
+function primalDual(f,N,opts){const n=N*N,{mode,lam,mu,r,it}=opts;const tau=.99/Math.sqrt(8),sig=tau;
+  let u=mode==='rof'?Float32Array.from(f):new Float32Array(n).fill(.5);const ub=Float32Array.from(u),px=new Float32Array(n),py=new Float32Array(n),gx=new Float32Array(n),gy=new Float32Array(n),dv=new Float32Array(n),un=new Float32Array(n);const bound=mode==='rof'?lam:1;
+  for(let k=0;k<it;k++){grad2(ub,N,gx,gy);for(let i=0;i<n;i++){const a=px[i]+sig*gx[i],b=py[i]+sig*gy[i],m=Math.max(1,Math.hypot(a,b)/bound);px[i]=a/m;py[i]=b/m;}
+    div2(px,py,N,dv);if(mode==='rof')for(let i=0;i<n;i++)un[i]=(u[i]+tau*dv[i]+tau*f[i])/(1+tau);else for(let i=0;i<n;i++)un[i]=clip(u[i]+tau*dv[i]-tau*mu*r[i],0,1);
+    for(let i=0;i<n;i++){ub[i]=2*un[i]-u[i];u[i]=un[i];}}return u;}
+function tvIso(u,N){let s=0;for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i,a=i<N-1?u[k+1]-u[k]:0,b=j<N-1?u[k+N]-u[k]:0;s+=Math.hypot(a,b);}return s;}
+function drawGray(id,a,N,row,overlay){const c=$(id);c.width=N;c.height=N;const g=c.getContext('2d'),d=g.createImageData(N,N);
+  for(let k=0;k<N*N;k++){const v=Math.round(255*clip(a[k],0,1));let r=v,gg=v,b=v;if(overlay){if(overlay.edge[k]){r=202;gg=157;b=72;}else if(overlay.in[k]){r=r*.62+202*.38;gg=gg*.62+157*.38;b=b*.62+72*.38;}}d.data[4*k]=r;d.data[4*k+1]=gg;d.data[4*k+2]=b;d.data[4*k+3]=255;}
+  g.putImageData(d,0,0);if(row!=null){g.fillStyle='rgba(202,157,72,.85)';g.fillRect(0,row,N,1);}}
+const psnr=(a,b)=>10*Math.log10(1/mse(a,b));
+function im2Inputs(){const sg=val('im2Sig'),lt=Math.pow(10,val('im2LT')),lv=val('im2LV'),row=Math.round(val('im2Row'));setV('im2Sig',fmt(sg,3));setV('im2LT',fmt(lt,3));setV('im2LV',fmt(lv,3));setV('im2Row',row);return{sg,lt,lv,row};}
+function computeIm2(){const{sg,lt,lv}=im2Inputs();const src=$('imSrc').value;const key=[src,sg,lt,lv,IM.upId||0].join('|');if(IM.key===key&&IM.tv)return;
+  $('im2St').textContent='обчислення…';
+  setTimeout(()=>{const clean=src==='upload'&&IM.up?IM.up:synth(NI);const gg=gaussGen(11);const noisy=clean.map(v=>v+sg*gg());
+    Object.assign(IM,{clean,noisy,tik:tikh2d(noisy,NI,lt),tv:primalDual(noisy,NI,{mode:'rof',lam:lv,it:220}),key});SG.key='';$('im2St').textContent='';drawIm2();},20);}
+function drawIm2(){const{row}=im2Inputs();if(!IM.tv){computeIm2();return;}
+  drawGray('imC0',IM.clean,NI,row);drawGray('imC1',IM.noisy,NI,row);drawGray('imC2',IM.tik,NI,row);drawGray('imC3',IM.tv,NI,row);
+  const xs=Array.from({length:NI},(_,i)=>i),sl=a=>Array.from(a.slice(row*NI,row*NI+NI));const[y0,y1]=rangeOf([sl(IM.noisy),sl(IM.clean)],0.05);
+  imP3.begin(0,NI-1,y0,y1).axes({xl:'стовпчик'}).line(xs,sl(IM.noisy),'#c4c9c6',1.2).line(xs,sl(IM.clean),C.ink,1.6,[6,4]).line(xs,sl(IM.tik),C.blue,2.2).line(xs,sl(IM.tv),C.gold,2.6);
+  $('im2Out').innerHTML='PSNR відносно оригіналу (більше — краще):\n  з шумом:  '+fmt(psnr(IM.noisy,IM.clean),2)+' дБ\n  Тихонов:  '+fmt(psnr(IM.tik,IM.clean),2)+' дБ\n  ROF:      '+fmt(psnr(IM.tv,IM.clean),2)+' дБ\n\nTV(u₀) = '+fmt(tvIso(IM.clean,NI),1)+',  TV(f) = '+fmt(tvIso(IM.noisy,NI),1)+',  TV(ROF) = '+fmt(tvIso(IM.tv,NI),1)+'\nШум різко збільшує повну варіацію; ROF зменшує її, не чіпаючи високих стрибків.';}
+bind(['im2Sig','im2LT','im2LV','imSrc'],computeIm2,350);bind(['im2Row'],drawIm2);$('im2Go').addEventListener('click',()=>{IM.key='';computeIm2();});
+$('imFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=NI;c.height=NI;const g=c.getContext('2d');const s=Math.min(img.width,img.height);g.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,NI,NI);const d=g.getImageData(0,0,NI,NI).data,a=new Float32Array(NI*NI);for(let k=0;k<NI*NI;k++)a[k]=(.299*d[4*k]+.587*d[4*k+1]+.114*d[4*k+2])/255;IM.up=a;IM.upId=(IM.upId||0)+1;$('imSrc').value='upload';IM.key='';computeIm2();URL.revokeObjectURL(img.src);};img.src=URL.createObjectURL(f);});
+
+const SG={key:'',u:null};
+function sgInputs(){const mu=Math.pow(10,val('sgMu')),t=val('sgT'),auto=$('sgAuto').checked;setV('sgMu',fmt(mu,3));setV('sgT',fmt(t,2));setV('sgC1',fmt(val('sgC1'),2));setV('sgC2',fmt(val('sgC2'),2));$('sgC1').disabled=auto;$('sgC2').disabled=auto;return{mu,t,auto};}
+function computeSeg(){const{mu,auto}=sgInputs();if(!IM.noisy){const{sg,lt,lv}=im2Inputs();const clean=synth(NI),gg=gaussGen(11);IM.clean=clean;IM.noisy=clean.map(v=>v+sg*gg());}
+  const f=IM.noisy,n=NI*NI;const key=[IM.key,mu,auto,val('sgC1'),val('sgC2')].join('|');if(SG.key===key&&SG.u){drawSeg();return;}
+  $('sgSt').textContent='обчислення…';
+  setTimeout(()=>{let c1,c2;if(auto){const s=Array.from(f).sort((a,b)=>a-b);c1=s[Math.floor(.75*n)];c2=s[Math.floor(.25*n)];}else{c1=val('sgC1');c2=val('sgC2');}
+    let u,r;const outer=auto?3:1;for(let o=0;o<outer;o++){r=new Float32Array(n);for(let k=0;k<n;k++)r[k]=(f[k]-c1)**2-(f[k]-c2)**2;u=primalDual(f,NI,{mode:'seg',mu,r,it:o===outer-1?350:150});
+      if(auto&&o<outer-1){let s1=0,n1=0,s2=0,n2=0;for(let k=0;k<n;k++){if(u[k]>.5){s1+=f[k];n1++;}else{s2+=f[k];n2++;}}if(n1&&n2){c1=s1/n1;c2=s2/n2;}}}
+    if(auto){$('sgC1').value=clip(c1,0,1);$('sgC2').value=clip(c2,0,1);sgInputs();}
+    const E=v=>tvIso(v,NI)+mu*v.reduce((s,x,k)=>s+x*r[k],0);const ts=[],Es=[];for(let i=1;i<50;i++){const t=i/50;ts.push(t);Es.push(E(u.map(x=>x>t?1:0)));}
+    Object.assign(SG,{key,u,r,c1,c2,Eu:E(u),ts,Es,E});$('sgSt').textContent='';drawSeg();},20);}
+function drawSeg(){const{t}=sgInputs();if(!SG.u){computeSeg();return;}const u=SG.u,n=NI*NI;drawGray('sgC1c',u,NI,null);
+  const inn=new Uint8Array(n),edge=new Uint8Array(n);for(let k=0;k<n;k++)inn[k]=u[k]>t?1:0;for(let j=0;j<NI;j++)for(let i=0;i<NI;i++){const k=j*NI+i;if(!inn[k])continue;if((i>0&&!inn[k-1])||(i<NI-1&&!inn[k+1])||(j>0&&!inn[k-NI])||(j<NI-1&&!inn[k+NI]))edge[k]=1;}
+  drawGray('sgC2c',IM.noisy,NI,null,{in:inn,edge});
+  const B=40,hist=new Array(B).fill(0);for(let k=0;k<n;k++)hist[Math.min(B-1,Math.floor(u[k]*B))]++;const hm=Math.max(...hist);
+  const P=sgP1.begin(0,1,0,1.05).axes({xl:'значення u*',fy:(v)=>Math.round(v*100)+'%'});P.clip();hist.forEach((h,i)=>{P.g.fillStyle=C.g;const x0=P.X(i/B),x1=P.X((i+1)/B),y=P.Y(Math.sqrt(h/hm));P.g.fillRect(x0+.5,y,x1-x0-1,P.b-y);});P.g.restore();P.vline(t,C.gold,2);
+  const Et=SG.E(u.map(x=>x>t?1:0));let[a,b]=rangeOf([SG.Es,[SG.Eu]],0.15);const sc=0.01*Math.abs(SG.Eu)+1;a=Math.min(a,SG.Eu-sc*0.3);b=Math.max(b,SG.Eu+sc);const Q=sgP2.begin(0,1,a,b).axes({xl:'поріг t'});Q.hline(SG.Eu,C.g,1.6,[6,4]).line(SG.ts,SG.Es,C.gold,2.6).dot(t,Et,C.gold,5.5,C.ink);
+  let near=0;for(let k=0;k<n;k++)if(u[k]<.05||u[k]>.95)near++;
+  $('sgOut').innerHTML='c₁ = '+fmt(SG.c1,3)+',  c₂ = '+fmt(SG.c2,3)+'\nзначень u* поблизу 0 або 1: '+fmt(100*near/n,1)+'%\nмінімум опуклої задачі: '+fmt(SG.Eu,3)+'\nенергія Σₜ при t = '+fmt(t,2)+': '+fmt(Et,3)+'\nрозкид енергії по t ∈ [0.1, 0.9]: '+fmt(Math.max(...SG.Es.slice(4,45))-Math.min(...SG.Es.slice(4,45)),3)+' ('+fmt(100*(Math.max(...SG.Es.slice(4,45))-Math.min(...SG.Es.slice(4,45)))/Math.abs(SG.Eu),2)+'% від |E|)'+'\n(гістограма має корінь з частоти по вертикалі)';}
+bind(['sgMu','sgAuto','sgC1','sgC2'],computeSeg,450);bind(['sgT'],drawSeg);$('sgGo').addEventListener('click',()=>{SG.key='';computeSeg();});
+R.img=()=>{if(imMode==='1')renderIm1();else if(imMode==='2')drawIm2();else drawSeg();};
+
+/* ================= 7. АЛГОРИТМИ ================= */
+const alP1=new Plot('alP1',{l:54}),alP2=new Plot('alP2'),alP3=new Plot('alP3'),kgP1=new Plot('kgP1'),kgP2=new Plot('kgP2',{l:54});
+const AL={key:''};
+function computeAL(){const n=+$('alN').value,lam=Math.pow(10,val('alLam')),key=n+'|'+lam;if(AL.key===key)return;
+  const h=1/n,gg=gaussGen(5),xs=Array.from({length:n},(_,i)=>(i+.5)*h),f=Float64Array.from(xs,x=>(x>.5?1:0)+.4*x+.08*gg());
+  const c=lam/(h*h),A=new Float64Array(n),B=new Float64Array(n),Cc=new Float64Array(n);for(let i=0;i<n;i++){const dg=(i>0)+(i<n-1);A[i]=i>0?-c:0;Cc[i]=i<n-1?-c:0;B[i]=1+c*dg;}
+  const us=tridiag(A,B,Cc,f);const Mv=(u,o)=>{for(let i=0;i<n;i++){o[i]=B[i]*u[i]+(i>0?A[i]*u[i-1]:0)+(i<n-1?Cc[i]*u[i+1]:0);}};
+  const E=u=>{let s=0;for(let i=0;i<n;i++)s+=.5*(u[i]-f[i])**2;for(let i=0;i<n-1;i++)s+=.5*lam*((u[i+1]-u[i])/h)**2;return s;};const Es=E(us);
+  const L=1+4*c*Math.sin(Math.PI*(n-1)/(2*n))**2,tau=1/L,K=20000;
+  const snapK=[];for(let j=0;j<=70;j++){const k=Math.round(Math.pow(10,j*Math.log10(K)/70));if(!snapK.includes(k))snapK.push(k);}
+  let u=new Float64Array(n),g=new Float64Array(n),y=new Float64Array(n),uo=new Float64Array(n),tk=1;const gGD=[],gNe=[],snGD={},snNe={};const v=new Float64Array(n);
+  for(let k=1;k<=K;k++){Mv(u,g);for(let i=0;i<n;i++)u[i]-=tau*(g[i]-f[i]);if(snapK.includes(k)){gGD.push([k,E(u)-Es]);snGD[k]=Float64Array.from(u);}}
+  for(let k=1;k<=K;k++){Mv(y,g);for(let i=0;i<n;i++){v[i]=y[i]-tau*(g[i]-f[i]);}const tn=(1+Math.sqrt(1+4*tk*tk))/2,b=(tk-1)/tn;for(let i=0;i<n;i++){y[i]=v[i]+b*(v[i]-uo[i]);uo[i]=v[i];}tk=tn;if(snapK.includes(k)){gNe.push([k,E(uo)-Es]);snNe[k]=Float64Array.from(uo);}}
+  let d0=0;for(let i=0;i<n;i++)d0+=us[i]*us[i];Object.assign(AL,{key,n,lam,h,xs,f,us,Es,L,tau,K,snapK,gGD,gNe,snGD,snNe,d0,E0:E(new Float64Array(n))-Es});}
+function renderAL(){computeAL();const k0=Math.pow(10,val('alK'));setV('alLam',fmt(AL.lam,5));
+  const k=AL.snapK.reduce((b,x)=>Math.abs(Math.log(x)-Math.log(k0))<Math.abs(Math.log(b)-Math.log(k0))?x:b,1);setV('alK',k);
+  const lg=v=>Math.log10(Math.max(v,1e-16));const P=alP1.begin(0,Math.log10(AL.K),-16.5,Math.max(lg(AL.E0),0)+.5).axes({xl:'k',fx:logTick,fy:logTick,xt:[0,1,2,3,4],yt:ticks(-16,Math.max(lg(AL.E0),0)+.5,6).filter(v=>Number.isInteger(v)),zero:false});
+  const bx=[],by=[];for(let i=0;i<=100;i++){const kk=Math.pow(10,i*Math.log10(AL.K)/100);bx.push(Math.log10(kk));by.push(lg(AL.L*AL.d0/(2*kk)));}
+  P.line(bx,by,C.blue,1.8,[6,5]).line(AL.gGD.map(p=>Math.log10(p[0])),AL.gGD.map(p=>lg(p[1])),C.gold,2.6).line(AL.gNe.map(p=>Math.log10(p[0])),AL.gNe.map(p=>lg(p[1])),C.g,2.6);
+  P.seg(0,lg(AL.E0),0,-16,C.vio,2,[2,3]).dot(0,-16,C.vio,6).text(0,-16,'  передобумовлений: точно після 1 кроку',C.vio,'left','bottom').vline(Math.log10(k),C.ink,1,[3,3]);
+  const ug=AL.snGD[k],un=AL.snNe[k];const[y0,y1]=rangeOf([AL.f,AL.us],0.06);const Q=alP2.begin(0,1,y0,y1).axes({xl:'x'});
+  AL.f.forEach((v,i)=>{if(i%Math.max(1,Math.floor(AL.n/250))===0)Q.dot(AL.xs[i],v,C.grey,1.6,null);});Q.line(AL.xs,Array.from(AL.us),C.vio,2.2).line(AL.xs,Array.from(un),C.g,2.2,[5,3]).line(AL.xs,Array.from(ug),C.gold,2.6);
+  const gk=AL.gGD.find(p=>p[0]===k)[1],nk=AL.gNe.find(p=>p[0]===k)[1];
+  $('alOut').innerHTML='h = 1/'+AL.n+',  λ/h² = '+fmt(AL.lam/AL.h**2,4)+'\nL = 1 + 4λ/h²·sin²(…) = '+fmt(AL.L,5)+',  τ = 1/L\n\nпісля k = '+k+' кроків:\n  E(u_k) − E* (спуск):    '+fmt(gk,3)+'\n  E(u_k) − E* (Нестеров): '+fmt(nk,3)+'\n  оцінка теореми:          '+fmt(AL.L*AL.d0/(2*k),3)+'\n\nдля похибки 10⁻³ оцінка вимагає k ≈ '+fmt(AL.L*AL.d0/2e-3,3)+' кроків;\nу метриці M = I + λDᵀD стала Ліпшиця дорівнює 1 і досить одного кроку\n(система з тридіагональною M розв\'язується прогонкою за O(n)).\nФіолетова крива — u*; низькочастотні компоненти спуск «добирає» найповільніше.';}
+bind(['alN','alLam','alK'],renderAL,60);
+function renderFilt(){const k=Math.max(1,Math.round(Math.pow(10,val('alFk'))));setV('alFk',k);const lam=1/k;
+  const xs=[],ph=[],ps=[],lo=[],hi=[];for(let i=0;i<=300;i++){const lx=-4+4*i/300,mu=Math.pow(10,lx);xs.push(lx);ph.push(1-Math.pow(1-mu,k));ps.push(mu/(mu+lam));const s=k*mu;hi.push(Math.min(1,s));lo.push((1-Math.exp(-1))*Math.min(1,s));}
+  const P=alP3.begin(-4,0,0,1.06).axes({xl:'μ',fx:logTick,xt:[-4,-3,-2,-1,0]});P.poly([...xs,...xs.slice().reverse()],[...hi,...lo.slice().reverse()],'rgba(202,157,72,.2)');
+  P.line(xs,ps,C.g,2.6).line(xs,ph,C.gold,2.6).vline(Math.log10(lam),C.ink,1,[3,3]).text(Math.log10(lam),1.02,' μ = λ',C.ink,'left','bottom');
+  $('alFOut').textContent='k = '+k+'  ⇒  λ ≈ 1/(2τk) = '+fmt(lam,4)+'\nкомпоненти з μ ≫ λ відтворюються майже повністю,\nкомпоненти з μ ≪ λ (де зосереджений шум) пригнічуються як μ/λ.\nЧим довше ітеруємо, тим слабша регуляризація.';}
+bind(['alFk'],renderFilt);
+const KG={key:''};
+function computeKG(){const ft=cf('kgF',['x']);if(!ft)return false;const m=Math.round(val('kgM')),nz=val('kgNoise'),w=val('kgW'),lam=Math.pow(10,val('kgLam')),seed=Math.round(num('kgSeed',3));
+  setV('kgM',m);setV('kgNoise',fmt(nz,2));setV('kgW',fmt(w,3));setV('kgLam',val('kgLam')<=-7.99?'≈ 0':fmt(lam,4));
+  const key=[$('kgF').value,m,nz,w,lam,seed].join('|');if(KG.key===key)return true;const F=safe(ft);
+  const r=rng(seed),gg=gaussGen(seed+101);const x=Array.from({length:m},()=>r()).sort((a,b)=>a-b),y=x.map(t=>(F(t)||0)+nz*gg());
+  const K=(a,b)=>Math.exp(-((a-b)**2)/(2*w*w));const G=x.map(a=>x.map(b=>K(a,b)));
+  let v=new Array(m).fill(1),mu=0;for(let it=0;it<200;it++){const z=G.map(rw=>rw.reduce((s,g,j)=>s+g*v[j],0));mu=Math.hypot(...z);v=z.map(q=>q/mu);}
+  const tau=1/(2*(mu+lam)),NG=200,gx=Array.from({length:NG+1},(_,i)=>i/NG),Kg=gx.map(a=>x.map(b=>K(a,b))),tru=gx.map(F);
+  const KM=30000,ks=[];for(let j=0;j<=80;j++){const k=Math.round(Math.pow(10,j*Math.log10(KM)/80));if(!ks.includes(k))ks.push(k);}
+  let al=new Array(m).fill(0);const snaps={},tr=[],te=[];const Ga=new Float64Array(m);
+  const evalErr=a=>{let s1=0;for(let i=0;i<m;i++){let s=0;for(let j=0;j<m;j++)s+=G[i][j]*a[j];s1+=(s-y[i])**2;}let s2=0,c=0;for(let i=0;i<=NG;i++){if(!isFinite(tru[i]))continue;let s=0;for(let j=0;j<m;j++)s+=Kg[i][j]*a[j];s2+=(s-tru[i])**2;c++;}return[s1/m,s2/Math.max(c,1)];};
+  for(let k=1;k<=KM;k++){for(let i=0;i<m;i++){let s=0;const Gi=G[i];for(let j=0;j<m;j++)s+=Gi[j]*al[j];Ga[i]=s;}for(let i=0;i<m;i++)al[i]=(1-2*tau*lam)*al[i]-2*tau*(Ga[i]-y[i]);if(ks.includes(k)){snaps[k]=al.slice();const[a,b]=evalErr(al);tr.push([k,a]);te.push([k,b]);}}
+  // ядрова гребенева регресія (Холецький)
+  const Mx=G.map((rw,i)=>rw.map((g,j)=>g+(i===j?Math.max(lam,1e-5):0)));const Lc=Mx.map(()=>new Array(m).fill(0));
+  for(let i=0;i<m;i++)for(let j=0;j<=i;j++){let s=Mx[i][j];for(let q=0;q<j;q++)s-=Lc[i][q]*Lc[j][q];Lc[i][j]=i===j?Math.sqrt(Math.max(s,1e-300)):s/Lc[j][j];}
+  const z=new Array(m);for(let i=0;i<m;i++){let s=y[i];for(let q=0;q<i;q++)s-=Lc[i][q]*z[q];z[i]=s/Lc[i][i];}const aK=new Array(m);for(let i=m-1;i>=0;i--){let s=z[i];for(let q=i+1;q<m;q++)s-=Lc[q][i]*aK[q];aK[i]=s/Lc[i][i];}
+  Object.assign(KG,{key,x,y,gx,Kg,tru,tau,mu,ks,snaps,tr,te,aK,krrErr:evalErr(aK),lam,KM});return true;}
+function renderKG(){if(!computeKG())return;const k0=Math.pow(10,val('kgK'));const k=KG.ks.reduce((b,x)=>Math.abs(Math.log(x)-Math.log(k0))<Math.abs(Math.log(b)-Math.log(k0))?x:b,1);setV('kgK',k);
+  const pr=a=>KG.Kg.map(rw=>rw.reduce((s,g,j)=>s+g*a[j],0));const fk=pr(KG.snaps[k]),fK=pr(KG.aK);
+  const[y0,y1]=rangeOf([KG.y,KG.tru],0.15);const P=kgP1.begin(0,1,y0,y1).axes({xl:'x'});
+  P.line(KG.gx,KG.tru,C.blue,1.8,[6,5]).line(KG.gx,fK.map(v=>clip(v,y0-5,y1+5)),C.g,2.2).line(KG.gx,fk.map(v=>clip(v,y0-5,y1+5)),C.gold,2.8);KG.x.forEach((xx,i)=>P.dot(xx,KG.y[i],C.ink,3.4));
+  const lg=v=>Math.log10(Math.max(v,1e-12));const all=[...KG.tr,...KG.te].map(p=>lg(p[1]));let[a,b]=rangeOf([all],0.1);b=Math.max(b,Math.min(lg(KG.krrErr[1])+.2,b+1));
+  const Q=kgP2.begin(0,Math.log10(KG.KM),a,b).axes({xl:'k',fx:logTick,fy:v=>Math.abs(v-Math.round(v))<1e-6?'10'+sup(Math.round(v)):(+Math.pow(10,v).toPrecision(2)).toString(),xt:[0,1,2,3,4],zero:false});
+  Q.hline(lg(KG.krrErr[1]),C.g,1.4,[6,4]).line(KG.tr.map(p=>Math.log10(p[0])),KG.tr.map(p=>lg(p[1])),C.gold,2.4).line(KG.te.map(p=>Math.log10(p[0])),KG.te.map(p=>lg(p[1])),C.red,2.4);
+  const best=KG.te.reduce((b,p)=>p[1]<b[1]?p:b);Q.dot(Math.log10(best[0]),lg(best[1]),C.red,5.5,C.ink).vline(Math.log10(k),C.ink,1,[3,3]);
+  const te=KG.te.find(p=>p[0]===k)[1],tr=KG.tr.find(p=>p[0]===k)[1];
+  $('kgOut').innerHTML='μ_max(G) = '+fmt(KG.mu,4)+',  τ = 1/(2(μ_max+λ)) = '+fmt(KG.tau,4)+'\nk = '+k+':  ефективне λ ≈ 1/(2τk) = '+fmt(1/(2*KG.tau*k),3)+'\n  помилка на навчанні: '+fmt(tr,4)+'\n  помилка на тесті:    '+fmt(te,4)+'\nнайкраща рання зупинка: k = '+best[0]+', тест '+fmt(best[1],4)+'\nядрова гребенева регресія'+(KG.lam<1e-5?' (λ = 10⁻⁵, майже інтерполяція)':'')+': тест '+fmt(KG.krrErr[1],4)+'\n\nКожна ітерація лежить у span{K(·,xᵢ)} — алгоритмічна\nформа теореми про представлення.';}
+bind(['kgF','kgM','kgNoise','kgW','kgLam','kgSeed','kgK'],renderKG,120);
+R.alg=()=>{renderAL();renderFilt();renderKG();};
+
+/* ================= запуск ================= */
+document.addEventListener('DOMContentLoaded',()=>{if(window.renderMathInElement)renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});});
+show((location.hash||'').slice(1)||'theory');
+</script>
+</body>
+</html>
