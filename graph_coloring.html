@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Розфарбування у графах</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMath()"></script>
+<style>
+:root{
+  --green:#345a53; --green-d:#26433e; --green-l:#e6eeec;
+  --gold:#ca9d48; --gold-d:#a67d2f; --gold-l:#f5ecd9;
+  --bg:#f5f3ee; --card:#ffffff; --ink:#1f2b29; --muted:#66736f; --line:#e2dccd;
+  --bad:#c0392b; --ok:#2e7d4f;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --sans:'Source Sans 3','Segoe UI',Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans)}
+a{color:var(--green)}
+/* header */
+.top{background:linear-gradient(135deg,var(--green-d),var(--green));color:#fff;border-bottom:4px solid var(--gold)}
+.top-in{max-width:1380px;margin:0 auto;padding:18px 16px;display:flex;gap:18px;align-items:center}
+.logo{width:76px;height:76px;flex:0 0 auto;border-radius:50%;background:#fff;padding:3px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.logo img,.logo svg{width:100%;height:100%;display:block;border-radius:50%;object-fit:contain}
+.dept{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-l);opacity:.95}
+h1{font:700 30px/1.15 var(--serif);margin:2px 0 2px}
+.sub{font-size:15px;opacity:.85}
+/* tabs */
+.tabs{position:sticky;top:0;z-index:5;background:rgba(245,243,238,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.tabs-in{max-width:1380px;margin:0 auto;padding:8px 16px;display:flex;gap:6px;overflow-x:auto}
+.tab{border:1px solid var(--line);background:#fff;color:var(--green-d);padding:8px 14px;border-radius:999px;font:600 15px var(--sans);cursor:pointer;white-space:nowrap}
+.tab:hover{border-color:var(--gold)}
+.tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+main{max-width:1380px;margin:0 auto;padding:18px 16px 40px}
+section.page{display:none}
+section.page.active{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:16px;align-items:start}
+@media (max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.card h2{font:700 19px/1.25 var(--serif);color:var(--green-d);margin:0 0 10px}
+.card h3{font:700 16px var(--serif);color:var(--green-d);margin:12px 0 6px}
+.muted{color:var(--muted);font-size:14px}
+.small{font-size:14px}
+/* canvas */
+.canvas{width:100%;aspect-ratio:1000/620;display:block;border-radius:10px;touch-action:none;user-select:none;
+  background-color:#fbfaf6;background-image:radial-gradient(#d9d3c3 1px,transparent 1px);background-size:22px 22px;border:1px solid var(--line)}
+.edge{stroke:#7f8c88;stroke-width:2.4;stroke-linecap:round}
+.edge.on{stroke:var(--ink);stroke-width:4.5}
+.edge.bad{stroke:var(--bad);stroke-width:4.5;stroke-dasharray:8 6}
+.edge.dim{opacity:.15}
+.edge.dash{stroke-dasharray:3 7;opacity:.55}
+.ehit{stroke:transparent;stroke-width:16;cursor:pointer}
+.vx{cursor:grab}
+.vx.dim{opacity:.22}
+.vc{stroke:var(--green-d);stroke-width:2.2}
+.vc.empty{fill:#fff}
+.ring{fill:none;stroke:var(--gold);stroke-width:4;stroke-dasharray:6 4}
+text.vl{font:700 14px var(--sans);text-anchor:middle;pointer-events:none}
+text.lbl{font:600 15px var(--sans);fill:var(--green-d)}
+/* controls */
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.btn{border:1px solid var(--green);background:#fff;color:var(--green-d);padding:6px 11px;border-radius:9px;font:600 14px var(--sans);cursor:pointer}
+.btn:hover{background:var(--green-l)}
+.btn.primary{background:var(--green);color:#fff}
+.btn.primary:hover{background:var(--green-d)}
+.btn.gold{background:var(--gold);border-color:var(--gold-d);color:#fff}
+.btn.gold:hover{background:var(--gold-d)}
+.btn.on{background:var(--gold-l);border-color:var(--gold-d);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+input[type=text],input[type=number],textarea,select{font:15px var(--sans);border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink)}
+textarea{width:100%;resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:14px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);outline-offset:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{width:30px;height:30px;border-radius:50%;border:2px solid var(--green-d);cursor:pointer;font:700 13px var(--sans);display:flex;align-items:center;justify-content:center}
+.chip.sel{outline:3px solid var(--gold);outline-offset:2px}
+.hint{font-size:14px;color:var(--muted);margin-top:8px}
+kbd{font:12px ui-monospace,monospace;background:var(--green-l);border:1px solid #c9d6d3;border-radius:4px;padding:0 4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.stat{background:var(--green-l);border-radius:10px;padding:6px 8px;text-align:center}
+.stat b{display:block;font:700 21px var(--serif);color:var(--green-d)}
+.stat span{font-size:12.5px;color:var(--muted)}
+.stat.key{background:var(--gold-l)}
+.bars .br{display:grid;grid-template-columns:150px 1fr 34px;gap:8px;align-items:center;margin:5px 0;font-size:14px}
+.bars .track{height:14px;background:#efece4;border-radius:7px;overflow:hidden}
+.bars .fill{height:100%;border-radius:7px}
+.bars .v{font-weight:700;text-align:right}
+@media (max-width:480px){.bars .br{grid-template-columns:118px 1fr 28px;font-size:13px}}
+.status{padding:8px 10px;border-radius:9px;font-size:14.5px;margin-top:8px}
+.status.ok{background:#e5f3ea;color:#1d5a36}
+.status.bad{background:#fbe8e5;color:#8a2417}
+.status.info{background:var(--gold-l);color:#5c4517}
+.log{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:9px;margin-top:8px;font-size:14px}
+.log div{padding:4px 8px;border-bottom:1px solid #f0ece2;display:flex;gap:6px;align-items:center}
+.log div.cur{background:var(--gold-l);font-weight:600}
+.log div.todo{color:#a8b0ad}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;border:1px solid var(--green-d);flex:0 0 auto}
+.prose p{margin:0 0 10px}
+.prose{font-size:15.5px}
+.frame{min-height:110px;background:#fbfaf6;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:9px;padding:10px 12px;font-size:15px}
+.checks div{padding:3px 0}
+.yes{color:var(--ok);font-weight:700}.no{color:var(--bad);font-weight:700}
+table.t{border-collapse:collapse;width:100%;font-size:14px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+table.t th{color:var(--green-d);font-weight:700;background:#faf8f2}
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.app h3{margin-top:0}
+.tag{display:inline-block;background:var(--green-l);color:var(--green-d);border-radius:6px;padding:0 6px;font-size:13px;margin:0 3px 3px 0}
+/* theory */
+.theory{max-width:900px;margin:0 auto}
+.theory .card{padding:20px 26px}
+.theory h2{font-size:23px}
+.theory p{margin:0 0 12px}
+.def,.thm{border-radius:10px;padding:10px 14px;margin:12px 0}
+.def{background:var(--green-l);border-left:4px solid var(--green)}
+.thm{background:var(--gold-l);border-left:4px solid var(--gold)}
+.def b:first-child,.thm b:first-child{font-family:var(--serif);color:var(--green-d)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+details{border:1px solid var(--line);border-radius:9px;padding:6px 10px;margin:6px 0;background:#fff}
+summary{cursor:pointer;font-weight:600;color:var(--green-d)}
+footer{text-align:center;color:var(--muted);font-size:13.5px;padding:18px 16px 30px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo" title="Кафедра фундаментальної математики">
+      <img id="logoImg" src="logo_kafedra.png" alt="Логотип кафедри фундаментальної математики"
+           onerror="this.style.display='none';document.getElementById('logoSvg').style.display='block'">
+      <svg id="logoSvg" viewBox="0 0 100 100" style="display:none" aria-label="Кафедра фундаментальної математики">
+        <circle cx="50" cy="50" r="49" fill="#345a53"/>
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#ca9d48" stroke-width="2.5"/>
+        <line x1="50" y1="6" x2="50" y2="94" stroke="#ca9d48" stroke-width="2"/>
+        <line x1="6" y1="50" x2="94" y2="50" stroke="#ca9d48" stroke-width="2"/>
+        <g font-family="Georgia,serif" font-size="22" fill="#fff" text-anchor="middle">
+          <text x="30" y="38">∀</text><text x="70" y="38">ε</text>
+          <text x="30" y="78">∃</text><text x="70" y="78">δ</text>
+        </g>
+        <g>
+          <rect x="41" y="41" width="6" height="6" fill="#ca9d48"/><rect x="47" y="41" width="6" height="6" fill="#fff"/><rect x="53" y="41" width="6" height="6" fill="#ca9d48"/>
+          <rect x="41" y="47" width="6" height="6" fill="#fff"/><rect x="47" y="47" width="6" height="6" fill="#ca9d48"/><rect x="53" y="47" width="6" height="6" fill="#fff"/>
+          <rect x="41" y="53" width="6" height="6" fill="#ca9d48"/><rect x="47" y="53" width="6" height="6" fill="#fff"/><rect x="53" y="53" width="6" height="6" fill="#ca9d48"/>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <div class="dept">Кафедра фундаментальної математики · ХНУ імені В. Н. Каразіна</div>
+      <h1>Розфарбування у графах</h1>
+      <div class="sub">Теорія графів · хроматичне число · жадібний алгоритм · ланцюги Кемпе · теорема Брукса</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs"><div class="tabs-in">
+  <button class="tab active" data-tab="lab">🧪 Лабораторія</button>
+  <button class="tab" data-tab="kempe">🔗 Ланцюги Кемпе</button>
+  <button class="tab" data-tab="brooks">🏛 Теорема Брукса</button>
+  <button class="tab" data-tab="apps">🛰 Застосування</button>
+  <button class="tab" data-tab="theory">📖 Теоретична довідка</button>
+</div></nav>
+
+<main>
+<!-- ===================== LAB ===================== -->
+<section class="page active" id="page-lab">
+ <div class="grid">
+  <div>
+   <div class="card">
+    <div class="toolbar" id="modeBar">
+      <button class="btn on" data-mode="vertex" title="V">＋ Вершина</button>
+      <button class="btn" data-mode="edge" title="E">⟋ Ребро</button>
+      <button class="btn" data-mode="move" title="M">✋ Переміщення</button>
+      <button class="btn" data-mode="delete" title="D">✕ Видалення</button>
+      <button class="btn" data-mode="paint" title="P">🎨 Ручне фарбування</button>
+      <span class="sep"></span>
+      <button class="btn" id="bClasses">▥ Розкласти за класами кольорів</button>
+      <button class="btn" id="bLayout">✦ Авто-розміщення</button>
+      <button class="btn" id="bWipe">Очистити граф</button>
+    </div>
+    <div class="row" id="paintRow" style="display:none"><span class="small">Колір пензля:</span><div class="chips" id="paintChips"></div><span class="muted">клік по вершині — пофарбувати / зняти колір; клавіші <kbd>1</kbd>–<kbd>9</kbd></span></div>
+    <svg id="labSvg" class="canvas"></svg>
+    <div class="hint" id="labHint"></div>
+   </div>
+
+   <div class="card">
+    <h2>Введення графа</h2>
+    <div class="row">
+      <select id="presetSel"></select>
+      <input type="text" id="presetPar" size="7" title="Параметр(и)">
+      <button class="btn primary" id="bPreset">Створити</button>
+      <span class="muted" id="presetHelp"></span>
+    </div>
+    <h3>Список ребер з клавіатури</h3>
+    <textarea id="edgeTxt" rows="3" placeholder="Напр.: 1-2, 2-3, 3-1, 3-4   (або по одному ребру в рядку: 1 2)"></textarea>
+    <div class="row">
+      <label class="small">Кількість вершин n (необов'язково): <input type="number" id="nIn" min="0" max="60" style="width:70px"></label>
+      <label class="small"><input type="checkbox" id="autoLay" checked> авто-розміщення</label>
+      <button class="btn primary" id="bImport">Побудувати</button>
+      <button class="btn" id="bExport">Експорт поточного графа</button>
+    </div>
+    <div class="muted" id="importMsg">Вершини нумеруються з 1. Петлі ігноруються (петля унеможливлює правильне розфарбування), кратні ребра зливаються в одне.</div>
+   </div>
+
+   <div class="card">
+    <h2>Що показує картинка</h2>
+    <div class="prose" id="explain"></div>
+   </div>
+  </div>
+
+  <div>
+   <div class="card">
+    <h2>Характеристики графа</h2>
+    <div class="stats" id="stats"></div>
+   </div>
+   <div class="card">
+    <h2>Оцінки хроматичного числа</h2>
+    <div class="bars" id="bounds"></div>
+    <div class="muted">Золоті смуги — нижні оцінки, зелені — верхні; темна — точне значення χ(G).</div>
+   </div>
+   <div class="card">
+    <h2>Розфарбування</h2>
+    <div class="row">
+      <button class="btn" id="bGreedy">Жадібний: 1, 2, …, n</button>
+      <button class="btn" id="bSW">Жадібний: порядок Секереша–Вілфа</button>
+      <button class="btn gold" id="bOpt">Оптимальне (χ кольорів)</button>
+      <button class="btn" id="bClear">Зняти кольори</button>
+    </div>
+    <div class="row">
+      <input type="text" id="orderIn" placeholder="власний порядок, напр.: 3 1 4 2 5" style="flex:1;min-width:160px">
+      <button class="btn" id="bOrder">Жадібний у цьому порядку</button>
+    </div>
+    <div class="row" id="stepRow">
+      <button class="btn" id="bStep0" title="Почати з нуля">⏮</button>
+      <button class="btn" id="bStepB">◀ Крок</button>
+      <button class="btn" id="bStepF">Крок ▶</button>
+      <button class="btn" id="bAuto">▶ Авто</button>
+      <button class="btn" id="bStepEnd" title="До кінця">⏭</button>
+      <span class="muted" id="stepInfo"></span>
+    </div>
+    <div id="colStatus"></div>
+    <div class="log" id="greedyLog" style="display:none"></div>
+   </div>
+   <div class="card">
+    <h2>Підсвітити структуру</h2>
+    <div class="row" id="hlBar">
+      <button class="btn on" data-hl="none">Нічого</button>
+      <button class="btn" data-hl="clique">Найбільша кліка</button>
+      <button class="btn" data-hl="indep">Найбільша незалежна множина</button>
+      <button class="btn" data-hl="odd">Непарний цикл / частки</button>
+    </div>
+    <div class="muted" id="hlInfo"></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ===================== KEMPE ===================== -->
+<section class="page" id="page-kempe">
+ <div class="grid">
+  <div>
+   <div class="card">
+    <h2>Ланцюги, що чергуються, на поточному графі</h2>
+    <svg id="kSvg" class="canvas"></svg>
+    <div class="hint">Клікніть по вершині кольору <b>a</b> або <b>b</b> — кольори a ↔ b обміняються на всьому (a, b)-ланцюзі, що її містить. Граф редагується у вкладці «Лабораторія».</div>
+   </div>
+   <div class="card prose">
+    <h2>Сенс леми Кемпе</h2>
+    <p>Підграф $G_{a,b}$, породжений вершинами двох кольорів, розпадається на компоненти — ланцюги. Усередині ланцюга кольори вздовж будь-якого шляху чергуються, а з-поза ланцюга до його вершин ведуть лише ребра від вершин <i>інших</i> кольорів. Тому обмін $a \leftrightarrow b$ на одному ланцюзі нічого не ламає: це «локальна перебудова», яка змінює кольори відразу на цілій зв'язній частині графа, зберігаючи правильність (лема 3.3).</p>
+    <p>Типове застосування: якщо вершини $x$ (колір $a$) і $y$ (колір $b$) лежать у <i>різних</i> $(a,b)$-ланцюгах, обмін у ланцюзі вершини $x$ робить їх однокольоровими — і колір $a$ звільняється в околі, де він заважав. Саме так працює крок 2 доведення теореми Брукса і доведення Хівуда теореми про п'ять фарб.</p>
+   </div>
+  </div>
+  <div>
+   <div class="card">
+    <h2>Вибір кольорів a і b</h2>
+    <div class="row"><b style="width:22px">a</b><div class="chips" id="kChipsA"></div></div>
+    <div class="row"><b style="width:22px">b</b><div class="chips" id="kChipsB"></div></div>
+    <div class="row">
+      <button class="btn" id="kGreedy">Почати з жадібного 1…n</button>
+      <button class="btn" id="kLab">Взяти з лабораторії</button>
+      <button class="btn" id="kOpt">Оптимальне</button>
+    </div>
+    <div class="row"><button class="btn gold" id="kLocal">Лема 3.4: перефарбувати вершини в менші вільні кольори</button></div>
+    <div id="kStatus"></div>
+   </div>
+   <div class="card">
+    <h2>(a, b)-ланцюги</h2>
+    <div id="kList" class="small"></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ===================== BROOKS ===================== -->
+<section class="page" id="page-brooks">
+ <div class="grid">
+  <div>
+   <div class="card">
+    <h2>Доведення теореми Брукса крок за кроком</h2>
+    <svg id="bSvg" class="canvas"></svg>
+    <div class="hint">Клікніть по вершині, щоб обрати вершину <b>v</b>, яку видаляємо в доведенні. Пунктирні ребра — ребра при v (граф H = G − v).</div>
+   </div>
+   <div class="card">
+    <h2>Мицельський: великі χ без трикутників</h2>
+    <div class="row">
+      <button class="btn primary" id="mStart">Почати з K₂</button>
+      <button class="btn gold" id="mApply">Застосувати M(G) до поточного графа</button>
+    </div>
+    <div class="muted">Граф M(G): копії uᵢ вершин vᵢ з тими самими сусідами серед vⱼ, плюс вершина w, суміжна з усіма uᵢ. Ланцюжок K₂ → C₅ → граф Грьоча → … дає χ = 2, 3, 4, 5, …, але ω = 2.</div>
+    <table class="t" id="mTable" style="margin-top:8px"></table>
+   </div>
+  </div>
+  <div>
+   <div class="card">
+    <h2>Чи виконано умови теореми?</h2>
+    <div class="checks" id="bChecks"></div>
+    <div id="bConcl"></div>
+   </div>
+   <div class="card">
+    <h2>Кроки доведення</h2>
+    <div class="row">
+      <button class="btn primary" id="bBuild">Побудувати кроки</button>
+      <button class="btn" id="bPrev">◀ Назад</button>
+      <button class="btn" id="bNext">Далі ▶</button>
+      <span class="muted" id="bPos"></span>
+    </div>
+    <div class="frame" id="bFrame">Оберіть вершину v і натисніть «Побудувати кроки».</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ===================== APPS ===================== -->
+<section class="page" id="page-apps">
+ <div class="grid">
+  <div>
+   <div class="card">
+    <h2>Частоти передавачів: геометрія конфліктів</h2>
+    <svg id="tSvg" class="canvas"></svg>
+    <div class="row">
+      <label class="small">Радіус завад R: <input type="range" id="tR" min="60" max="320" value="230"></label><b id="tRv">230</b>
+      <button class="btn" id="tRand">Випадкові 14 веж</button>
+      <button class="btn" id="tClear">Очистити</button>
+    </div>
+    <div class="hint">Клік по порожньому місцю — нова вежа, перетягування — перемістити, клік по вежі — видалити. Дві вежі заважають одна одній, якщо відстань між ними менша за R, тобто кола радіуса R/2 навколо них перетинаються. Число на вежі — номер каналу.</div>
+    <div id="tStatus"></div>
+   </div>
+  </div>
+  <div>
+   <div class="card">
+    <h2>Розклад іспитів з клавіатури</h2>
+    <div class="muted">Кожен рядок: <code>Назва: учасник, учасник, …</code>. Дві події конфліктують, якщо мають спільного учасника.</div>
+    <textarea id="exTxt" rows="8"></textarea>
+    <div class="row"><button class="btn primary" id="exGo">Скласти розклад</button></div>
+    <svg id="exSvg" class="canvas"></svg>
+    <div id="exOut" class="small"></div>
+   </div>
+  </div>
+ </div>
+
+ <div class="card">
+  <h2>Як розфарбування виглядає в прикладних задачах</h2>
+  <p class="prose">У кожній з наведених задач є об'єкти, частина пар яких «не може співіснувати» — не можна одночасно, не можна поруч, не можна на одному ресурсі. Об'єкти стають вершинами, конфлікти — ребрами, ресурси (дні, частоти, регістри, комірки) — кольорами. Тоді правильне розфарбування — це допустимий розподіл ресурсів, а хроматичне число — мінімальна кількість ресурсів. Нижні оцінки ($\omega$, $n/\alpha$) кажуть, скільки ресурсів доведеться виділити <i>за будь-якого</i> планування, а верхні ($\Delta+1$, Секереш–Вілф, Брукс) — скільки гарантовано досить.</p>
+  <div class="apps">
+   <div class="app card">
+    <h3>📅 Розклади</h3>
+    <p class="small">Іспити, засідання, змагання: вершини — події, ребра — спільні учасники, кольори — часові слоти. Кліка — група подій, що попарно перетинаються за учасниками, тому днів не менше за її розмір. Якщо кожна подія конфліктує не більш ніж з $\Delta$ іншими, то $\Delta+1$ слотів досить завжди, а за теоремою Брукса — і $\Delta$ слотів, якщо тільки конфлікти не утворюють повного графа $K_{\Delta+1}$ (чи непарного циклу при $\Delta=2$).</p>
+    <span class="tag">вершина = подія</span><span class="tag">колір = слот</span><span class="tag">χ = мін. к-сть слотів</span>
+   </div>
+   <div class="app card">
+    <h3>📡 Частоти, Wi‑Fi, мобільний зв'язок</h3>
+    <p class="small">Передавачі, розташовані ближче за радіус завад, не можуть працювати на одному каналі. Граф конфліктів тут геометричний (граф перетину кругів), і кліка — це група веж, кола яких попарно перетинаються. Відомий приклад — три канали Wi‑Fi 1/6/11 у діапазоні 2,4 ГГц: щільне розміщення точок доступу вимагає, щоб граф сусідства був 3-розфарбовуваним.</p>
+    <span class="tag">вершина = передавач</span><span class="tag">ребро = завада</span><span class="tag">колір = канал</span>
+   </div>
+   <div class="app card">
+    <h3>💻 Розподіл регістрів у компіляторі</h3>
+    <p class="small">Змінні програми, які «живі» одночасно, не можуть займати один регістр процесора. Граф інтерференції змінних фарбують у $k$ кольорів, де $k$ — кількість регістрів (алгоритм Чайтіна, 1981). Вершина малого степеня ($<k$) завжди дофарбовується — це в точності ідея впорядкування Секереша–Вілфа; якщо фарб не вистачає, частину змінних «скидають» у пам'ять.</p>
+    <span class="tag">вершина = змінна</span><span class="tag">колір = регістр</span><span class="tag">виродженість</span>
+   </div>
+   <div class="app card">
+    <h3>🔢 Судоку та латинські квадрати</h3>
+    <p class="small">81 клітинка — вершини, ребро сполучає клітинки одного рядка, стовпця чи блоку; кожна вершина має степінь 20, а граф містить кліки $K_9$. Розв'язати судоку — значить доповнити часткове 9-розфарбування до правильного. Пошук з поверненням, що лежить в основі обчислення $\chi$ у цій сторінці (DSATUR: першою фарбуємо найбільш «обмежену» вершину), — це та сама стратегія, якою розв'язують судоку.</p>
+    <span class="tag">колір = цифра</span><span class="tag">кліка K₉</span>
+   </div>
+   <div class="app card">
+    <h3>🗺 Карти</h3>
+    <p class="small">Країни — вершини, спільний кордон — ребро. Граф карти плоский, і теорема чотирьох фарб (Аппель–Гакен, 1976) стверджує, що $\chi\le 4$. Історія цієї задачі — це історія ланцюгів Кемпе: помилкове «доведення» Кемпе 1879 року, знайдена Хівудом помилка і його теорема про п'ять фарб 1890 року, доведена тими самими ланцюгами.</p>
+    <span class="tag">плоский граф</span><span class="tag">ланцюги Кемпе</span>
+   </div>
+   <div class="app card">
+    <h3>⚙️ Паралельні обчислення</h3>
+    <p class="small">Задачі, що звертаються до спільних даних, не можна виконувати одночасно. Розфарбування графа залежностей розбиває роботу на «хвилі» — класи кольорів, у межах яких усе виконується паралельно. Так організовують, наприклад, червоно-чорне впорядкування в методі Гаусса–Зейделя (дводольність сітки, теорема Кеніга) та стиснене обчислення розріджених якобіанів.</p>
+    <span class="tag">клас кольору = паралельна хвиля</span>
+   </div>
+   <div class="app card">
+    <h3>🧪 Зберігання несумісних речовин</h3>
+    <p class="small">Речовини, які не можна тримати поруч, мають опинитися в різних відсіках складу. Мінімальна кількість відсіків — хроматичне число графа несумісності, а незалежна множина — набір речовин, які можна безпечно зберігати разом (тому $\chi \ge n/\alpha$).</p>
+    <span class="tag">клас кольору = відсік</span><span class="tag">α — макс. сумісна група</span>
+   </div>
+   <div class="app card">
+    <h3>🔁 Локальне перепланування</h3>
+    <p class="small">У реальному розкладі часто треба «вклинити» нову подію, не переписуючи все. Обмін двох слотів не для всіх подій, а лише для зв'язної групи пов'язаних подій — це обмін кольорів на ланцюзі Кемпе. Лема Кемпе гарантує, що такий обмін не створить нових конфліктів, а слот, потрібний новій події, може звільнитися.</p>
+    <span class="tag">ланцюг Кемпе = група обміну</span>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ===================== THEORY ===================== -->
+<section class="page" id="page-theory">
+ <div class="theory">
+  <div class="card">
+   <div class="toc">
+    <a class="tag" href="#th1">1. Основні поняття</a><a class="tag" href="#th2">2. Оцінки χ</a><a class="tag" href="#th3">3. Ланцюги Кемпе</a><a class="tag" href="#th4">4. Теорема Брукса</a><a class="tag" href="#th5">Зведення оцінок</a><a class="tag" href="#th6">Питання для самоперевірки</a>
+   </div>
+   <p>Задачі обходу графа (гамільтонові та ойлерові цикли) питають, як пройти вершини чи ребра. Задача розфарбування — іншої природи: це задача <i>розбиття</i> множини вершин на частини, всередині яких немає ребер. Основна характеристика — хроматичне число; його обчислення є NP-складною задачею (уже перевірка 3-розфарбовуваності NP-повна), тому головний інтерес становлять оцінки хроматичного числа через простіші параметри графа. Усі графи нижче прості: петля унеможливлює розфарбування, а кратні ребра на нього не впливають.</p>
+  </div>
+
+  <div class="card" id="th1">
+   <h2>1. Основні поняття. Хроматичне число</h2>
+   <div class="def"><b>Означення.</b> Розфарбуванням графа $G=(V,E)$ у $k$ кольорів називається відображення $c\colon V\to\{1,\dots,k\}$. Воно <i>правильне</i>, якщо $c(u)\ne c(v)$ для кожного ребра $uv\in E$. Найменше $k$, для якого існує правильне $k$-розфарбування, — <i>хроматичне число</i> $\chi(G)$.</div>
+   <p>Хроматичне число коректно визначене, бо розфарбування всіх вершин у різні кольори правильне, отже $\chi(G)\le n$. Множини $V_i=c^{-1}(i)$ називаються класами кольорів. Ключове спостереження таке: розфарбування правильне тоді й лише тоді, коли кожен клас кольорів є <i>незалежною множиною</i> (жодні дві її вершини не суміжні). Тому</p>
+   <div class="thm"><b>Твердження 1.4.</b> $\chi(G)$ — найменша кількість незалежних множин, на які можна розбити $V$.</div>
+   <p>Саме цей «геометричний» зміст показує кнопка «Розкласти за класами кольорів» у лабораторії: вершини стають у стовпці-класи, і всі ребра йдуть лише <i>між</i> стовпцями. Поруч з незалежними множинами стоять кліки — множини попарно суміжних вершин; через $\alpha(G)$ і $\omega(G)$ позначають найбільші потужності незалежної множини і кліки.</p>
+   <p>Хроматичне число монотонне ($H\subseteq G\Rightarrow \chi(H)\le\chi(G)$), для незв'язного графа дорівнює максимуму по компонентах, і $\chi(G)=1$ рівно тоді, коли ребер немає. Найпростіші приклади: $\chi(K_n)=n$; $\chi(C_n)=2$ для парного $n$ і $3$ для непарного — уздовж циклу два кольори мусять чергуватися, і при непарній довжині перший і останній колір збігаються. 2-розфарбовувані графи — це в точності дводольні графи.</p>
+   <div class="thm"><b>Теорема Кеніга (1936).</b> Граф 2-розфарбовуваний тоді й лише тоді, коли не містить простих циклів непарної довжини.</div>
+   <p>Ідея доведення: у зв'язному графі фарбуємо вершину за парністю відстані до фіксованої вершини $r$. Якщо ребро $uv$ з'єднує вершини однакового кольору, то $d(u)=d(v)$, і два найкоротші шляхи з $r$ разом із ребром $uv$ дають непарний цикл. Лабораторія будує саме цей цикл (кнопка «Непарний цикл / частки»).</p>
+  </div>
+
+  <div class="card" id="th2">
+   <h2>2. Оцінки хроматичного числа</h2>
+   <p>Нижні оцінки випливають з твердження 1.4: вершини кліки мають попарно різні кольори, а кожен клас кольорів містить не більше $\alpha(G)$ вершин, отже</p>
+   $$\chi(G)\ \ge\ \omega(G),\qquad \chi(G)\ \ge\ \frac{n}{\alpha(G)}.$$
+   <p>Верхні оцінки дає <i>жадібний алгоритм</i>: вершини $v_1,\dots,v_n$ переглядаються по черзі, і кожна отримує найменший колір, не використаний на її вже пофарбованих сусідах. Якщо $v_i$ має $d_i$ сусідів серед попередніх, то $c(v_i)\le d_i+1$; звідси $\chi(G)\le\Delta(G)+1$. Результат сильно залежить від порядку (у лабораторії спробуйте «Корону» з порядком, що чергує частки: дводольний граф отримає $n$ кольорів).</p>
+   <div class="thm"><b>Теорема Секереша–Вілфа (1968).</b> $\displaystyle \chi(G)\le 1+\max_{H\subseteq G}\delta(H).$</div>
+   <p>Порядок будується з кінця: $v_n$ — вершина найменшого степеня в $G$, $v_{n-1}$ — найменшого степеня в $G-v_n$, і так далі. Тоді кожна вершина має серед попередніх не більше $d=\max_H\delta(H)$ сусідів. Число $d$ називають <i>виродженістю</i> графа. Наприклад, для дерева $d=1$, тож $\chi\le2$ незалежно від $\Delta$.</p>
+   <div class="def"><b>Означення.</b> Граф $k$-<i>критичний</i>, якщо $\chi(G)=k$, а кожен власний підграф має менше хроматичне число. Кожен $k$-хроматичний граф містить $k$-критичний підграф; $k$-критичний граф зв'язний і має $\delta(G)\ge k-1$.</div>
+   <p>Нижня оцінка через кліку може бути як завгодно грубою: хроматичне число може бути великим через «глобальну» структуру графа.</p>
+   <div class="thm"><b>Теорема Мицельського (1955).</b> Для кожного $k\ge2$ існує граф без трикутників з $\chi(G)=k$.</div>
+   <p>Конструкція $M(G)$ додає до $G$ копії $u_i$ вершин $v_i$ (суміжні з тими самими $v_j$, що й $v_i$) і вершину $w$, суміжну з усіма $u_i$. Якщо $G$ без трикутників, то й $M(G)$ без трикутників, і $\chi(M(G))=\chi(G)+1$: з гіпотетичного $\chi(G)$-розфарбування $M(G)$ з $c(w)=k$ можна побудувати $(k-1)$-розфарбування $G$, перефарбувавши вершини кольору $k$ у кольори їхніх копій.</p>
+  </div>
+
+  <div class="card" id="th3">
+   <h2>3. Ланцюги, що чергуються</h2>
+   <div class="def"><b>Означення.</b> Для правильного розфарбування $c$ і кольорів $a\ne b$ компоненти зв'язності підграфа $G_{a,b}=G[c^{-1}(a)\cup c^{-1}(b)]$ називаються $(a,b)$-<i>ланцюгами</i> (ланцюгами Кемпе).</div>
+   <div class="thm"><b>Лема Кемпе.</b> Обмін кольорів $a\leftrightarrow b$ на одному $(a,b)$-ланцюзі дає правильне розфарбування; $(a,b)$-ланцюги і класи інших кольорів при цьому не змінюються.</div>
+   <p>Причина в тому, що будь-який сусід вершини ланцюга, який лежить поза ланцюгом, має колір, відмінний від $a$ і $b$ (інакше він належав би тій самій компоненті). Друга, зовсім проста лема: якщо сусіди вершини $x$ у $k$-розфарбуванні використовують менше ніж $k-1$ кольорів, то $x$ можна перефарбувати в інший колір. Разом ці два прийоми — головний інструментарій доведення теореми Брукса. Назва походить від А. Кемпе, який 1879 року застосував метод у помилковому доведенні гіпотези чотирьох фарб; П. Хівуд 1890 року знайшов помилку і тим самим методом довів, що кожен плоский граф 5-розфарбовуваний.</p>
+  </div>
+
+  <div class="card" id="th4">
+   <h2>4. Теорема Брукса</h2>
+   <p>Оцінка $\chi\le\Delta+1$ досягається для повних графів ($\Delta=n-1$, $\chi=n$) і непарних циклів ($\Delta=2$, $\chi=3$). Теорема Брукса стверджує, що для зв'язних графів інших прикладів немає.</p>
+   <div class="thm"><b>Теорема Брукса (1941).</b> Якщо зв'язний граф $G$ не є повним і не є циклом непарної довжини, то $\chi(G)\le\Delta(G)$.</div>
+   <p>Випадок $\Delta\le2$ зводиться до теореми Кеніга: зв'язний граф з $\Delta=2$ — шлях або цикл, і за умовою цикл парний. При $\Delta\ge3$ доведення ведеться індукцією за $n$ від супротивного. Видаляємо довільну вершину $v$; граф $H=G-v$ має $\Delta$-розфарбування (<b>крок 0</b>, індукційне припущення застосовується до компонент $H$). Якби на сусідах $v$ бракувало якогось кольору, $v$ можна було б дофарбувати, тож сусіди $v_1,\dots,v_\Delta$ мають попарно різні кольори (<b>крок 1</b>). Якби $v_i$ і $v_j$ лежали в різних $(i,j)$-ланцюгах, обмін на ланцюзі $v_i$ звільнив би колір $i$ (<b>крок 2</b>). Далі аналіз степенів показує, що ланцюг $C_{ij}$ — простий шлях з кінцями $v_i, v_j$ (<b>крок 3</b>), а ланцюги $C_{ij}$ і $C_{jl}$ перетинаються лише по $v_j$ (<b>крок 4</b>). Нарешті, оскільки $G\ne K_{\Delta+1}$, деякі два сусіди $v_1,v_2$ не суміжні; обмін $1\leftrightarrow3$ на $C_{13}$ створює розфарбування, у якому сусід $w$ вершини $v_1$ на шляху $C_{12}$ лежить одночасно у двох нових ланцюгах $C'_{12}$ і $C'_{23}$ — суперечність з кроком 4 (<b>крок 5</b>).</p>
+   <div class="thm"><b>Наслідок.</b> Якщо $\Delta(G)\ge3$, то $\chi(G)=\Delta+1$ тоді й лише тоді, коли $G$ містить $K_{\Delta+1}$ (і тоді це компонента $G$). Зокрема, кожен зв'язний кубічний граф, відмінний від $K_4$, 3-розфарбовуваний — наприклад, граф Петерсена.</div>
+   <p>Теорема точна: $K_\Delta$ з приєднаною висячою вершиною має $\chi=\Delta$. Але вона може бути далекою від істини: у зірки $K_{1,s}$ маємо $\Delta=s$ і $\chi=2$. Існують інші доведення — зокрема доведення Ловаса (1975) через жадібний алгоритм з вдалим порядком; перевага доведення через ланцюги в тому, що метод переноситься на теорему Візінга про реберні розфарбування.</p>
+  </div>
+
+  <div class="card" id="th5">
+   <h2>Зведення оцінок</h2>
+   $$\max\Bigl\{\omega(G),\ \Bigl\lceil \tfrac{n}{\alpha(G)}\Bigr\rceil\Bigr\}\ \le\ \chi(G)\ \le\ 1+\max_{H\subseteq G}\delta(H)\ \le\ \Delta(G)+1,$$
+   $$\chi(G)\le\Delta(G)\quad\text{для зв'язного } G\ne K_n,\ C_{2k+1}\ \text{(Брукс)}.$$
+   <table class="t">
+    <tr><th>Граф</th><th>$\Delta$</th><th>$\omega$</th><th>$\chi$</th><th>Коментар</th></tr>
+    <tr><td>$K_n$</td><td>$n-1$</td><td>$n$</td><td>$n$</td><td>оцінка $\Delta+1$ досягається</td></tr>
+    <tr><td>$C_{2k+1}$</td><td>2</td><td>2 (при $k\ge2$)</td><td>3</td><td>виняток у теоремі Брукса</td></tr>
+    <tr><td>$C_{2k}$, дерева, $K_{m,n}$</td><td>—</td><td>2</td><td>2</td><td>дводольні (Кеніг)</td></tr>
+    <tr><td>Граф Петерсена</td><td>3</td><td>2</td><td>3</td><td>Брукс: $\chi\le3$</td></tr>
+    <tr><td>Граф Грьоча $M(C_5)$</td><td>5</td><td>2</td><td>4</td><td>Мицельський</td></tr>
+    <tr><td>Зірка $K_{1,s}$</td><td>$s$</td><td>2</td><td>2</td><td>Брукс далекий від точності</td></tr>
+   </table>
+  </div>
+
+  <div class="card" id="th6">
+   <h2>Питання для самоперевірки</h2>
+   <details><summary>Чому $\chi(G)\ge n/\alpha(G)$, і коли ця оцінка краща за $\omega(G)$?</summary><p class="small">Класи кольорів — незалежні множини, кожна з не більше ніж $\alpha$ вершинами, тож їх щонайменше $n/\alpha$. Для $C_5$: $\omega=2$, а $n/\alpha=5/2$, тобто $\chi\ge3$. Для графа Грьоча $n=11$, $\alpha=5$, $\lceil 11/5\rceil = 3 > \omega = 2$.</p></details>
+   <details><summary>Чому жадібний алгоритм завжди дає не більше $\Delta+1$ кольорів і як його «обдурити»?</summary><p class="small">Пофарбованих сусідів не більше $\Delta$, тож один із кольорів $1,\dots,\Delta+1$ вільний. На «короні» ($K_{n,n}$ без досконалого парування) порядок $u_1,w_1,u_2,w_2,\dots$ змушує використати $n$ кольорів, хоча $\chi=2$. З іншого боку, для кожного графа існує порядок, на якому жадібний алгоритм дає рівно $\chi$ кольорів.</p></details>
+   <details><summary>Де в доведенні теореми Брукса використовується, що $G$ не повний?</summary><p class="small">У кроці 5: потрібні два несуміжні сусіди $v_1,v_2$ вершини $v$. Якби всі сусіди були попарно суміжні, $\{v,v_1,\dots,v_\Delta\}$ утворювала б $K_{\Delta+1}$, яка за зв'язністю є всім графом.</p></details>
+   <details><summary>Чому граф Мицельського не має трикутників?</summary><p class="small">Вершини $u_i$ попарно несуміжні, усі сусіди $w$ — це $u_i$, а трикутник $u_iv_jv_l$ означав би трикутник $v_iv_jv_l$ у $G$.</p></details>
+   <details><summary>Чи правда, що $\chi(G)\le\Delta(G)$ для кожного незв'язного графа, жодна компонента якого не є повним графом чи непарним циклом?</summary><p class="small">Так: теорему застосовують до кожної компоненти, а $\chi(G)$ — максимум по компонентах. Але, наприклад, $K_4\cup K_2$ має $\Delta=3$ і $\chi=4$: оцінку порушує компонента $K_4$.</p></details>
+  </div>
+ </div>
+</section>
+</main>
+
+<footer>Кафедра фундаментальної математики · Харківський національний університет імені В. Н. Каразіна<br>Інтерактивний посібник до курсу «Теорія графів»: розфарбування вершин графів</footer>
+
+<script>
+'use strict';
+/* ================= utilities ================= */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const PAL = ['#ca9d48','#345a53','#c8553d','#3f7cac','#8e5ea2','#6aa84f','#e0892b','#2a9d8f','#b5487a','#8a7a5a','#5865c9','#a8a83a','#d48a8a','#4a4a4a'];
+const HALO = ['#e8b84f','#4fa39a','#e07a62','#6c9fd4','#b48ac9','#93c47d','#f0a85a','#61c3b8'];
+const W = 1000, H = 620;
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const colHex = c => c > 0 ? PAL[(c - 1) % PAL.length] : '#ffffff';
+function ink(hex){ const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return (0.299*r+0.587*g+0.114*b)>150 ? '#1f2b29' : '#ffffff'; }
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const V = i => 'v<sub>' + (i + 1) + '</sub>';
+const dot = c => `<span class="dot" style="background:${colHex(c)}"></span>`;
+function renderMath(){ try{ if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError:false}); }catch(e){} }
+
+/* ================= graph core ================= */
+function adjOf(g){ const A = g.nodes.map(() => new Set()); for (const [a,b] of g.edges){ A[a].add(b); A[b].add(a); } return A; }
+const ekey = (a,b) => a < b ? a + '-' + b : b + '-' + a;
+function hasEdge(g,a,b){ const k = ekey(a,b); return g.edges.some(e => ekey(e[0],e[1]) === k); }
+function addEdge(g,a,b){ if (a===b || a<0 || b<0 || a>=g.nodes.length || b>=g.nodes.length || hasEdge(g,a,b)) return false; g.edges.push([Math.min(a,b),Math.max(a,b)]); return true; }
+function removeEdge(g,k){ g.edges = g.edges.filter(e => ekey(e[0],e[1]) !== k); }
+function removeNode(g,i){ g.nodes.splice(i,1); g.edges = g.edges.filter(e => e[0]!==i && e[1]!==i).map(([a,b]) => [a>i?a-1:a, b>i?b-1:b]); }
+function circlePos(n, r=240, cx=500, cy=310, rot=-Math.PI/2){ return Array.from({length:n}, (_,i) => ({x:cx + r*Math.cos(rot + 2*Math.PI*i/Math.max(n,1)), y:cy + r*Math.sin(rot + 2*Math.PI*i/Math.max(n,1))})); }
+function complement(A){ const n = A.length; return A.map((s,i) => { const t = new Set(); for (let j=0;j<n;j++) if (j!==i && !s.has(j)) t.add(j); return t; }); }
+
+/* ================= algorithms ================= */
+function components(A){ const n=A.length, seen=new Array(n).fill(false), res=[]; for (let s=0;s<n;s++){ if (seen[s]) continue; const c=[s]; seen[s]=true; for (let i=0;i<c.length;i++) for (const w of A[c[i]]) if (!seen[w]){ seen[w]=true; c.push(w); } res.push(c); } return res; }
+function compInfo(A,c){ let m=0, dmax=0, all2=true; for (const v of c){ const d=A[v].size; dmax=Math.max(dmax,d); if (d!==2) all2=false; m+=d; } m/=2; const nc=c.length; return {nc, m, dmax, complete: m===nc*(nc-1)/2, oddCycle: all2 && nc>=3 && nc%2===1}; }
+function maxClique(A, budget={n:400000}){
+  const n=A.length; let best=[];
+  function bk(R,P,X){
+    if (--budget.n < 0) return;
+    if (R.length > best.length) best = R.slice();
+    if (!P.length || R.length + P.length <= best.length) return;
+    let u=-1, bc=-1;
+    for (const w of P.concat(X)){ let c=0; for (const x of P) if (A[w].has(x)) c++; if (c>bc){ bc=c; u=w; } }
+    const cand = P.filter(x => !A[u].has(x));
+    for (const v of cand){ bk(R.concat([v]), P.filter(x => A[v].has(x)), X.filter(x => A[v].has(x))); P = P.filter(x => x!==v); X = X.concat([v]); }
+  }
+  bk([], [...Array(n).keys()], []); return best;
+}
+function degeneracy(A){
+  const n=A.length, rem=new Array(n).fill(false), d=A.map(s=>s.size), seq=[]; let mx=0;
+  for (let s=0;s<n;s++){ let v=-1; for (let i=0;i<n;i++) if (!rem[i] && (v<0 || d[i]<d[v])) v=i; mx=Math.max(mx,d[v]); rem[v]=true; seq.push(v); for (const u of A[v]) if (!rem[u]) d[u]--; }
+  return {order: seq.reverse(), d: mx};
+}
+function greedy(A, order){
+  const col = new Array(A.length).fill(0), steps=[];
+  for (const v of order){ const used=new Set(); let back=0; for (const u of A[v]) if (col[u]){ used.add(col[u]); back++; } let c=1; while (used.has(c)) c++; col[v]=c; steps.push({v, used:[...used].sort((a,b)=>a-b), back, c}); }
+  return {col, steps};
+}
+function exactColoring(A, k, budget){
+  const n=A.length, col=new Array(n).fill(0), deg=A.map(s=>s.size), AA=A.map(s=>[...s]);
+  function pick(){ let best=-1, bs=-1, bd=-1; for (let v=0;v<n;v++){ if (col[v]) continue; const s=new Set(); for (const u of AA[v]) if (col[u]) s.add(col[u]); if (s.size>bs || (s.size===bs && deg[v]>bd)){ best=v; bs=s.size; bd=deg[v]; } } return best; }
+  function rec(cnt, maxc){
+    if (cnt===n) return true;
+    if (--budget.n < 0) throw 0;
+    const v=pick(), used=new Set(); for (const u of AA[v]) if (col[u]) used.add(col[u]);
+    const lim=Math.min(k, maxc+1);
+    for (let c=1;c<=lim;c++){ if (used.has(c)) continue; col[v]=c; if (rec(cnt+1, Math.max(maxc,c))) return true; col[v]=0; }
+    return false;
+  }
+  try { return rec(0,0) ? col : null; } catch(e){ if (e===0) return 'timeout'; throw e; }
+}
+function chromatic(A){
+  const n=A.length; if (!n) return {chi:0, col:[], exact:true};
+  const cl=Math.max(1, maxClique(A).length), dg=degeneracy(A), gr=greedy(A, dg.order).col, ub=Math.max(...gr);
+  for (let k=cl;k<ub;k++){ const r=exactColoring(A,k,{n:600000}); if (r==='timeout') return {chi:null, lo:k, hi:ub, col:gr, exact:false}; if (r) return {chi:k, col:r, exact:true}; }
+  return {chi:ub, col:gr, exact:true};
+}
+function bipartite(A){
+  const n=A.length, side=new Array(n).fill(-1), par=new Array(n).fill(-1), lev=new Array(n).fill(0);
+  for (let s=0;s<n;s++){ if (side[s]>=0) continue; side[s]=0; const q=[s];
+    for (let qi=0; qi<q.length; qi++){ const u=q[qi];
+      for (const w of A[u]){
+        if (side[w]<0){ side[w]=1-side[u]; par[w]=u; lev[w]=lev[u]+1; q.push(w); }
+        else if (side[w]===side[u]){
+          let a=u, b=w; const pa=[a], pb=[b];
+          while (lev[a]>lev[b]){ a=par[a]; pa.push(a); } while (lev[b]>lev[a]){ b=par[b]; pb.push(b); }
+          while (a!==b){ a=par[a]; b=par[b]; pa.push(a); pb.push(b); }
+          return {ok:false, cycle: pa.concat(pb.slice(0,-1).reverse())};
+        }
+      }
+    }
+  }
+  return {ok:true, side};
+}
+function kempeChain(A, col, s, a, b){ if (col[s]!==a && col[s]!==b) return []; const seen=new Set([s]), st=[s]; while (st.length){ const u=st.pop(); for (const w of A[u]) if (!seen.has(w) && (col[w]===a || col[w]===b)){ seen.add(w); st.push(w); } } return [...seen]; }
+function kempeComponents(A, col, a, b){ const done=new Set(), res=[]; for (let v=0;v<A.length;v++){ if (done.has(v) || (col[v]!==a && col[v]!==b)) continue; const ch=kempeChain(A,col,v,a,b); ch.forEach(x=>done.add(x)); res.push(ch); } return res; }
+function swapChain(col, chain, a, b){ const c=col.slice(); for (const v of chain) c[v] = c[v]===a ? b : a; return c; }
+function edgesWithin(g, set){ const S = set instanceof Set ? set : new Set(set), E=new Set(); for (const [a,b] of g.edges) if (S.has(a) && S.has(b)) E.add(ekey(a,b)); return E; }
+function cycleEdges(cyc){ const E=new Set(); for (let i=0;i<cyc.length;i++) E.add(ekey(cyc[i], cyc[(i+1)%cyc.length])); return E; }
+function checkColoring(g, col){ let bad=0, un=0; const used=new Set(); for (let i=0;i<g.nodes.length;i++){ if (col[i]) used.add(col[i]); else un++; } for (const [a,b] of g.edges) if (col[a] && col[a]===col[b]) bad++; return {bad, un, k:used.size}; }
+function forceLayout(g, iters=450){
+  const n=g.nodes.length; if (n<2) return; const P=g.nodes, k=Math.sqrt(W*H/n)*0.55; let t=70;
+  for (let it=0; it<iters; it++){
+    const dx=new Array(n).fill(0), dy=new Array(n).fill(0);
+    for (let i=0;i<n;i++) for (let j=i+1;j<n;j++){ let x=P[i].x-P[j].x, y=P[i].y-P[j].y, d=Math.hypot(x,y)||0.01; const f=k*k/d; dx[i]+=x/d*f; dy[i]+=y/d*f; dx[j]-=x/d*f; dy[j]-=y/d*f; }
+    for (const [a,b] of g.edges){ let x=P[a].x-P[b].x, y=P[a].y-P[b].y, d=Math.hypot(x,y)||0.01; const f=d*d/k; dx[a]-=x/d*f; dy[a]-=y/d*f; dx[b]+=x/d*f; dy[b]+=y/d*f; }
+    for (let i=0;i<n;i++){ dx[i]+=(500-P[i].x)*0.02; dy[i]+=(310-P[i].y)*0.02; const d=Math.hypot(dx[i],dy[i])||1; P[i].x=clamp(P[i].x+dx[i]/d*Math.min(d,t),40,960); P[i].y=clamp(P[i].y+dy[i]/d*Math.min(d,t),40,580); }
+    t*=0.985;
+  }
+}
+function mycielski(g){
+  const n=g.nodes.length, R=265, nodes=[];
+  const outer=circlePos(n, R, 500, 318), inner=circlePos(n, R*0.5, 500, 318);
+  outer.forEach(p=>nodes.push({x:p.x,y:p.y})); inner.forEach(p=>nodes.push({x:p.x,y:p.y})); nodes.push({x:500,y:318});
+  const res={nodes, edges:[]};
+  for (const [a,b] of g.edges){ addEdge(res,a,b); addEdge(res,n+a,b); addEdge(res,n+b,a); }
+  for (let i=0;i<n;i++) addEdge(res, n+i, 2*n);
+  return res;
+}
+
+/* ================= presets ================= */
+function nums(s, def){ const a=(String(s).match(/\d+(\.\d+)?/g)||[]).map(Number); return a.length ? a : def; }
+const PRESETS = {
+  petersen:{name:'Граф Петерсена', par:'', help:'кубічний, χ = 3', make(){ const o=circlePos(5,255), i=circlePos(5,120); const g={nodes:o.concat(i),edges:[]}; for (let k=0;k<5;k++){ addEdge(g,k,(k+1)%5); addEdge(g,k,k+5); addEdge(g,5+k,5+(k+2)%5); } return g; }},
+  complete:{name:'Повний граф Kₙ', par:'5', help:'n', make(p){ const n=clamp(nums(p,[5])[0]|0,1,16); const g={nodes:circlePos(n),edges:[]}; for (let i=0;i<n;i++) for (let j=i+1;j<n;j++) addEdge(g,i,j); return g; }},
+  cycle:{name:'Цикл Cₙ', par:'7', help:'n ≥ 3', make(p){ const n=clamp(nums(p,[7])[0]|0,3,40); const g={nodes:circlePos(n),edges:[]}; for (let i=0;i<n;i++) addEdge(g,i,(i+1)%n); return g; }},
+  path:{name:'Шлях Pₙ', par:'6', help:'n', make(p){ const n=clamp(nums(p,[6])[0]|0,1,30); const g={nodes:Array.from({length:n},(_,i)=>({x:n>1?80+840*i/(n-1):500,y:310+(i%2?40:-40)})),edges:[]}; for (let i=0;i+1<n;i++) addEdge(g,i,i+1); return g; }},
+  wheel:{name:'Колесо Wₙ', par:'6', help:'n — довжина циклу', make(p){ const n=clamp(nums(p,[6])[0]|0,3,30); const g={nodes:[{x:500,y:310}].concat(circlePos(n,240)),edges:[]}; for (let i=1;i<=n;i++){ addEdge(g,0,i); addEdge(g,i,i%n+1); } return g; }},
+  kmn:{name:'Повний дводольний Kₘ,ₙ', par:'3,4', help:'m, n', make(p){ const [m0,n0]=nums(p,[3,4]); const m=clamp(m0|0,1,12), n=clamp((n0||m0)|0,1,12); const g={nodes:[],edges:[]}; for (let i=0;i<m;i++) g.nodes.push({x:m>1?150+700*i/(m-1):500,y:150}); for (let j=0;j<n;j++) g.nodes.push({x:n>1?150+700*j/(n-1):500,y:470}); for (let i=0;i<m;i++) for (let j=0;j<n;j++) addEdge(g,i,m+j); return g; }},
+  star:{name:'Зірка K₁,ₛ', par:'7', help:'s', make(p){ const s=clamp(nums(p,[7])[0]|0,1,30); const g={nodes:[{x:500,y:310}].concat(circlePos(s,240)),edges:[]}; for (let i=1;i<=s;i++) addEdge(g,0,i); return g; }},
+  grotzsch:{name:'Граф Грьоча M(C₅)', par:'', help:'без трикутників, χ = 4', make(){ return mycielski(PRESETS.cycle.make('5')); }},
+  crown:{name:'Корона (пастка для жадібного)', par:'4', help:'n; Kₙ,ₙ без досконалого парування', make(p){ const n=clamp(nums(p,[4])[0]|0,2,12); const g={nodes:[],edges:[]}; for (let i=0;i<n;i++) g.nodes.push({x:n>1?150+700*i/(n-1):500,y:150}); for (let i=0;i<n;i++) g.nodes.push({x:n>1?150+700*i/(n-1):500,y:470}); for (let i=0;i<n;i++) for (let j=0;j<n;j++) if (i!==j) addEdge(g,i,n+j); const ord=[]; for (let i=0;i<n;i++) ord.push(i+1, n+i+1); g.order=ord.join(' '); return g; }},
+  cube:{name:'Куб Q₃', par:'', help:'дводольний 3-регулярний', make(){ const g={nodes:[],edges:[]}; for (let v=0;v<8;v++){ const b0=v&1, b1=(v>>1)&1, b2=(v>>2)&1; g.nodes.push(b2?{x:410+180*b0,y:220+180*b1}:{x:260+480*b0,y:70+480*b1}); } for (let v=0;v<8;v++) for (let t=0;t<3;t++){ const u=v^(1<<t); if (u>v) addEdge(g,v,u); } return g; }},
+  tree:{name:'Бінарне дерево', par:'3', help:'глибина 1–4', make(p){ const d=clamp(nums(p,[3])[0]|0,1,4); const g={nodes:[],edges:[]}; for (let l=0;l<=d;l++){ const cnt=1<<l; for (let k=0;k<cnt;k++) g.nodes.push({x:40+920*(k+0.5)/cnt, y:60+500*l/d}); } for (let v=1; v<g.nodes.length; v++) addEdge(g, v, Math.floor((v-1)/2)); return g; }},
+  k4k2:{name:'K₄ ∪ K₂ (незв\'язний)', par:'', help:'зауваження 4.2', make(){ const g={nodes:circlePos(4,160,330,310).concat([{x:740,y:220},{x:740,y:400}]),edges:[]}; for (let i=0;i<4;i++) for (let j=i+1;j<4;j++) addEdge(g,i,j); addEdge(g,4,5); return g; }},
+  pendant:{name:'K_Δ з висячою вершиною', par:'4', help:'Δ ≥ 3; зауваження 4.4', make(p){ const d=clamp(nums(p,[4])[0]|0,3,10); const g={nodes:circlePos(d,210,420,310,0).concat([{x:870,y:310}]),edges:[]}; for (let i=0;i<d;i++) for (let j=i+1;j<d;j++) addEdge(g,i,j); addEdge(g,0,d); return g; }},
+  octa:{name:'Октаедр K₂,₂,₂', par:'', help:'4-регулярний, χ = 3', make(){ const g={nodes:circlePos(3,260,500,330).concat(circlePos(3,110,500,330,Math.PI/2)),edges:[]}; for (let i=0;i<6;i++) for (let j=i+1;j<6;j++) if (j!==i+3) addEdge(g,i,j); return g; }},
+  grid:{name:'Решітка r × c', par:'3,4', help:'r, c', make(p){ const [r0,c0]=nums(p,[3,4]); const r=clamp(r0|0,1,8), c=clamp((c0||r0)|0,1,10); const g={nodes:[],edges:[]}; for (let i=0;i<r;i++) for (let j=0;j<c;j++) g.nodes.push({x:c>1?120+760*j/(c-1):500, y:r>1?80+460*i/(r-1):310}); for (let i=0;i<r;i++) for (let j=0;j<c;j++){ const v=i*c+j; if (j+1<c) addEdge(g,v,v+1); if (i+1<r) addEdge(g,v,v+c); } return g; }},
+  random:{name:'Випадковий G(n, p)', par:'10,0.35', help:'n, p', make(p){ const a=nums(p,[10,0.35]); const n=clamp(a[0]|0,1,30), q=clamp(a[1]??0.35,0,1); const g={nodes:circlePos(n),edges:[]}; for (let i=0;i<n;i++) for (let j=i+1;j<n;j++) if (Math.random()<q) addEdge(g,i,j); forceLayout(g); return g; }},
+  empty:{name:'Порожнє полотно', par:'', help:'малюйте самі', make(){ return {nodes:[],edges:[]}; }}
+};
+
+/* ================= GraphView ================= */
+class GraphView {
+  constructor(svg, o){
+    this.svg=svg; this.o=o; this.drag=null;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.addEventListener('pointerdown', e => this.down(e));
+    window.addEventListener('pointermove', e => this.move(e));
+    window.addEventListener('pointerup', e => this.up(e));
+  }
+  graph(){ return this.o.graph ? this.o.graph() : G; }
+  pt(e){ const p=this.svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; const q=p.matrixTransform(this.svg.getScreenCTM().inverse()); return {x:q.x, y:q.y}; }
+  down(e){
+    const p=this.pt(e), tv=e.target.closest('[data-v]'), te=e.target.closest('[data-e]');
+    if (tv){ e.preventDefault(); this.drag={i:+tv.dataset.v, sx:p.x, sy:p.y, moved:false}; }
+    else if (te){ this.o.onEdgeClick && this.o.onEdgeClick(te.dataset.e); }
+    else if (this.o.onBg) this.o.onBg(clamp(p.x,22,W-22), clamp(p.y,22,H-22));
+  }
+  move(e){
+    const d=this.drag; if (!d) return; const p=this.pt(e);
+    if (!d.moved && Math.hypot(p.x-d.sx, p.y-d.sy) < 6) return;
+    if (this.o.noDrag && this.o.noDrag()) return;
+    d.moved=true; const nd=this.graph().nodes[d.i]; nd.x=clamp(p.x,22,W-22); nd.y=clamp(p.y,22,H-22);
+    if (this.o.onMove) this.o.onMove(); this.render();
+  }
+  up(){ const d=this.drag; if (!d) return; this.drag=null; if (!d.moved){ this.o.onVertexClick && this.o.onVertexClick(d.i); } else if (this.o.onDragEnd) this.o.onDragEnd(); }
+  render(){
+    const g=this.graph(), o=this.o, P=(o.positions && o.positions()) || g.nodes, col=(o.coloring && o.coloring()) || [], h=(o.highlight && o.highlight()) || {};
+    const N=h.nodes||new Set(), E=h.edges||new Set(), R=h.ring||new Set(), D=h.dashed||new Set(), r=o.radius||18;
+    let s = o.underlay ? o.underlay(P) : '';
+    for (const [a,b] of g.edges){
+      const k=ekey(a,b), pa=P[a], pb=P[b], on=E.has(k);
+      let cls='edge'; if (col[a]>0 && col[a]===col[b]) cls+=' bad'; if (on) cls+=' on'; if (h.dim && !on) cls+=' dim'; if (D.has(k)) cls+=' dash';
+      const xy=`x1="${pa.x.toFixed(1)}" y1="${pa.y.toFixed(1)}" x2="${pb.x.toFixed(1)}" y2="${pb.y.toFixed(1)}"`;
+      s += `<g data-e="${k}"><line class="ehit" ${xy}/><line class="${cls}" ${xy}/></g>`;
+    }
+    g.nodes.forEach((nd,i) => {
+      const p=P[i], c=col[i]||0, f=colHex(c), dim=h.dim && !N.has(i) && !R.has(i);
+      const lab = o.label ? o.label(i,c) : (nd.label ?? (i+1));
+      s += `<g data-v="${i}" class="vx${dim?' dim':''}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})">${R.has(i)?`<circle r="${r+8}" class="ring"/>`:''}<circle r="${r}" fill="${f}" class="vc${c?'':' empty'}"/><text class="vl" fill="${c?ink(f):'#345a53'}" dy="0.35em">${esc(lab)}</text></g>`;
+    });
+    if (o.overlay) s += o.overlay(P);
+    this.svg.innerHTML = s;
+  }
+}
+
+/* ================= state ================= */
+let G = PRESETS.petersen.make();
+let AN = null;
+const lab = {mode:'vertex', col:null, pc:1, sel:null, greedy:null, timer:null, byClasses:false, hl:'none', src:''};
+const KS = {col:null, a:1, b:2, msg:''};
+const BR = {v:null, frames:[], pos:0};
+const MY = {hist:[]};
+
+function analyze(g){
+  const A=adjOf(g), n=A.length, deg=A.map(s=>s.size), m=g.edges.length;
+  const Delta=n?Math.max(...deg):0, delta=n?Math.min(...deg):0;
+  const comps=components(A), ci=comps.map(c=>compInfo(A,c));
+  const clique=maxClique(A), indep=n?maxClique(complement(A)):[];
+  const dg=degeneracy(A), bip=bipartite(A), ch=chromatic(A);
+  const brooks=n?Math.max(...ci.map(x => (x.complete||x.oddCycle) ? x.dmax+1 : x.dmax)):0;
+  return {A,n,m,deg,Delta,delta,comps,ci,clique,indep,dg,bip,ch,brooks};
+}
+function graphChanged(){
+  AN = analyze(G);
+  if (lab.col && lab.col.length !== G.nodes.length) lab.col=null;
+  lab.greedy=null; stopAuto();
+  KS.col=null; BR.frames=[]; BR.pos=0; BR.v=null;
+  renderAll();
+}
+function renderAll(){ labView.render(); updateLab(); renderKempe(); renderBrooks(); }
+
+/* ================= LAB ================= */
+function labColoring(){ if (lab.greedy){ const c=new Array(G.nodes.length).fill(0); for (let k=0;k<lab.greedy.pos;k++){ const st=lab.greedy.steps[k]; c[st.v]=st.c; } return c; } return lab.col || []; }
+function commitGreedy(){ if (lab.greedy){ lab.col=labColoring(); while (lab.col.length<G.nodes.length) lab.col.push(0); lab.greedy=null; stopAuto(); } }
+function labHL(){
+  const h={nodes:new Set(), edges:new Set(), ring:new Set(), dim:false};
+  if (lab.sel!=null) h.ring.add(lab.sel);
+  if (lab.greedy && lab.greedy.pos<lab.greedy.steps.length) h.ring.add(lab.greedy.steps[lab.greedy.pos].v);
+  if (lab.hl==='clique' && AN.clique.length){ AN.clique.forEach(v=>h.nodes.add(v)); h.edges=edgesWithin(G,AN.clique); h.dim=true; }
+  if (lab.hl==='indep' && AN.indep.length){ AN.indep.forEach(v=>h.nodes.add(v)); h.dim=true; }
+  if (lab.hl==='odd' && !AN.bip.ok){ AN.bip.cycle.forEach(v=>h.nodes.add(v)); h.edges=cycleEdges(AN.bip.cycle); h.dim=true; }
+  return h;
+}
+function labColorForView(){ if (lab.hl==='odd' && AN.bip.ok && !lab.greedy && !lab.col) return AN.bip.side.map(s=>s+1); return labColoring(); }
+function classLayout(){
+  const col=labColorForView(), n=G.nodes.length, groups=new Map();
+  for (let i=0;i<n;i++){ const c=col[i]||0; if (!groups.has(c)) groups.set(c,[]); groups.get(c).push(i); }
+  const keys=[...groups.keys()].sort((a,b)=> (a===0)-(b===0) || a-b), K=keys.length||1, cw=W/K, pos=new Array(n), cols=[];
+  keys.forEach((k,idx) => { const mem=groups.get(k).sort((a,b)=>G.nodes[a].y-G.nodes[b].y), x=cw*(idx+0.5), gap=Math.min(62,(H-150)/Math.max(1,mem.length-1)), y0=H/2+22-gap*(mem.length-1)/2; mem.forEach((v,t)=>pos[v]={x,y:y0+gap*t}); cols.push({k,x,cw,count:mem.length}); });
+  return {pos, cols};
+}
+let _cl=null;
+const labView = new GraphView($('#labSvg'), {
+  coloring: () => labColorForView(),
+  highlight: labHL,
+  positions: () => { if (!lab.byClasses) return null; _cl=classLayout(); return _cl.pos; },
+  underlay: () => {
+    if (!lab.byClasses || !_cl) return '';
+    return _cl.cols.map(c => `<rect x="${(c.x-c.cw/2+8).toFixed(1)}" y="12" width="${(c.cw-16).toFixed(1)}" height="${H-24}" rx="16" fill="${c.k?colHex(c.k):'#999'}" fill-opacity="0.09" stroke="${c.k?colHex(c.k):'#999'}" stroke-opacity="0.45"/><text class="lbl" x="${c.x.toFixed(1)}" y="44" text-anchor="middle">${c.k?`V<tspan dy="5" font-size="12">${c.k}</tspan><tspan dy="-5"> · ${c.count}</tspan>`:'без кольору'}</text>`).join('');
+  },
+  noDrag: () => lab.byClasses,
+  onBg: (x,y) => { if (lab.mode==='vertex'){ commitGreedy(); G.nodes.push({x,y}); if (lab.col) lab.col.push(0); graphChanged(); } else { lab.sel=null; labView.render(); } },
+  onVertexClick: i => {
+    if (lab.mode==='edge'){ if (lab.sel==null || lab.sel===i){ lab.sel = lab.sel===i ? null : i; labView.render(); } else { commitGreedy(); addEdge(G,lab.sel,i); lab.sel=null; graphChanged(); } }
+    else if (lab.mode==='delete'){ commitGreedy(); if (lab.col) lab.col.splice(i,1); removeNode(G,i); graphChanged(); }
+    else if (lab.mode==='paint'){ commitGreedy(); if (!lab.col) lab.col=new Array(G.nodes.length).fill(0); lab.col[i] = lab.col[i]===lab.pc ? 0 : lab.pc; lab.src='ручне'; labView.render(); updateLab(); }
+  },
+  onEdgeClick: k => { if (lab.mode==='delete'){ commitGreedy(); removeEdge(G,k); graphChanged(); } }
+});
+
+const HINTS = {
+  vertex:'Клік по порожньому місцю — нова вершина. Вершини можна перетягувати. Гарячі клавіші: <kbd>V</kbd> вершина, <kbd>E</kbd> ребро, <kbd>M</kbd> переміщення, <kbd>D</kbd> видалення, <kbd>P</kbd> фарбування.',
+  edge:'Клікніть дві вершини поспіль — між ними з\'явиться ребро. <kbd>Esc</kbd> — скасувати вибір.',
+  move:'Перетягуйте вершини, щоб зробити рисунок наочнішим (структура графа не змінюється).',
+  delete:'Клік по вершині видаляє її разом з інцидентними ребрами; клік по ребру — лише ребро.',
+  paint:'Оберіть колір пензля і клацайте по вершинах. Ребра між вершинами одного кольору стають червоними пунктирними — це порушення правильності.'
+};
+function setMode(m){ lab.mode=m; lab.sel=null; $$('#modeBar [data-mode]').forEach(b=>b.classList.toggle('on', b.dataset.mode===m)); $('#paintRow').style.display = m==='paint' ? 'flex' : 'none'; $('#labHint').innerHTML=HINTS[m]; renderPaintChips(); labView.render(); }
+function renderPaintChips(){ const K=Math.min(PAL.length, Math.max(4, (AN?AN.Delta:3)+1)); $('#paintChips').innerHTML = Array.from({length:K},(_,i)=>`<div class="chip${lab.pc===i+1?' sel':''}" data-c="${i+1}" style="background:${colHex(i+1)};color:${ink(colHex(i+1))}">${i+1}</div>`).join(''); }
+$('#paintChips').addEventListener('click', e => { const c=e.target.closest('[data-c]'); if (c){ lab.pc=+c.dataset.c; renderPaintChips(); } });
+$$('#modeBar [data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+$('#bClasses').addEventListener('click', () => { lab.byClasses=!lab.byClasses; $('#bClasses').classList.toggle('on', lab.byClasses); labView.render(); });
+$('#bLayout').addEventListener('click', () => { forceLayout(G); renderAll(); });
+$('#bWipe').addEventListener('click', () => { G={nodes:[],edges:[]}; lab.col=null; graphChanged(); setMode('vertex'); });
+
+/* presets & import */
+const ps=$('#presetSel');
+ps.innerHTML = Object.entries(PRESETS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+function syncPresetPar(){ const p=PRESETS[ps.value]; $('#presetPar').value=p.par; $('#presetPar').disabled=!p.par; $('#presetHelp').textContent=p.help; }
+ps.addEventListener('change', syncPresetPar);
+$('#bPreset').addEventListener('click', () => { const p=PRESETS[ps.value]; G=p.make($('#presetPar').value); lab.col=null; lab.src=''; if (G.order){ $('#orderIn').value=G.order; delete G.order; } MY.hist=[]; graphChanged(); });
+$('#bImport').addEventListener('click', () => {
+  const txt=$('#edgeTxt').value, a=(txt.match(/\d+/g)||[]).map(Number), msg=$('#importMsg');
+  if (a.length%2){ msg.innerHTML='<span class="no">Непарна кількість чисел: кожне ребро задається двома номерами вершин.</span>'; return; }
+  if (a.some(x=>x<1)){ msg.innerHTML='<span class="no">Вершини нумеруються з 1.</span>'; return; }
+  const n=Math.max(+$('#nIn').value||0, ...a, 0);
+  if (n>60){ msg.innerHTML='<span class="no">Забагато вершин (максимум 60 — щоб точні алгоритми працювали миттєво).</span>'; return; }
+  const g={nodes:circlePos(n),edges:[]}; let loops=0;
+  for (let i=0;i<a.length;i+=2){ if (a[i]===a[i+1]) loops++; else addEdge(g,a[i]-1,a[i+1]-1); }
+  if ($('#autoLay').checked) forceLayout(g);
+  G=g; lab.col=null; MY.hist=[]; graphChanged();
+  msg.innerHTML=`<span class="yes">Побудовано граф: n = ${n}, m = ${g.edges.length}.</span>${loops?` Проігноровано петель: ${loops}.`:''}`;
+});
+$('#bExport').addEventListener('click', () => { $('#edgeTxt').value=G.edges.map(([a,b])=>`${a+1}-${b+1}`).join(', '); $('#nIn').value=G.nodes.length; $('#importMsg').textContent='Поточний граф записано у поле — його можна скопіювати або відредагувати.'; });
+
+/* coloring controls */
+function runGreedy(order, name){ lab.greedy={...greedy(AN.A,order), order, name, pos:0}; lab.greedy.pos=lab.greedy.steps.length; lab.src=name; stopAuto(); labView.render(); updateLab(); }
+$('#bGreedy').addEventListener('click', () => runGreedy([...Array(G.nodes.length).keys()], 'жадібне, порядок 1, 2, …, n'));
+$('#bSW').addEventListener('click', () => runGreedy(AN.dg.order, 'жадібне, порядок Секереша–Вілфа'));
+$('#bOrder').addEventListener('click', () => {
+  const n=G.nodes.length, a=($('#orderIn').value.match(/\d+/g)||[]).map(x=>+x-1);
+  const ok = a.length===n && new Set(a).size===n && a.every(x=>x>=0 && x<n);
+  if (!ok){ $('#colStatus').innerHTML=`<div class="status bad">Порядок має бути перестановкою чисел 1, …, ${n} (кожне рівно один раз).</div>`; return; }
+  runGreedy(a, 'жадібне, власний порядок');
+});
+$('#bOpt').addEventListener('click', () => { lab.greedy=null; stopAuto(); lab.col=AN.ch.col.slice(); lab.src = AN.ch.exact ? 'оптимальне' : 'найкраще знайдене'; labView.render(); updateLab(); });
+$('#bClear').addEventListener('click', () => { lab.greedy=null; stopAuto(); lab.col=null; lab.src=''; labView.render(); updateLab(); });
+function stepTo(p){ if (!lab.greedy) return; lab.greedy.pos=clamp(p,0,lab.greedy.steps.length); labView.render(); updateLab(); }
+$('#bStep0').addEventListener('click', () => { stopAuto(); stepTo(0); });
+$('#bStepB').addEventListener('click', () => { stopAuto(); lab.greedy && stepTo(lab.greedy.pos-1); });
+$('#bStepF').addEventListener('click', () => { stopAuto(); lab.greedy && stepTo(lab.greedy.pos+1); });
+$('#bStepEnd').addEventListener('click', () => { stopAuto(); lab.greedy && stepTo(lab.greedy.steps.length); });
+$('#bAuto').addEventListener('click', () => {
+  if (!lab.greedy) return; if (lab.timer){ stopAuto(); return; }
+  if (lab.greedy.pos>=lab.greedy.steps.length) stepTo(0);
+  $('#bAuto').textContent='⏸ Пауза';
+  lab.timer=setInterval(() => { if (!lab.greedy || lab.greedy.pos>=lab.greedy.steps.length){ stopAuto(); return; } stepTo(lab.greedy.pos+1); }, 750);
+});
+function stopAuto(){ if (lab.timer){ clearInterval(lab.timer); lab.timer=null; } const b=$('#bAuto'); if (b) b.textContent='▶ Авто'; }
+$$('#hlBar [data-hl]').forEach(b => b.addEventListener('click', () => { lab.hl=b.dataset.hl; $$('#hlBar [data-hl]').forEach(x=>x.classList.toggle('on', x===b)); labView.render(); updateLab(); }));
+
+document.addEventListener('keydown', e => {
+  if (!$('#page-lab').classList.contains('active')) return;
+  if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k=e.key.toLowerCase(), map={v:'vertex',e:'edge',m:'move',d:'delete',p:'paint','м':'vertex','у':'edge','ь':'move','в':'delete','з':'paint'};
+  if (map[k]){ setMode(map[k]); e.preventDefault(); }
+  else if (/^[1-9]$/.test(k) && lab.mode==='paint'){ lab.pc=+k; renderPaintChips(); }
+  else if (k==='escape'){ lab.sel=null; labView.render(); }
+});
+
+function chiText(){ const c=AN.ch; return c.chi!=null ? String(c.chi) : `${c.lo}…${c.hi}`; }
+function updateLab(){
+  const a=AN, n=a.n;
+  const st=[['n','вершин'],['m','ребер'],['Δ','найбільший степінь'],['δ','найменший степінь'],['ω','клікове число'],['α','число незалежності'],['χ','хроматичне число'],['d','max δ(H)']];
+  const val={n, m:a.m, 'Δ':a.Delta, 'δ':a.delta, 'ω':a.clique.length, 'α':a.indep.length, 'χ':chiText(), d:a.dg.d};
+  $('#stats').innerHTML = st.map(([k,t])=>`<div class="stat${k==='χ'?' key':''}"><b>${val[k]}</b><span>${k} — ${t}</span></div>`).join('')
+    + `<div class="stat"><b>${a.comps.length}</b><span>компонент</span></div><div class="stat"><b>${a.bip.ok?'так':'ні'}</b><span>дводольний</span></div>`;
+  // bounds
+  if (!n){ $('#bounds').innerHTML='<div class="muted">Граф порожній — додайте вершини.</div>'; }
+  else {
+    const lowA=Math.ceil(n/Math.max(1,a.indep.length)), chi=a.ch.chi ?? a.ch.hi;
+    const rows=[['ω(G) — кліка',a.clique.length,'#ca9d48'],['⌈n / α(G)⌉',lowA,'#ca9d48'],['χ(G) — точне',chi,'#26433e'],['Брукс',a.brooks,'#6f9a91'],['Секереш–Вілф: d+1',a.dg.d+1,'#6f9a91'],['жадібна: Δ+1',a.Delta+1,'#6f9a91']];
+    const cur=labColorForView(), ck=checkColoring(G,cur); if (ck.k) rows.push(['у поточному розфарб.',ck.k, ck.bad?'#c0392b':'#3f7cac']);
+    const mx=Math.max(...rows.map(r=>r[1]),1);
+    $('#bounds').innerHTML = rows.map(([t,v,c])=>`<div class="br"><span>${t}</span><div class="track"><div class="fill" style="width:${(100*v/mx).toFixed(1)}%;background:${c}"></div></div><span class="v">${v}</span></div>`).join('');
+  }
+  // status
+  const col=labColorForView(), ck=checkColoring(G,col);
+  let html='';
+  if (!ck.k && !lab.greedy) html=`<div class="status info">Кольорів ще немає. Запустіть алгоритм або фарбуйте вручну (режим 🎨).</div>`;
+  else {
+    const what = lab.greedy ? lab.greedy.name : (lab.hl==='odd' && a.bip.ok && !lab.col ? 'частки дводольного графа' : (lab.src||'розфарбування'));
+    if (ck.bad) html=`<div class="status bad"><b>${esc(what)}:</b> ${ck.k} кольорів, але є ${ck.bad} конфліктн${ck.bad===1?'е ребро':'их ребер'} (червоні) — розфарбування неправильне.</div>`;
+    else if (ck.un) html=`<div class="status info"><b>${esc(what)}:</b> пофарбовано ${n-ck.un} з ${n} вершин, використано ${ck.k} кольорів, конфліктів немає.</div>`;
+    else { const opt = a.ch.chi!=null && ck.k===a.ch.chi; html=`<div class="status ok"><b>${esc(what)}:</b> правильне ${ck.k}-розфарбування ✓ ${opt?'— оптимальне, бо k = χ(G).':`— на ${ck.k-(a.ch.chi??ck.k)} більше, ніж χ(G) = ${chiText()}.`}</div>`; }
+  }
+  $('#colStatus').innerHTML=html;
+  // greedy log
+  const lg=$('#greedyLog');
+  if (lab.greedy){
+    lg.style.display='block'; const gs=lab.greedy;
+    lg.innerHTML = gs.steps.map((s,k)=>`<div class="${k<gs.pos?'':(k===gs.pos?'cur':'todo')}">${k<gs.pos?dot(s.c):'<span class="dot"></span>'} ${k+1}. ${V(s.v)}: пофарбованих сусідів d = ${s.back}${s.used.length?`, їх кольори {${s.used.join(', ')}}`:''} → колір <b>${s.c}</b> ≤ d + 1 = ${s.back+1}</div>`).join('');
+    const cur=lg.querySelector('.cur'); if (cur) cur.scrollIntoView({block:'nearest'});
+    $('#stepInfo').textContent=`крок ${gs.pos} з ${gs.steps.length}`;
+  } else { lg.style.display='none'; $('#stepInfo').textContent='кроки доступні після запуску жадібного алгоритму'; }
+  $$('#stepRow .btn').forEach(b=>b.disabled=!lab.greedy);
+  // highlight info
+  const hi={none:'', clique:`Кліка з ${a.clique.length} вершин: ${a.clique.map(V).join(', ')}. Усі її вершини попарно суміжні, тому потребують ${a.clique.length} різних кольорів.`,
+    indep:`Незалежна множина з ${a.indep.length} вершин: ${a.indep.map(V).join(', ')}. Жодні дві не суміжні — їх можна пофарбувати одним кольором. Клас кольору не може бути більшим.`,
+    odd: a.bip.ok ? 'Граф дводольний: непарних циклів немає. Показано 2-розфарбування за парністю відстані (доведення теореми Кеніга).' : `Непарний цикл довжини ${a.bip.cycle.length}: ${a.bip.cycle.map(V).join(' – ')} – ${V(a.bip.cycle[0])}. Його знайдено так само, як у доведенні теореми Кеніга (два найкоротші шляхи + ребро між вершинами однакової парності).`};
+  $('#hlInfo').innerHTML=hi[lab.hl];
+  $('#explain').innerHTML=explainText();
+  renderPaintChips();
+}
+function explainText(){
+  const a=AN, n=a.n; if (!n) return '<p>Полотно порожнє. Створіть граф з готового набору, введіть список ребер або намалюйте його мишею.</p>';
+  const om=a.clique.length, al=a.indep.length, chi=a.ch.chi, low=Math.max(om,Math.ceil(n/al));
+  let t=`<p>Розфарбування — це розбиття ${n} вершин на класи кольорів; кожен клас — незалежна множина, усередині якої немає ребер (тв. 1.4). Увімкніть «Розкласти за класами кольорів», щоб побачити це буквально: усі ребра йдуть тільки між стовпцями.</p>`;
+  t+=`<p><b>Знизу.</b> Найбільша кліка має ${om} вершин, тож ${om} кольорів потрібні вже для неї. Найбільша незалежна множина має ${al} вершин, а класів кольорів має вистачити на всі ${n} вершин, тож їх не менше ⌈${n}/${al}⌉ = ${Math.ceil(n/al)}. Разом χ ≥ ${low}.</p>`;
+  t+=`<p><b>Зверху.</b> Жадібний алгоритм ніколи не перевищує Δ + 1 = ${a.Delta+1}; у порядку Секереша–Вілфа кожна вершина має не більше ${a.dg.d} пофарбованих сусідів, тому вистачає ${a.dg.d+1} кольорів. Теорема Брукса (покомпонентно) дає χ ≤ ${a.brooks}.</p>`;
+  if (chi!=null){
+    t+=`<p><b>Точно:</b> χ(G) = ${chi}. `;
+    if (chi===low) t+= chi===om ? 'Нижня оцінка через кліку точна.' : 'Оцінка n/α точна, хоча кліка менша.';
+    else t+=`Хроматичне число більше за обидві нижні оцінки: воно визначається «глобальною» будовою графа, а не локальними клікою (див. графи Мицельського).`;
+    t+= a.bip.ok ? ' Непарних циклів немає, тому граф дводольний (теорема Кеніга).' : ` Граф містить непарний цикл, тому χ ≥ 3.`;
+    t+='</p>';
+  } else t+=`<p>Граф великий для точного перебору в браузері: відомо лише, що ${a.ch.lo} ≤ χ ≤ ${a.ch.hi}.</p>`;
+  return t;
+}
+
+/* ================= KEMPE ================= */
+function kEnsure(){ if (!KS.col || KS.col.length!==G.nodes.length){ KS.col=greedy(AN.A,[...Array(G.nodes.length).keys()]).col; KS.msg='Початкове розфарбування — жадібне у порядку 1, 2, …, n.'; } }
+function kComps(){ return kempeComponents(AN.A, KS.col, KS.a, KS.b); }
+const kView = new GraphView($('#kSvg'), {
+  coloring: () => KS.col,
+  highlight: () => { const h={nodes:new Set(), edges:new Set(), dim:true}; for (const ch of kComps()){ ch.forEach(v=>h.nodes.add(v)); edgesWithin(G,ch).forEach(e=>h.edges.add(e)); } return h; },
+  underlay: P => { let s=''; kComps().forEach((ch,i) => { const c=HALO[i%HALO.length]; const E=edgesWithin(G,ch); for (const k of E){ const [a,b]=k.split('-').map(Number); s+=`<line x1="${P[a].x}" y1="${P[a].y}" x2="${P[b].x}" y2="${P[b].y}" stroke="${c}" stroke-opacity="0.38" stroke-width="20" stroke-linecap="round"/>`; } ch.forEach(v=>{ s+=`<circle cx="${P[v].x}" cy="${P[v].y}" r="29" fill="${c}" fill-opacity="0.35"/>`; }); }); return s; },
+  onVertexClick: i => {
+    const c=KS.col[i], a=KS.a, b=KS.b;
+    if (c!==a && c!==b){ KS.msg=`Вершина ${V(i)} має колір ${c} ∉ {${a}, ${b}} і не належить жодному (${a}, ${b})-ланцюгу.`; }
+    else { const ch=kempeChain(AN.A,KS.col,i,a,b); KS.col=swapChain(KS.col,ch,a,b); const ck=checkColoring(G,KS.col);
+      KS.msg=`Обміняли ${a} ↔ ${b} у ланцюзі з ${ch.length} верш. (${ch.map(V).join(', ')}). Розфарбування ${ck.bad?'<span class="no">неправильне</span>':'<span class="yes">залишилось правильним ✓</span>'} — лема Кемпе. Решта ланцюгів і класи інших кольорів не змінилися.`; }
+    renderKempe();
+  }
+});
+function renderKChips(){
+  const used=Math.max(0,...(KS.col||[0])), K=Math.min(PAL.length, Math.max(used, (AN?AN.Delta:2)+1, 3));
+  const mk=(sel,other)=>Array.from({length:K},(_,i)=>`<div class="chip${sel===i+1?' sel':''}" data-c="${i+1}" style="background:${colHex(i+1)};color:${ink(colHex(i+1))};${other===i+1?'opacity:.3;cursor:not-allowed':''}">${i+1}</div>`).join('');
+  $('#kChipsA').innerHTML=mk(KS.a,KS.b); $('#kChipsB').innerHTML=mk(KS.b,KS.a);
+}
+$('#kChipsA').addEventListener('click', e => { const c=e.target.closest('[data-c]'); if (c && +c.dataset.c!==KS.b){ KS.a=+c.dataset.c; renderKempe(); } });
+$('#kChipsB').addEventListener('click', e => { const c=e.target.closest('[data-c]'); if (c && +c.dataset.c!==KS.a){ KS.b=+c.dataset.c; renderKempe(); } });
+$('#kGreedy').addEventListener('click', () => { KS.col=null; kEnsure(); renderKempe(); });
+$('#kOpt').addEventListener('click', () => { KS.col=AN.ch.col.slice(); KS.msg='Взято оптимальне розфарбування.'; renderKempe(); });
+$('#kLab').addEventListener('click', () => { const c=labColorForView(); if (!c.length || c.some(x=>!x) || checkColoring(G,c).bad){ KS.msg='<span class="no">У лабораторії немає повного правильного розфарбування.</span>'; } else { KS.col=c.slice(); KS.msg='Взято розфарбування з лабораторії.'; } renderKempe(); });
+$('#kLocal').addEventListener('click', () => {
+  let changed=[];
+  for (let v=0; v<G.nodes.length; v++){ const used=new Set([...AN.A[v]].map(u=>KS.col[u])); let c=1; while (used.has(c)) c++; if (c<KS.col[v]){ changed.push(`${V(v)}: ${KS.col[v]}→${c}`); KS.col[v]=c; } }
+  KS.msg = changed.length ? `Перефарбовано (на сусідах був вільний менший колір): ${changed.join('; ')}.` : 'Жодну вершину не можна перефарбувати в менший колір без обмінів. Спробуйте обмін у ланцюзі Кемпе — він може звільнити колір, після чого лема 3.4 спрацює знову.';
+  renderKempe();
+});
+function renderKempe(){
+  if (!AN) return; kEnsure(); renderKChips(); kView.render();
+  const ck=checkColoring(G,KS.col), comps=kComps();
+  $('#kStatus').innerHTML=`<div class="status ${ck.bad?'bad':'ok'}">Використано кольорів: <b>${ck.k}</b> (χ = ${chiText()}). ${KS.msg}</div>`;
+  $('#kList').innerHTML = comps.length ? `<p>Граф G<sub>${KS.a},${KS.b}</sub> має ${comps.length} компонент(и):</p>` + comps.map((ch,i)=>`<div style="padding:3px 0"><span class="dot" style="background:${HALO[i%HALO.length]}"></span> ланцюг ${i+1}: ${ch.map(v=>dot(KS.col[v])+V(v)).join(' ')} — ${ch.length} верш.</div>`).join('') : `<p class="muted">Кольори ${KS.a} і ${KS.b} не використано — ланцюгів немає.</p>`;
+}
+
+/* ================= BROOKS ================= */
+const bView = new GraphView($('#bSvg'), {
+  coloring: () => { const f=BR.frames[BR.pos]; return f ? f.col : []; },
+  highlight: () => { const f=BR.frames[BR.pos], h={nodes:new Set(), edges:new Set(), ring:new Set(), dashed:new Set(), dim:false}; if (BR.v!=null){ h.ring.add(BR.v); if (BR.frames.length) for (const u of AN.A[BR.v]) h.dashed.add(ekey(BR.v,u)); } if (f && f.hl){ f.hl.nodes.forEach(v=>h.nodes.add(v)); f.hl.edges.forEach(e=>h.edges.add(e)); h.dim=true; h.nodes.add(BR.v); } return h; },
+  onVertexClick: i => { BR.v=i; BR.frames=[]; BR.pos=0; renderBrooks(); }
+});
+function buildBrooks(){
+  const A=AN.A, n=AN.n, F=[]; if (!n) return [{col:[],text:'Граф порожній.'}];
+  if (AN.comps.length>1) return [{col:AN.ch.col, text:`Граф незв'язний (${AN.comps.length} компонент). Теорему застосовують до кожної компоненти окремо (зауваження 4.2). Показано оптимальне розфарбування.`}];
+  const ci=AN.ci[0], D=AN.Delta;
+  if (ci.complete) return [{col:AN.ch.col, text:`G = K<sub>${n}</sub> — повний граф: χ = ${n} = Δ + 1. Це один з двох винятків теореми.`}];
+  if (ci.oddCycle) return [{col:AN.ch.col, text:`G — непарний цикл C<sub>${n}</sub>: χ = 3 = Δ + 1. Це другий виняток теореми.`}];
+  if (D<=2) return [{col:AN.bip.side.map(s=>s+1), text:`Випадок Δ ≤ 2: зв'язний граф — це шлях або парний цикл, непарних циклів немає, і за теоремою Кеніга χ ≤ 2 = Δ.`}];
+  if (BR.v==null) BR.v = AN.deg.indexOf(D);
+  const v=BR.v, AH=A.map((s,i)=> i===v ? new Set() : new Set([...s].filter(u=>u!==v)));
+  const nb=[...A[v]];
+  // prefer a Δ-colouring of H in which the neighbours of v get pairwise distinct colours: exactly the hard case of the proof
+  const AH2=AH.map(s=>new Set(s)); for (const x of nb) for (const y of nb) if (x!==y) AH2[x].add(y);
+  let c0 = nb.length===D ? exactColoring(AH2, D, {n:1500000}) : null;
+  if (!Array.isArray(c0)) c0=exactColoring(AH, D, {n:2000000});
+  if (!Array.isArray(c0)) return [{col:[], text:'Не вдалося швидко знайти Δ-розфарбування H — граф завеликий для демонстрації.'}];
+  c0[v]=0;
+  const missing = c => { const s=new Set(nb.map(u=>c[u])); for (let e=1;e<=D;e++) if (!s.has(e)) return e; return 0; };
+  const nbHL = {nodes:new Set(nb), edges:new Set()};
+  F.push({col:c0, text:`<b>Крок 0.</b> Видаляємо вершину v = ${V(v)} (deg v = ${nb.length}, Δ = ${D}). Граф H = G − v розфарбовуємо правильно в Δ = ${D} кольорів — у доведенні це дає індукційне припущення, тут розфарбування знайдено перебором.`});
+  let e=missing(c0);
+  if (e){ const fin=c0.slice(); fin[v]=e; F.push({col:c0, hl:nbHL, text:`<b>Крок 1.</b> Сусіди v використовують лише кольори {${[...new Set(nb.map(u=>c0[u]))].sort((x,y)=>x-y).join(', ')}}: колір ${dot(e)} ${e} вільний.`}); F.push({col:fin, text:`Фарбуємо v у колір ${e}. Отримано правильне ${D}-розфарбування G, тобто χ(G) ≤ Δ = ${D} ✓`}); return F; }
+  F.push({col:c0, hl:nbHL, text:`<b>Крок 1.</b> Сусіди ${nb.map(u=>dot(c0[u])+V(u)).join(', ')} мають усі Δ = ${D} кольорів, і всі різні. Вільного кольору для v немає — переходимо до ланцюгів Кемпе.`});
+  // pairs info
+  const pairs=[]; for (let i=1;i<=D;i++) for (let j=i+1;j<=D;j++){ const vi=nb.find(u=>c0[u]===i), vj=nb.find(u=>c0[u]===j); const ch=kempeChain(AH,c0,vi,i,j); pairs.push({i,j,vi,vj,same:ch.includes(vj),ch}); }
+  const sameCnt=pairs.filter(p=>p.same).length;
+  const p0=pairs.find(p=>!p.same) || pairs[0];
+  F.push({col:c0, hl:{nodes:new Set(p0.ch), edges:edgesWithin(G,p0.ch)}, text:`<b>Крок 2.</b> Для кожної пари кольорів (i, j) перевіряємо, чи лежать v<sub>i</sub> та v<sub>j</sub> в одному (i, j)-ланцюгу. Тут в одному ланцюгу — ${sameCnt} пар з ${pairs.length}: ${pairs.map(p=>`(${p.i},${p.j})${p.same?'✓':'✗'}`).join(' ')}. Підсвічено (${p0.i}, ${p0.j})-ланцюг вершини ${V(p0.vi)}${p0.same?` — він є простим шляхом до ${V(p0.vj)}, як стверджує крок 3`:''}.`});
+  // BFS over Kempe swaps
+  const vis=new Set([c0.join(',')]); const q=[{c:c0,path:[]}]; let found=null;
+  outer: for (let qi=0; qi<q.length; qi++){ const {c,path}=q[qi]; if (path.length>=4) continue;
+    for (const u of nb) for (let b=1;b<=D;b++){ const a=c[u]; if (b===a) continue; const ch=kempeChain(AH,c,u,a,b), c2=swapChain(c,ch,a,b), key=c2.join(','); if (vis.has(key)) continue; vis.add(key); const p2=path.concat([{u,a,b,ch,before:c,after:c2}]); if (missing(c2)){ found={c:c2,path:p2}; break outer; } if (vis.size<25000) q.push({c:c2,path:p2}); }
+  }
+  if (!found){ F.push({col:AN.ch.col, text:`У межах короткого перебору обмінів не знайдено. За теоремою ∆-розфарбування існує; показано розфарбування з χ = ${chiText()} кольорів.`}); return F; }
+  found.path.forEach((mv,idx) => {
+    const other=nb.find(w=>w!==mv.u && mv.before[w]===mv.b), inCh = other!=null && mv.ch.includes(other);
+    const hl={nodes:new Set(mv.ch), edges:edgesWithin(G,mv.ch)};
+    F.push({col:mv.before, hl, text:`<b>Обмін ${idx+1}.</b> Розглядаємо (${mv.a}, ${mv.b})-ланцюг вершини ${V(mv.u)} (колір ${mv.a}): ${mv.ch.map(V).join(', ')}. ${other==null?`Сусіда кольору ${mv.b} у v зараз немає.`: inCh?`Він містить і ${V(other)} (колір ${mv.b}) — обмін переставить їхні кольори, змінивши структуру ланцюгів (так діє крок 5 доведення).`:`Сусід ${V(other)} кольору ${mv.b} лежить в іншому ланцюгу (ситуація кроку 2).`} Обмінюємо ${mv.a} ↔ ${mv.b} на цьому ланцюзі (лема 3.3).`});
+    F.push({col:mv.after, hl, text:`Після обміну ${idx+1} розфарбування H правильне. Кольори сусідів v: ${nb.map(w=>dot(mv.after[w])+V(w)).join(', ')}.`});
+  });
+  e=missing(found.c); const fin=found.c.slice(); fin[v]=e;
+  F.push({col:fin, text:`Колір ${dot(e)} ${e} більше не зустрічається серед сусідів v. Фарбуємо v у колір ${e}: отримано правильне ${D}-розфарбування G, тобто χ(G) ≤ Δ = ${D} ✓ (у доведенні теореми ситуація «всі сусіди в одних ланцюгах» веде до суперечності кроків 3–5).`});
+  return F;
+}
+$('#bBuild').addEventListener('click', () => { BR.frames=buildBrooks(); BR.pos=0; renderBrooks(); });
+$('#bPrev').addEventListener('click', () => { if (BR.pos>0){ BR.pos--; renderBrooks(); } });
+$('#bNext').addEventListener('click', () => { if (BR.pos<BR.frames.length-1){ BR.pos++; renderBrooks(); } });
+function renderBrooks(){
+  if (!AN) return; bView.render();
+  const a=AN, conn=a.comps.length===1 && a.n>0, ci=a.ci[0]||{};
+  const ok=(b,t)=>`<div><span class="${b?'yes':'no'}">${b?'✓':'✗'}</span> ${t}</div>`;
+  $('#bChecks').innerHTML = ok(conn,'G зв\'язний') + ok(conn && !ci.complete,'G не є повним графом') + ok(conn && !ci.oddCycle,'G не є циклом непарної довжини') + `<div class="muted">Δ(G) = ${a.Delta}, χ(G) = ${chiText()}</div>`;
+  let c;
+  if (!a.n) c='Граф порожній.';
+  else if (!conn) c=`Граф незв'язний: теорема застосовується до кожної компоненти, χ(G) = max χ(Gᵢ) ≤ ${a.brooks}.`;
+  else if (ci.complete || ci.oddCycle) c=`Виняток теореми: χ(G) = Δ + 1 = ${a.Delta+1}.`;
+  else c=`Теорема гарантує χ(G) ≤ Δ(G) = ${a.Delta}. Фактично χ(G) = ${chiText()}${a.ch.chi!=null && a.ch.chi<a.Delta?' — оцінка Брукса тут не точна':''}.`;
+  $('#bConcl').innerHTML=`<div class="status ${conn && !ci.complete && !ci.oddCycle?'ok':'info'}">${c}</div>`;
+  const f=BR.frames[BR.pos];
+  $('#bFrame').innerHTML = f ? f.text : (BR.v!=null ? `Обрано v = ${V(BR.v)}. Натисніть «Побудувати кроки».` : 'Оберіть вершину v кліком (або залиште вибір за програмою) і натисніть «Побудувати кроки».');
+  $('#bPos').textContent = BR.frames.length ? `${BR.pos+1} / ${BR.frames.length}` : '';
+  $('#bPrev').disabled = !BR.frames.length || BR.pos===0; $('#bNext').disabled = !BR.frames.length || BR.pos>=BR.frames.length-1;
+  $('#mTable').innerHTML = MY.hist.length ? '<tr><th>Граф</th><th>n</th><th>m</th><th>ω</th><th>χ</th></tr>' + MY.hist.map(h=>`<tr><td>${h.name}</td><td>${h.n}</td><td>${h.m}</td><td>${h.om}</td><td><b>${h.chi}</b></td></tr>`).join('') : '';
+}
+function pushHist(name){ MY.hist.push({name, n:AN.n, m:AN.m, om:AN.clique.length, chi:chiText()}); }
+$('#mStart').addEventListener('click', () => { G={nodes:[{x:380,y:310},{x:620,y:310}],edges:[[0,1]]}; lab.col=null; MY.hist=[]; graphChanged(); pushHist('K₂'); renderBrooks(); });
+$('#mApply').addEventListener('click', () => {
+  if (G.nodes.length>23){ $('#bFrame').innerHTML='<span class="no">Граф завеликий: M(G) матиме понад 47 вершин.</span>'; return; }
+  const prev=MY.hist.length ? MY.hist[MY.hist.length-1].name : 'G';
+  if (!MY.hist.length){ pushHist('G (вихідний)'); }
+  G=mycielski(G); lab.col=null; graphChanged();
+  const names={'K₂':'M(K₂) = C₅','M(K₂) = C₅':'M(C₅) — граф Грьоча'}; pushHist(names[prev] || ('M(' + prev.replace(/ \(вихідний\)/,'') + ')')); renderBrooks();
+});
+
+/* ================= APPLICATIONS: towers ================= */
+const TW={g:{nodes:[],edges:[]}, R:230, col:[]};
+function twRecalc(){ const g=TW.g; g.edges=[]; for (let i=0;i<g.nodes.length;i++) for (let j=i+1;j<g.nodes.length;j++) if (Math.hypot(g.nodes[i].x-g.nodes[j].x, g.nodes[i].y-g.nodes[j].y) < TW.R) g.edges.push([i,j]); const A=adjOf(g); TW.A=A; TW.ch=chromatic(A); TW.col=TW.ch.col; TW.om=maxClique(A).length; TW.gr=Math.max(0,...greedy(A,[...Array(A.length).keys()]).col); }
+const tView = new GraphView($('#tSvg'), {
+  graph: () => TW.g, radius:14, coloring: () => TW.col, label: (i,c) => c||'',
+  underlay: P => P.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="${TW.R/2}" fill="${colHex(TW.col[i])}" fill-opacity="0.13" stroke="${colHex(TW.col[i])}" stroke-opacity="0.5" stroke-dasharray="4 4"/>`).join(''),
+  onBg: (x,y) => { if (TW.g.nodes.length>=40) return; TW.g.nodes.push({x,y}); twUpdate(); },
+  onVertexClick: i => { removeNode(TW.g,i); twUpdate(); },
+  onMove: () => { twRecalc(); twStatus(); }
+});
+function twStatus(){ const n=TW.g.nodes.length; $('#tStatus').innerHTML = n ? `<div class="status ok">Веж: <b>${n}</b>, пар із завадами: <b>${TW.g.edges.length}</b>. Мінімум каналів χ = <b>${TW.ch.chi ?? TW.ch.hi}</b>; найбільша група веж, кола яких попарно перетинаються, ω = <b>${TW.om}</b> (стільки каналів потрібно завжди). Жадібне призначення в порядку встановлення веж використало б ${TW.gr}.</div>` : '<div class="status info">Додайте вежі кліком по полю.</div>'; }
+function twUpdate(){ twRecalc(); tView.render(); twStatus(); }
+$('#tR').addEventListener('input', e => { TW.R=+e.target.value; $('#tRv').textContent=TW.R; twUpdate(); });
+$('#tRand').addEventListener('click', () => { TW.g={nodes:Array.from({length:14},()=>({x:60+Math.random()*880,y:50+Math.random()*520})),edges:[]}; twUpdate(); });
+$('#tClear').addEventListener('click', () => { TW.g={nodes:[],edges:[]}; twUpdate(); });
+
+/* ================= APPLICATIONS: exams ================= */
+const EX={g:{nodes:[],edges:[]}, col:[]};
+$('#exTxt').value = ['Математичний аналіз: Олена, Іван, Марко','Алгебра: Іван, Тарас','Теорія графів: Олена, Тарас, Назар','Функціональний аналіз: Марко, Ярина','Дискретна математика: Софія, Андрій','Програмування: Андрій, Ярина','Теорія ймовірностей: Назар, Софія','Диференціальні рівняння: Марко, Віра','Топологія: Віра, Андрій'].join('\n');
+const exView = new GraphView($('#exSvg'), { graph: () => EX.g, coloring: () => EX.col, radius:20 });
+function exRun(){
+  const lines=$('#exTxt').value.split('\n').map(s=>s.trim()).filter(Boolean), items=[];
+  for (const L of lines){ const k=L.indexOf(':'); const name=(k>=0?L.slice(0,k):L).trim(); const ppl=(k>=0?L.slice(k+1):'').split(/[,;]/).map(s=>s.trim().toLowerCase()).filter(Boolean); if (name) items.push({name, ppl:new Set(ppl), raw:ppl.length}); }
+  if (!items.length){ $('#exOut').innerHTML='<div class="status bad">Немає жодного рядка з подією.</div>'; return; }
+  if (items.length>40){ $('#exOut').innerHTML='<div class="status bad">Забагато подій (максимум 40).</div>'; return; }
+  const g={nodes:circlePos(items.length,235),edges:[]}; const shared={};
+  for (let i=0;i<items.length;i++) for (let j=i+1;j<items.length;j++){ const s=[...items[i].ppl].filter(p=>items[j].ppl.has(p)); if (s.length){ addEdge(g,i,j); shared[ekey(i,j)]=s; } }
+  EX.g=g; const A=adjOf(g), ch=chromatic(A), cl=maxClique(A); EX.col=ch.col; exView.render();
+  const k=Math.max(0,...ch.col), days=[]; for (let d=1; d<=k; d++) days.push(items.map((it,i)=>ch.col[i]===d?i:-1).filter(i=>i>=0));
+  let h=`<div class="status ok">Мінімальна кількість днів: <b>χ = ${ch.chi ?? k}</b>. Нижня оцінка: події ${cl.map(i=>'<b>'+(i+1)+'</b>').join(', ')} попарно мають спільних учасників (кліка ω = ${cl.length}), тож менше ${cl.length} днів неможливо.</div>`;
+  h+='<table class="t" style="margin-top:8px"><tr><th>День</th><th>Події (незалежна множина)</th></tr>'+days.map((d,i)=>`<tr><td>${dot(i+1)} ${i+1}</td><td>${d.map(x=>`${x+1}. ${esc(items[x].name)}`).join('<br>')}</td></tr>`).join('')+'</table>';
+  h+='<details><summary>Конфлікти (ребра графа)</summary><div class="small">'+(g.edges.length?g.edges.map(([a,b])=>`${a+1}–${b+1}: ${esc(shared[ekey(a,b)].join(', '))}`).join('<br>'):'конфліктів немає')+'</div></details>';
+  $('#exOut').innerHTML=h;
+}
+$('#exGo').addEventListener('click', exRun);
+
+/* ================= tabs & init ================= */
+function showTab(t){ $$('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===t)); $$('section.page').forEach(s=>s.classList.toggle('active', s.id==='page-'+t));
+  if (t==='lab') labView.render(); if (t==='kempe') renderKempe(); if (t==='brooks') renderBrooks(); if (t==='apps'){ tView.render(); exView.render(); }
+  try{ localStorage.setItem('gc_tab', t); }catch(e){} }
+$$('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+syncPresetPar();
+graphChanged();
+setMode('vertex');
+TW.g={nodes:[{x:180,y:200},{x:330,y:150},{x:300,y:330},{x:480,y:260},{x:560,y:430},{x:650,y:180},{x:780,y:300},{x:860,y:470},{x:420,y:500},{x:160,y:450},{x:720,y:540},{x:900,y:140}],edges:[]};
+twUpdate(); exRun();
+try{ const t=localStorage.getItem('gc_tab'); if (t && $('#page-'+t)) showTab(t); }catch(e){}
+</script>
+</body>
+</html>
