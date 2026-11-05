@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Границя функції однієї змінної — інтерактивний посібник</title>
+<meta name="description" content="Інтерактивний посібник «Границя функції однієї змінної». Кафедра фундаментальної математики ХНУ імені В. Н. Каразіна.">
+<link rel="icon" id="favicon" href="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+  /* Налаштування MathJax 3 (LaTeX-формули) */
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']],
+           macros: { tg:'\\operatorname{tg}', ctg:'\\operatorname{ctg}', arctg:'\\operatorname{arctg}', sign:'\\operatorname{sign}' } },
+    svg: { fontCache: 'global' },
+    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','canvas','input','select'] }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --green:#345a53; --green-d:#26443e; --gold:#ca9d48; --gold-d:#a87d2c; --gold-l:#ecd9b0;
+  --paper:#f6f4ee; --ink:#1e2b28; --muted:#5f6f6b; --line:#e2ddd0; --red:#b5483b; --blue:#3f6b9a;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;font-size:15.5px}
+a{color:var(--green)}
+/* ---------- шапка ---------- */
+header.top{
+  color:#fff;border-bottom:4px solid var(--gold);
+  background:
+    radial-gradient(1200px 300px at 85% -40%, rgba(202,157,72,.22), transparent 60%),
+    radial-gradient(800px 260px at 0% 120%, rgba(255,255,255,.07), transparent 60%),
+    linear-gradient(135deg,#2c4e48 0%, #345a53 55%, #2a4a44 100%);
+  position:relative;overflow:hidden;
+}
+header.top::after{ /* «крейдяні» формули на тлі */
+  content:"∀ε>0 ∃δ>0 : 0<|x−x₀|<δ ⇒ |f(x)−A|<ε     lim sin x / x = 1     (1+1/n)ⁿ → e";
+  position:absolute;right:-40px;bottom:6px;font-family:"PT Serif",serif;font-style:italic;font-size:1.15rem;
+  color:rgba(255,255,255,.07);white-space:nowrap;pointer-events:none;
+}
+.top-inner{max-width:1320px;margin:0 auto;display:flex;gap:22px;align-items:center;padding:20px 26px;position:relative;z-index:1}
+.top img{width:92px;height:92px;flex:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+.dept{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-l);font-weight:700}
+.top h1{font-family:"PT Serif",Georgia,serif;font-size:2.1rem;line-height:1.15;margin:.15em 0 .1em;font-weight:700}
+.subtitle{color:#d9e4e0;font-size:.98rem}
+/* ---------- вкладки ---------- */
+nav.tabs{position:sticky;top:0;z-index:30;background:rgba(246,244,238,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.tabs-inner{max-width:1320px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:10px 26px;scrollbar-width:thin}
+.tab{border:1px solid var(--line);background:#fff;padding:7px 14px 7px 8px;border-radius:999px;font:inherit;font-weight:700;font-size:.88rem;color:var(--green);cursor:pointer;white-space:nowrap;transition:.15s}
+.tab:hover{border-color:var(--gold)}
+.tab .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--gold-l);color:var(--green-d);font-size:.74rem;margin-right:7px}
+.tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+.tab.active .n{background:var(--gold);color:#fff}
+/* ---------- основне ---------- */
+main{max-width:1320px;margin:0 auto;padding:26px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.panel h2{font-family:"PT Serif",Georgia,serif;font-size:1.75rem;color:var(--green-d);margin:0 0 .3em}
+.panel h3{font-family:"PT Serif",Georgia,serif;color:var(--green-d);font-size:1.3rem;margin:.2em 0 .5em}
+.lead{font-family:"PT Serif",Georgia,serif;font-size:1.08rem;max-width:960px;color:#2c3a37;margin:0 0 14px}
+.layout{display:grid;grid-template-columns:350px minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(30,43,40,.04)}
+.controls label.lbl{display:block;font-size:.84rem;font-weight:700;color:#4e5d59;margin:14px 0 5px}
+.controls label.lbl:first-child{margin-top:0}
+input[type=text],input[type=number],select{width:100%;padding:9px 11px;border:1px solid #cfd7d4;border-radius:10px;font:inherit;background:#fbfcfb;color:var(--ink)}
+input[type=text],input[type=number]{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.93rem}
+select{font-size:.9rem;cursor:pointer}
+input:focus,select:focus{outline:2px solid var(--gold);outline-offset:0;border-color:var(--gold)}
+input.bad{border-color:var(--red);background:#fdf3f1}
+input:disabled{color:#6b7875;background:#f1f3f2}
+.preview{min-height:30px;margin-top:6px;color:var(--green-d);overflow-x:auto;overflow-y:hidden;font-size:1rem}
+.preview.err{color:var(--red);font-size:.84rem}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+label.check{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;margin:10px 0 0;cursor:pointer}
+label.check input{margin-top:4px;accent-color:var(--green)}
+input[type=range]{width:100%;accent-color:var(--green);margin:4px 0}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{border:0;background:var(--green);color:#fff;font:inherit;font-weight:700;font-size:.88rem;padding:9px 14px;border-radius:10px;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--green-d)}
+.btn.ghost{background:#fff;color:var(--green);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--gold)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;margin-bottom:14px}
+.seg button{border:0;background:none;padding:9px 16px;font:inherit;font-weight:700;color:var(--green);cursor:pointer}
+.seg button.active{background:var(--green);color:#fff}
+.note{font-size:.86rem;color:var(--muted);margin-top:6px}
+.warn{color:var(--red)}
+/* графіки */
+.plot-wrap{position:relative;height:500px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#fff;box-shadow:0 1px 2px rgba(30,43,40,.04)}
+.plot-wrap.short{height:300px}.plot-wrap.mid{height:360px}.plot-wrap.track{height:170px}
+.plot-wrap canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.plot-wrap canvas.grabbing{cursor:grabbing}
+.plot-tools{position:absolute;top:10px;right:10px;display:flex;gap:4px}
+.plot-tools button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.92);cursor:pointer;font-weight:800;color:var(--green);font-size:15px;line-height:1}
+.plot-tools button:hover{border-color:var(--gold)}
+.hint{font-size:.8rem;color:var(--muted);margin:8px 2px 0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem;margin:10px 2px 0;color:#43524e}
+.legend i,.sw{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+/* результати */
+.result{margin-top:16px;padding:14px 16px;border-radius:12px;background:#eff4f2;border-left:4px solid var(--green)}
+.result.bad{background:#fbefec;border-left-color:var(--red)}
+.result .kicker{font-size:.8rem;letter-spacing:.02em;font-weight:800;color:var(--muted)}
+.result .big{font-size:1.45rem;font-weight:800;color:var(--green-d);line-height:1.3}
+.result.bad .big{color:var(--red)}
+.result .big small{font-size:.8rem;font-weight:600;color:var(--muted)}
+.stmt{font-family:"PT Serif",serif;font-style:italic;margin:6px 0;font-size:1rem}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+.kv:last-child{border-bottom:0}
+.kv span{color:var(--muted)}.kv b{font-family:"JetBrains Mono",monospace;font-weight:600;text-align:right}
+.verdict{margin-top:10px;padding:10px 12px;border-radius:10px;background:#f5f2ea;font-size:.93rem}
+.verdict.ok{background:#e9f2ee;border-left:4px solid var(--green)}
+.verdict.bad{background:#fbefec;border-left:4px solid var(--red)}
+.pair>div{margin:3px 0}
+/* означення / теореми */
+.def{border:1px solid var(--line);border-left:5px solid var(--gold);background:#fffdf7;border-radius:12px;padding:12px 18px;margin:14px 0;overflow-x:auto}
+.def.thm{border-left-color:var(--green);background:#f8fbfa}
+.def .tag{display:block;font-weight:800;color:var(--green);font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.prose{font-family:"PT Serif",Georgia,serif;font-size:1.04rem;line-height:1.7}
+.prose p{margin:.55em 0}
+.prose h4{font-family:Manrope,sans-serif;font-size:1rem;color:var(--green);margin:1.1em 0 .2em}
+.explain{margin-top:18px}
+.mjx-scroll{overflow-x:auto;overflow-y:hidden}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+/* таблиці */
+table.data{border-collapse:collapse;width:100%;font-size:.86rem}
+table.data th{background:#f1efe8;color:var(--green-d);font-weight:800;text-align:left;padding:7px 9px;border-bottom:2px solid var(--gold)}
+table.data td{padding:6px 9px;border-bottom:1px solid #eeeae0;font-family:"JetBrains Mono",monospace}
+table.data td:first-child{font-family:Manrope,sans-serif}
+table.data tr.limrow td{font-weight:700;color:var(--green-d);background:#f4f8f6}
+table.plain{border-collapse:collapse;width:100%;font-size:.95rem;margin:10px 0}
+table.plain td,table.plain th{padding:7px 10px;border-bottom:1px solid #ece7db;vertical-align:top;text-align:left}
+table.plain th{color:var(--green-d);background:#f4f1e9}
+code{font-family:"JetBrains Mono",monospace;background:#f1efe8;padding:1px 6px;border-radius:5px;font-size:.88em}
+kbd{font-family:"JetBrains Mono",monospace;font-size:.8em;border:1px solid #cfc8b6;border-bottom-width:2px;border-radius:5px;padding:0 5px;background:#fff}
+/* двоколонкові картки */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:980px){.split{grid-template-columns:1fr}}
+.app{margin-bottom:26px}
+.app-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:22px;align-items:start}
+@media (max-width:980px){.app-grid{grid-template-columns:1fr}}
+.app .num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;font-weight:800;margin-right:10px;font-family:Manrope}
+.app h3{display:flex;align-items:center}
+.pill{display:inline-block;background:var(--gold-l);color:var(--green-d);border-radius:999px;padding:2px 10px;font-size:.76rem;font-weight:800;margin:0 6px 6px 0}
+/* теорія */
+.theory{display:grid;grid-template-columns:250px minmax(0,1fr);gap:30px;align-items:start}
+@media (max-width:980px){.theory{grid-template-columns:1fr}.toc{position:static!important}}
+.toc{position:sticky;top:72px;font-size:.9rem}
+.toc a{display:block;padding:5px 10px;border-radius:8px;text-decoration:none;color:var(--green-d);border-left:3px solid transparent}
+.toc a:hover{background:#fff;border-left-color:var(--gold)}
+.theory section{scroll-margin-top:80px;margin-bottom:26px}
+.theory section > h3{border-bottom:2px solid var(--gold-l);padding-bottom:4px}
+.logo-note{display:flex;gap:16px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:14px 0}
+.logo-note img{width:64px;height:64px;flex:none}
+footer{border-top:4px solid var(--gold);background:var(--green-d);color:#cfdcd8;font-size:.86rem;margin-top:40px}
+footer .in{max-width:1320px;margin:0 auto;padding:18px 26px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+footer img{width:40px;height:40px}
+@media (max-width:640px){
+  .top h1{font-size:1.5rem}.top img{width:64px;height:64px}main{padding:16px}
+  .plot-wrap{height:400px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <img id="logo-main" src="data:image/png;base64,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" alt="Логотип кафедри фундаментальної математики: символи ∀, ε, ∃, δ">
+    <div>
+      <div class="dept"><span data-cfg="department"></span> · ХНУ імені В. Н. Каразіна</div>
+      <h1 data-cfg="title">Границя функції однієї змінної</h1>
+      <div class="subtitle">Інтерактивний посібник: означення, геометричний і фізичний зміст, прикладні задачі</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Розділи">
+  <div class="tabs-inner" role="tablist">
+    <button class="tab" data-tab="cauchy" role="tab"><span class="n">1</span>Означення Коші (ε–δ)</button>
+    <button class="tab" data-tab="heine" role="tab"><span class="n">2</span>Означення Гейне</button>
+    <button class="tab" data-tab="onesided" role="tab"><span class="n">3</span>Однобічні та нескінченні</button>
+    <button class="tab" data-tab="meaning" role="tab"><span class="n">4</span>Геометричний і фізичний зміст</button>
+    <button class="tab" data-tab="applied" role="tab"><span class="n">5</span>Прикладні задачі</button>
+    <button class="tab" data-tab="theory" role="tab"><span class="n">6</span>Теоретична довідка</button>
+    <button class="tab" data-tab="about" role="tab"><span class="n">?</span>Як користуватися</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ================= 1. КОШІ ================= -->
+<section class="panel" id="p-cauchy">
+  <h2>Означення границі за Коші — мовою «ε–δ»</h2>
+  <p class="lead">Число \(A\) є границею функції \(f\) у точці \(x_0\), якщо значення \(f(x)\) як завгодно мало відрізняються від \(A\), коли \(x\) достатньо близьке до \(x_0\) (але \(x\neq x_0\)). Строго це записують так:</p>
+  <div class="def"><span class="tag">Означення (Коші)</span>
+    \[\lim_{x\to x_0} f(x)=A \iff \forall\,\varepsilon>0\ \ \exists\,\delta>0\ \ \forall\,x\in D(f):\quad 0<|x-x_0|<\delta\ \Longrightarrow\ |f(x)-A|<\varepsilon .\]
+  </div>
+  <div class="layout">
+    <div class="card controls">
+      <label class="lbl" for="c-preset">Готовий приклад</label>
+      <select id="c-preset"></select>
+      <label class="lbl" for="c-f">Функція f(x)</label>
+      <input id="c-f" type="text" spellcheck="false" autocomplete="off">
+      <div class="preview" id="c-f-prev"></div>
+      <div class="row">
+        <div><label class="lbl" for="c-x0">Точка x₀</label><input id="c-x0" type="text" spellcheck="false"></div>
+        <div><label class="lbl" for="c-A">Число A</label><input id="c-A" type="text" spellcheck="false"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="c-Aauto" checked> обчислювати A автоматично (вимкніть, щоб перевірити «неправильне» A)</label>
+      <div class="note" id="c-Ainfo"></div>
+      <label class="lbl" for="c-eps">ε = <span id="c-eps-val"></span></label>
+      <input type="range" id="c-eps" min="-3" max="0.4" step="0.001">
+      <label class="check"><input type="checkbox" id="c-dauto" checked> знаходити δ автоматично</label>
+      <div id="c-dbox" hidden><label class="lbl" for="c-d">Ваше δ</label><input id="c-d" type="number" step="any" min="0"></div>
+      <div class="btns"><button class="btn" id="c-anim" type="button">▶ ε → 0</button><button class="btn ghost" id="c-zoom" type="button">Наблизити до x₀</button></div>
+      <div class="result" id="c-res" aria-live="polite"></div>
+    </div>
+    <div>
+      <div class="plot-wrap"><canvas id="c-canvas" aria-label="Графік функції з ε- та δ-смугами"></canvas></div>
+      <div class="legend">
+        <span><i style="background:rgba(202,157,72,.45)"></i>ε-окіл числа A</span>
+        <span><i style="background:rgba(52,90,83,.3)"></i>δ-окіл точки x₀</span>
+        <span><i style="background:#26443e"></i>умова |f(x) − A| &lt; ε виконується</span>
+        <span><i style="background:#b5483b"></i>умова порушується</span>
+        <span><i style="background:#fff;border:2px solid #26443e;border-radius:50%;width:11px;height:11px"></i>точка (x₀, A)</span>
+      </div>
+      <p class="hint">Перетягуйте графік мишею, змінюйте масштаб колесом (<kbd>Shift</kbd> — лише по x, <kbd>Alt</kbd> — лише по y), подвійне клацання повертає початковий вигляд.</p>
+      <div class="card prose explain">
+        <h4>Як читати малюнок</h4>
+        <p>Горизонтальна золотава смуга — це ε-окіл числа \(A\), тобто інтервал \((A-\varepsilon,\,A+\varepsilon)\). Уявіть, що ширину цієї смуги задає «суперник»: він вимагає, щоб значення функції відрізнялися від \(A\) менше ніж на \(\varepsilon\). Наша відповідь — вертикальна зелена смуга, δ-окіл точки \(x_0\). Означення вимагає, щоб уся частина графіка над <em>проколотим</em> δ-околом лежала всередині прямокутника, обведеного рамкою. Зелений колір кривої всередині смуги означає, що вимогу виконано, червоний — що її порушено.</p>
+        <p>Порожній кружечок у точці \((x_0, A)\) нагадує, що значення \(f(x_0)\) на границю не впливає: функція в цій точці може бути взагалі не визначена (як \(\frac{\sin x}{x}\) при \(x=0\)) або мати інше значення. Саме тому в означенні стоїть нерівність \(0<|x-x_0|\).</p>
+        <p>Зменшуйте \(\varepsilon\) повзунком або кнопкою «ε → 0»: якщо границя існує й дорівнює \(A\), то для кожного \(\varepsilon\) знаходиться своє \(\delta\), і зазвичай воно зменшується разом з \(\varepsilon\). Для лінійної функції \(\delta\) пропорційне \(\varepsilon\); для \(x^2\) у точці 1 відношення \(\delta/\varepsilon\) прямує до \(\tfrac12=\tfrac1{f'(1)}\). Якщо ж вимкнути автоматичне обчислення й задати хибне \(A\), то для досить малих \(\varepsilon\) жодне \(\delta\) не підійде — так на малюнку виглядає заперечення означення.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2. ГЕЙНЕ ================= -->
+<section class="panel" id="p-heine">
+  <h2>Означення границі за Гейне — мовою послідовностей</h2>
+  <p class="lead">Замість околів можна говорити про послідовності: функція має границю \(A\) в точці \(x_0\), якщо для <em>кожної</em> послідовності аргументів, що прямує до \(x_0\) і не потрапляє в \(x_0\), відповідні значення функції прямують до \(A\).</p>
+  <div class="def"><span class="tag">Означення (Гейне)</span>
+    \[\lim_{x\to x_0} f(x)=A \iff \forall\,(x_n)\subset D(f)\setminus\{x_0\}:\quad x_n\to x_0\ \Longrightarrow\ f(x_n)\to A .\]
+  </div>
+  <div class="layout">
+    <div class="card controls">
+      <label class="lbl" for="h-preset">Готовий приклад</label>
+      <select id="h-preset"></select>
+      <label class="lbl" for="h-f">Функція f(x)</label>
+      <input id="h-f" type="text" spellcheck="false" autocomplete="off"><div class="preview" id="h-f-prev"></div>
+      <label class="lbl" for="h-x0">Точка x₀</label><input id="h-x0" type="text" spellcheck="false">
+      <label class="lbl" for="h-s1"><span class="sw" style="background:#a87d2c"></span>Послідовність xₙ (змінна n)</label>
+      <input id="h-s1" type="text" spellcheck="false"><div class="preview" id="h-s1-prev"></div>
+      <label class="lbl" for="h-s2"><span class="sw" style="background:#3f6b9a"></span>Друга послідовність x′ₙ (необов’язково)</label>
+      <input id="h-s2" type="text" spellcheck="false"><div class="preview" id="h-s2-prev"></div>
+      <label class="lbl" for="h-N">Кількість членів: n = <span id="h-N-val">20</span></label>
+      <input type="range" id="h-N" min="1" max="150" step="1" value="20">
+      <div class="btns"><button class="btn" id="h-play" type="button">▶ Анімувати n</button></div>
+      <div class="result" id="h-res"></div>
+    </div>
+    <div>
+      <div class="plot-wrap mid"><canvas id="h-canvas1" aria-label="Графік функції з точками послідовностей"></canvas></div>
+      <p class="hint">Риски на осі абсцис — члени послідовностей \(x_n\); точки на графіку — пари \((x_n, f(x_n))\). Яскравіші точки відповідають більшим \(n\).</p>
+      <div class="split" style="margin-top:12px">
+        <div class="plot-wrap short"><canvas id="h-canvas2" aria-label="Значення f(x_n) залежно від n"></canvas></div>
+        <div class="card" style="overflow-x:auto">
+          <table class="data"><thead><tr><th>n</th><th>xₙ</th><th>f(xₙ)</th><th>x′ₙ</th><th>f(x′ₙ)</th></tr></thead><tbody id="h-table"></tbody></table>
+        </div>
+      </div>
+      <div class="card prose explain">
+        <h4>Навіщо друге означення?</h4>
+        <p>Означення Гейне переносить на функції все, що відомо про границі послідовностей: арифметичні властивості, теорему про двох поліцейських, критерій Коші. Теорема про еквівалентність стверджує, що означення Коші й Гейне задають одне й те саме поняття (див. «Теоретичну довідку»).</p>
+        <p>Особливо зручне це означення для доведення <em>неіснування</em> границі: досить вказати дві послідовності \(x_n\to x_0\) і \(x_n'\to x_0\), для яких \(f(x_n)\) і \(f(x'_n)\) мають різні границі. Класичний приклад — \(\sin\frac1x\): на \(x_n=\frac{1}{\pi n}\) функція дорівнює \(0\), а на \(x'_n=\frac{2}{\pi(4n+1)}\) — одиниці. Зверніть увагу й на зворотне: збіг результатів для двох (чи навіть тисячі) послідовностей ще нічого не доводить — означення вимагає перевірки для всіх послідовностей, тому існування границі доводять уже аналітично.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3. ОДНОБІЧНІ / ∞ ================= -->
+<section class="panel" id="p-onesided">
+  <h2>Однобічні границі, нескінченні границі та границі на нескінченності</h2>
+  <div class="seg" id="o-mode"><button data-mode="point" type="button">x → x₀ ± 0</button><button data-mode="inf" type="button">x → ±∞</button></div>
+  <div id="o-def-point">
+    <p class="lead">Іноді поведінка функції ліворуч і праворуч від точки різна. Тоді розглядають однобічні границі — аргумент наближається до \(x_0\) лише з одного боку.</p>
+    <div class="def"><span class="tag">Означення</span>
+      \[f(x_0-0)=\lim_{x\to x_0-0}f(x)=A \iff \forall\varepsilon>0\ \exists\delta>0\ \forall x\in D(f):\ x_0-\delta\lt x\lt x_0\ \Rightarrow\ |f(x)-A|<\varepsilon,\]
+      аналогічно \(f(x_0+0)\) — для \(x_0\lt x\lt x_0+\delta\). Двобічна границя існує тоді й лише тоді, коли \(f(x_0-0)=f(x_0+0)\).
+    </div>
+  </div>
+  <div id="o-def-inf" hidden>
+    <p class="lead">Коли аргумент необмежено зростає, роль δ-околу відіграє «окіл нескінченності» — промінь \((M,+\infty)\).</p>
+    <div class="def"><span class="tag">Означення</span>
+      \[\lim_{x\to+\infty}f(x)=A \iff \forall\varepsilon>0\ \exists M\ \forall x\in D(f):\ x>M\ \Rightarrow\ |f(x)-A|<\varepsilon .\]
+      Геометрично: праворуч від прямої \(x=M\) графік цілком лежить у смузі \(A-\varepsilon\lt y\lt A+\varepsilon\); пряма \(y=A\) — горизонтальна асимптота.
+    </div>
+  </div>
+  <div class="layout">
+    <div class="card controls">
+      <div id="o-pointbox">
+        <label class="lbl" for="o-preset">Готовий приклад</label><select id="o-preset"></select>
+      </div>
+      <div id="o-infbox" hidden>
+        <label class="lbl" for="o-ipreset">Готовий приклад</label><select id="o-ipreset"></select>
+      </div>
+      <label class="lbl" for="o-f">Функція f(x)</label>
+      <input id="o-f" type="text" spellcheck="false" autocomplete="off"><div class="preview" id="o-f-prev"></div>
+      <div id="o-pointctl">
+        <label class="lbl" for="o-x0">Точка x₀</label><input id="o-x0" type="text" spellcheck="false">
+        <label class="check"><input type="checkbox" id="o-play" checked> анімувати наближення x₀ ± h</label>
+        <label class="lbl" for="o-h">Крок h (вручну)</label><input type="range" id="o-h" min="0" max="1" step="0.001" value="0.3">
+      </div>
+      <div id="o-epsctl" hidden><label class="lbl" for="o-eps">ε = <span id="o-eps-val">0,1</span></label>
+      <input type="range" id="o-eps" min="-2.5" max="0" step="0.01" value="-1"></div>
+      <div class="result" id="o-res"></div>
+    </div>
+    <div>
+      <div class="plot-wrap"><canvas id="o-canvas" aria-label="Графік для однобічних границь"></canvas></div>
+      <div class="legend">
+        <span><i style="background:#345a53"></i>гілка зліва / x → −∞</span>
+        <span><i style="background:#a87d2c"></i>гілка справа / x → +∞</span>
+        <span><i style="background:#3f6b9a;border-radius:50%;width:10px"></i>значення f(x₀), якщо визначене</span>
+      </div>
+      <div class="card prose explain">
+        <h4>Класифікація точок розриву</h4>
+        <p>Однобічні границі дають природну класифікацію точок розриву. Якщо \(f(x_0-0)=f(x_0+0)\) скінченні, але не дорівнюють \(f(x_0)\) (або \(f\) у точці не визначена), розрив <em>усувний</em> — як у \(\frac{\sin x}{x}\). Якщо обидві однобічні границі скінченні, але різні, це <em>стрибок</em> (розрив I роду), наприклад \(\operatorname{sign}x\) чи ціла частина \([x]\). Якщо ж хоча б одна з однобічних границь нескінченна або не існує, маємо розрив <em>II роду</em>: так поводяться \(\frac1x\), \(e^{1/x}\), \(\sin\frac1x\).</p>
+        <p>Нескінченна границя \(\lim_{x\to x_0}f(x)=+\infty\) означає, що для кожного \(E>0\) знайдеться \(\delta>0\), при якому \(f(x)>E\) у проколотому δ-околі; геометрично пряма \(x=x_0\) є вертикальною асимптотою. Зауважте, що нескінченна границя — це спосіб описати характер розбіжності, а не «число»: у класичному розумінні така функція границі не має.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4. ЗМІСТ ================= -->
+<section class="panel" id="p-meaning">
+  <h2>Геометричний і фізичний зміст границі</h2>
+  <p class="lead">Найважливіші поняття математичного аналізу — похідна, інтеграл, сума ряду — це границі. Дві класичні задачі, з яких виріс аналіз, ведуть до однієї й тієї самої границі відношення приростів \(\dfrac{\Delta y}{\Delta x}\).</p>
+  <div class="card app">
+    <h3><span class="num">а</span>Геометрія: дотична як граничне положення січної</h3>
+    <div class="app-grid">
+      <div class="controls">
+        <div class="prose"><p>Проведемо через точку \(M_0(x_0,f(x_0))\) і близьку точку \(M(x_0+\Delta x, f(x_0+\Delta x))\) січну. Її кутовий коефіцієнт дорівнює \(\frac{\Delta y}{\Delta x}\). Коли \(\Delta x\to0\), точка \(M\) ковзає по кривій до \(M_0\), а січна повертається навколо \(M_0\) і в границі стає <em>дотичною</em>:</p>
+        \[k_{\text{дот}}=\operatorname{tg}\alpha=\lim_{\Delta x\to0}\frac{f(x_0+\Delta x)-f(x_0)}{\Delta x}=f'(x_0).\]</div>
+        <div class="row">
+          <div><label class="lbl" for="g-f">f(x)</label><input id="g-f" type="text" value="x^3/3 - x + 1" spellcheck="false"></div>
+          <div style="flex:.45"><label class="lbl" for="g-x0">x₀</label><input id="g-x0" type="text" value="1.5"></div>
+        </div>
+        <div class="preview" id="g-f-prev"></div>
+        <label class="lbl" for="g-dx">|Δx| = <span id="g-dx-val"></span></label>
+        <input type="range" id="g-dx" min="-3" max="0.4" step="0.005" value="0">
+        <div class="btns"><button class="btn" id="g-anim" type="button">▶ Δx → 0</button><button class="btn ghost" id="g-sign" type="button">Δx &gt; 0</button></div>
+        <div class="result" id="g-res"></div>
+      </div>
+      <div>
+        <div class="plot-wrap mid"><canvas id="g-canvas" aria-label="Січна і дотична"></canvas></div>
+        <div class="legend"><span><i style="background:#a87d2c"></i>січна M₀M</span><span><i style="background:#345a53"></i>дотична в M₀</span><span><i style="background:#3f6b9a"></i>Δx</span><span><i style="background:#b5483b"></i>Δy</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card app">
+    <h3><span class="num">б</span>Фізика: миттєва швидкість як границя середніх швидкостей</h3>
+    <div class="app-grid">
+      <div class="controls">
+        <div class="prose"><p>Нехай тіло рухається прямолінійно за законом \(s=s(t)\). За час від \(t_0\) до \(t_0+\Delta t\) воно проходить шлях \(\Delta s=s(t_0+\Delta t)-s(t_0)\), і його середня швидкість \(\bar v=\frac{\Delta s}{\Delta t}\). Спідометр же показує <em>миттєву</em> швидкість — границю середніх швидкостей на дедалі коротших проміжках:</p>
+        \[v(t_0)=\lim_{\Delta t\to0}\frac{s(t_0+\Delta t)-s(t_0)}{\Delta t}.\]
+        <p>Функція \(\bar v(\Delta t)\) не визначена при \(\Delta t=0\) (виходить \(\frac00\)), але має там границю — на нижньому графіку це видно як «виколоту» точку.</p></div>
+        <div class="row">
+          <div><label class="lbl" for="p-s">s(t), м</label><input id="p-s" type="text" value="4.9t^2" spellcheck="false"></div>
+          <div style="flex:.45"><label class="lbl" for="p-t0">t₀, с</label><input id="p-t0" type="text" value="2"></div>
+        </div>
+        <div class="preview" id="p-s-prev"></div>
+        <label class="lbl" for="p-dt">Δt = <span id="p-dt-val"></span> с</label>
+        <input type="range" id="p-dt" min="-1" max="1" step="0.005" value="1">
+        <div class="btns"><button class="btn" id="p-anim" type="button">▶ Δt → 0</button></div>
+        <div class="result" id="p-res"></div>
+      </div>
+      <div>
+        <div class="plot-wrap track"><canvas id="p-track" aria-label="Положення тіла на прямій"></canvas></div>
+        <p class="hint">Бліді точки — «стробоскопічний знімок»: положення тіла через рівні проміжки часу (видно прискорення).</p>
+        <div class="plot-wrap short"><canvas id="p-canvas" aria-label="Середня швидкість як функція Δt"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card prose">
+    <h3>Одна формула — багато фізичних величин</h3>
+    <p>Схема «приріст однієї величини, поділений на приріст іншої, при прямуванні знаменника до нуля» описує будь-яку <em>швидкість зміни</em>. Тому одна й та сама границя в різних науках має різні назви:</p>
+    <table class="plain">
+      <tr><th>Величина</th><th>Границя</th><th>Зміст</th></tr>
+      <tr><td>Прискорення</td><td>\(a=\lim\limits_{\Delta t\to0}\frac{\Delta v}{\Delta t}\)</td><td>швидкість зміни швидкості</td></tr>
+      <tr><td>Сила струму</td><td>\(I=\lim\limits_{\Delta t\to0}\frac{\Delta q}{\Delta t}\)</td><td>заряд, що проходить за одиницю часу</td></tr>
+      <tr><td>Густина стрижня</td><td>\(\rho(x)=\lim\limits_{\Delta x\to0}\frac{\Delta m}{\Delta x}\)</td><td>маса на одиницю довжини в точці</td></tr>
+      <tr><td>Потужність</td><td>\(N=\lim\limits_{\Delta t\to0}\frac{\Delta A}{\Delta t}\)</td><td>робота за одиницю часу</td></tr>
+      <tr><td>Теплоємність</td><td>\(C=\lim\limits_{\Delta T\to0}\frac{\Delta Q}{\Delta T}\)</td><td>теплота на один градус</td></tr>
+      <tr><td>Граничні витрати (економіка)</td><td>\(MC=\lim\limits_{\Delta q\to0}\frac{\Delta C}{\Delta q}\)</td><td>вартість ще однієї одиниці продукції</td></tr>
+    </table>
+    <p>Скрізь середня величина на скінченному проміжку замінюється граничною — «миттєвою» або «точковою». Саме це й мають на увазі, коли кажуть, що границя переводить нас від середнього до локального.</p>
+  </div>
+</section>
+
+<!-- ================= 5. ПРИКЛАДНІ ================= -->
+<section class="panel" id="p-applied">
+  <h2>Як границі працюють у прикладних задачах</h2>
+  <p class="lead">У прикладних задачах границя рідко «обчислюється заради відповіді». Частіше вона задає модель (неперервні відсотки, гранична швидкість), обґрунтовує наближення (малі кути) або показує межі обчислень (чисельне диференціювання). Змінюйте параметри — усі розрахунки перераховуються миттєво.</p>
+
+  <div class="card app">
+    <h3><span class="num">1</span>Фінанси: неперервне нарахування відсотків і число e</h3>
+    <span class="pill">друга чудова границя</span><span class="pill">границя послідовності</span>
+    <div class="app-grid">
+      <div class="controls prose">
+        <p>Банк нараховує \(r\) річних, розбиваючи рік на \(n\) періодів. За \(T\) років внесок \(P\) перетворюється на \(P\left(1+\frac rn\right)^{nT}\). Чим частіше нарахування, тим більша сума — але зростання не безмежне:</p>
+        \[\lim_{n\to\infty}P\left(1+\frac rn\right)^{nT}=P\,e^{rT}.\]
+        <div class="row">
+          <div><label class="lbl" for="a1-P">P, грн</label><input id="a1-P" type="number" value="10000"></div>
+          <div><label class="lbl" for="a1-r">r, %</label><input id="a1-r" type="number" value="20"></div>
+          <div><label class="lbl" for="a1-T">T, років</label><input id="a1-T" type="number" value="1"></div>
+        </div>
+        <div class="result" id="a1-res"></div>
+        <p class="note">Формулу \(Pe^{rt}\) використовують у фінансовій математиці для дисконтування, у біології — для неперервного росту популяцій, у фізиці — для радіоактивного розпаду (з від’ємним \(r\)).</p>
+      </div>
+      <div>
+        <div class="plot-wrap short"><canvas id="a1-canvas" aria-label="Сума залежно від кількості нарахувань"></canvas></div>
+        <div style="overflow-x:auto;margin-top:12px"><table class="data"><thead><tr><th>нарахування</th><th>n</th><th>сума</th><th>до границі</th></tr></thead><tbody id="a1-tbl"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card app">
+    <h3><span class="num">2</span>Механіка: гранична швидкість падіння парашутиста</h3>
+    <span class="pill">границя при t → +∞</span><span class="pill">«ε–T» замість «ε–δ»</span>
+    <div class="app-grid">
+      <div class="controls prose">
+        <p>Тіло масою \(m\) падає, і сила опору повітря пропорційна швидкості: \(m\dot v=mg-kv\). Розв’язок \(v(t)=\frac{mg}{k}\left(1-e^{-kt/m}\right)\) ніколи не досягає значення \(\frac{mg}{k}\), але необмежено до нього наближається:</p>
+        \[v_\infty=\lim_{t\to+\infty}v(t)=\frac{mg}{k}.\]
+        <p>Означення границі тут має практичний зміст: задавши допустиму похибку \(\varepsilon\), знаходимо момент \(T(\varepsilon)\), після якого швидкість вважають сталою.</p>
+        <div class="row">
+          <div><label class="lbl" for="a2-m">m, кг</label><input id="a2-m" type="number" value="80"></div>
+          <div><label class="lbl" for="a2-k">k, кг/с</label><input id="a2-k" type="number" value="15"></div>
+        </div>
+        <label class="lbl" for="a2-eps">ε = <span id="a2-eps-val"></span> м/с</label>
+        <input type="range" id="a2-eps" min="-2" max="1" step="0.01" value="-0.3">
+        <div class="result" id="a2-res"></div>
+      </div>
+      <div><div class="plot-wrap mid"><canvas id="a2-canvas" aria-label="Швидкість падіння"></canvas></div>
+        <p class="hint">Так само поводяться заряд конденсатора в RC-колі, температура тіла, що остигає (закон Ньютона), концентрація ліків у крові при постійному введенні.</p></div>
+    </div>
+  </div>
+
+  <div class="card app">
+    <h3><span class="num">3</span>Фізика коливань: малі кути і перша чудова границя</h3>
+    <span class="pill">\(\lim\limits_{x\to0}\frac{\sin x}{x}=1\)</span><span class="pill">еквівалентні нескінченно малі</span>
+    <div class="app-grid">
+      <div class="controls prose">
+        <p>Рівняння маятника \(\ddot\varphi+\frac gl\sin\varphi=0\) не розв’язується в елементарних функціях. Але оскільки \(\frac{\sin\varphi}{\varphi}\to1\), при малих кутах \(\sin\varphi\approx\varphi\), і рівняння стає лінійним, з відомим періодом \(T_0=2\pi\sqrt{l/g}\). Наскільки «малим» має бути кут? Відповідь дає числове значення відношення.</p>
+        <p>Малюнок ліворуч — геометричне доведення: для \(0<\varphi<\frac\pi2\) маємо \(\sin\varphi<\varphi<\operatorname{tg}\varphi\), звідки \(\cos\varphi<\frac{\sin\varphi}{\varphi}<1\), і за теоремою про двох поліцейських відношення прямує до 1.</p>
+        <label class="lbl" for="a3-phi">Амплітуда φ = <span id="a3-phi-val"></span></label>
+        <input type="range" id="a3-phi" min="1" max="80" step="1" value="35">
+        <div class="result" id="a3-res"></div>
+      </div>
+      <div>
+        <div class="split">
+          <div class="plot-wrap short"><canvas id="a3-geo" aria-label="Дуга, синус і тангенс"></canvas></div>
+          <div class="plot-wrap short"><canvas id="a3-canvas" aria-label="Графік sin φ / φ"></canvas></div>
+        </div>
+        <p class="hint">Те саме наближення лежить в основі параксіальної оптики (формула тонкої лінзи), розрахунку дифракції та «правила малих кутів» в астрономії й геодезії.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card app">
+    <h3><span class="num">4</span>Обчислення та комп’ютерний зір: чисельна похідна</h3>
+    <span class="pill">границя «в комп’ютері»</span><span class="pill">машинна точність</span>
+    <div class="app-grid">
+      <div class="controls prose">
+        <p>Комп’ютер не може «перейти до границі» — він обчислює різницеве відношення при конкретному \(h\):</p>
+        \[f'(x)\approx\frac{f(x+h)-f(x)}{h},\qquad f'(x)\approx\frac{f(x+h)-f(x-h)}{2h}.\]
+        <p>Математично похибка прямує до нуля при \(h\to0\) (як \(O(h)\) та \(O(h^2)\)). Але числа зберігаються з відносною точністю \(\varepsilon_{\text{маш}}\approx2{,}2\cdot10^{-16}\), і при малих \(h\) різниця \(f(x+h)-f(x)\) втрачає значущі цифри: похибка округлення росте як \(\varepsilon_{\text{маш}}/h\). Тому графік похибки має форму літери V, а найкраще \(h\) — близько \(\sqrt{\varepsilon_{\text{маш}}}\approx10^{-8}\) (для центральної різниці \(\approx10^{-5}\)).</p>
+        <div class="row">
+          <div><label class="lbl" for="a4-f">f(x)</label><input id="a4-f" type="text" value="sin(x)" spellcheck="false"></div>
+          <div style="flex:.45"><label class="lbl" for="a4-x">x</label><input id="a4-x" type="text" value="1"></div>
+        </div>
+        <div class="preview" id="a4-f-prev"></div>
+        <div class="result" id="a4-res"></div>
+        <p class="note">У комп’ютерному зорі зображення — це функція яскравості \(I(x,y)\) на сітці пікселів, де найменше можливе \(h\) дорівнює одному пікселю. Оператори Собеля чи Шарра, що виділяють контури, — це саме різницеві наближення часткових похідних, тобто «дискретні» версії границі \(\frac{\Delta I}{\Delta x}\). Розуміння того, чим скінченна різниця відрізняється від границі, пояснює, навіщо зображення спочатку згладжують (фільтр Гаусса) і чому градієнти чутливі до шуму.</p>
+      </div>
+      <div><div class="plot-wrap mid"><canvas id="a4-canvas" aria-label="Похибка чисельної похідної в логарифмічному масштабі"></canvas></div>
+        <div class="legend"><span><i style="background:#a87d2c"></i>права різниця, O(h)</span><span><i style="background:#345a53"></i>центральна різниця, O(h²)</span></div>
+        <p class="hint">Обидві осі логарифмічні. Праворуч від мінімуму домінує похибка формули, ліворуч — похибка округлення.</p></div>
+    </div>
+  </div>
+
+  <div class="card app">
+    <h3><span class="num">5</span>Геометрія: метод Архімеда і площа круга</h3>
+    <span class="pill">границя послідовності</span><span class="pill">\(\frac{\sin x}{x}\to1\)</span>
+    <div class="app-grid">
+      <div class="controls prose">
+        <p>Площу криволінійної фігури визначають як границю площ простих фігур. Правильний \(n\)-кутник, вписаний у коло радіуса 1, має площу</p>
+        \[S_n=\frac n2\sin\frac{2\pi}{n}=\pi\cdot\frac{\sin(2\pi/n)}{2\pi/n}\ \xrightarrow[n\to\infty]{}\ \pi,\]
+        <p>і це — знову перша чудова границя. Архімед, подвоюючи кількість сторін до 96, отримав оцінку \(3\frac{10}{71}<\pi<3\frac17\). Та сама ідея — наближати складне простим і переходити до границі — лежить в основі означення визначеного інтеграла, довжини дуги та площі поверхні.</p>
+        <label class="lbl" for="a5-n">Кількість сторін n = <span id="a5-n-val"></span></label>
+        <input type="range" id="a5-n" min="0.477" max="2.3" step="0.001" value="0.778">
+        <div class="result" id="a5-res"></div>
+      </div>
+      <div><div class="split">
+        <div class="plot-wrap short"><canvas id="a5-geo" aria-label="Вписаний многокутник"></canvas></div>
+        <div class="plot-wrap short"><canvas id="a5-canvas" aria-label="Площа многокутника залежно від n"></canvas></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 6. ТЕОРІЯ ================= -->
+<section class="panel" id="p-theory">
+  <h2>Коротка теоретична довідка</h2>
+  <div class="theory">
+    <nav class="toc card" aria-label="Зміст довідки">
+      <a href="#" data-target="t1">1. Окіл і гранична точка</a>
+      <a href="#" data-target="t2">2. Означення Коші</a>
+      <a href="#" data-target="t3">3. Означення Гейне</a>
+      <a href="#" data-target="t4">4. Заперечення означення</a>
+      <a href="#" data-target="t5">5. Однобічні границі</a>
+      <a href="#" data-target="t6">6. Нескінченність</a>
+      <a href="#" data-target="t7">7. Критерій Коші</a>
+      <a href="#" data-target="t8">8. Властивості границь</a>
+      <a href="#" data-target="t9">9. Чудові границі</a>
+      <a href="#" data-target="t10">10. Еквівалентні нескінченно малі</a>
+      <a href="#" data-target="t11">11. Невизначеності</a>
+      <a href="#" data-target="t12">12. Узагальнення: границя за базою</a>
+    </nav>
+    <div class="prose">
+      <section id="t1"><h3>1. Окіл, проколотий окіл, гранична точка</h3>
+        <p>Нехай \(f\colon D\to\mathbb R\), \(D\subset\mathbb R\). δ-околом точки \(x_0\) називають інтервал \(U_\delta(x_0)=(x_0-\delta,\,x_0+\delta)\), а <em>проколотим</em> δ-околом — той самий інтервал без центра:</p>
+        \[\mathring U_\delta(x_0)=\{x\in\mathbb R:\ 0<|x-x_0|<\delta\}.\]
+        <p>Точку \(x_0\) називають <em>граничною</em> для множини \(D\), якщо кожен її проколотий окіл містить точки з \(D\). Саме в граничних точках області визначення має сенс говорити про границю функції. Сама точка \(x_0\) може й не належати \(D\): границя описує поведінку функції <em>поблизу</em> точки, а не в ній.</p>
+      </section>
+      <section id="t2"><h3>2. Означення Коші (мовою «ε–δ»)</h3>
+        <div class="def"><span class="tag">Означення 1</span>Число \(A\) називають границею функції \(f\) у точці \(x_0\) (граничній для \(D\)), якщо
+          \[\forall\varepsilon>0\ \ \exists\delta>0\ \ \forall x\in D:\quad 0<|x-x_0|<\delta\ \Rightarrow\ |f(x)-A|<\varepsilon .\]
+          Позначення: \(\lim\limits_{x\to x_0}f(x)=A\) або \(f(x)\to A\) при \(x\to x_0\).</div>
+        <p>Мовою околів: для кожного ε-околу числа \(A\) існує проколотий δ-окіл точки \(x_0\), який функція відображає в цей ε-окіл: \(f\big(\mathring U_\delta(x_0)\cap D\big)\subset U_\varepsilon(A)\). Число \(\delta\), взагалі кажучи, залежить від \(\varepsilon\) (і від точки \(x_0\)), тому іноді пишуть \(\delta=\delta(\varepsilon)\).</p>
+        <div class="logo-note"><img data-logo alt=""><div>Чотири символи на емблемі кафедри фундаментальної математики — \(\forall\), \(\varepsilon\), \(\exists\), \(\delta\) — це «абетка» саме цього означення: зелений колір символізує класну дошку, золотий — мудрість.</div></div>
+        <p><b>Приклад.</b> Доведемо, що \(\lim_{x\to2}(3x-1)=5\). Маємо \(|f(x)-5|=3|x-2|\). Нерівність \(3|x-2|<\varepsilon\) виконується при \(|x-2|<\varepsilon/3\), тож можна взяти \(\delta=\varepsilon/3\).</p>
+      </section>
+      <section id="t3"><h3>3. Означення Гейне та еквівалентність</h3>
+        <div class="def"><span class="tag">Означення 2</span>\(\lim\limits_{x\to x_0}f(x)=A\), якщо для довільної послідовності \((x_n)\subset D\setminus\{x_0\}\), \(x_n\to x_0\), виконується \(f(x_n)\to A\).</div>
+        <div class="def thm"><span class="tag">Теорема 1 (про еквівалентність)</span>Означення Коші та Гейне еквівалентні.</div>
+        <p><b>Ідея доведення.</b> Коші ⇒ Гейне: за \(\varepsilon\) беремо \(\delta\) з означення Коші; оскільки \(x_n\to x_0\) і \(x_n\neq x_0\), то починаючи з деякого номера \(0<|x_n-x_0|<\delta\), а отже \(|f(x_n)-A|<\varepsilon\). Гейне ⇒ Коші — від супротивного: якщо для деякого \(\varepsilon_0\) жодне \(\delta=\frac1n\) не підходить, то знайдуться \(x_n\) з \(0<|x_n-x_0|<\frac1n\) і \(|f(x_n)-A|\ge\varepsilon_0\); тоді \(x_n\to x_0\), але \(f(x_n)\not\to A\) — суперечність.</p>
+        <p>Означення Гейне дає зручний спосіб доводити <em>неіснування</em> границі: досить знайти дві послідовності \(x_n\to x_0\), \(x_n'\to x_0\), для яких \(\lim f(x_n)\neq\lim f(x'_n)\), або одну, для якої \(f(x_n)\) не має границі.</p>
+      </section>
+      <section id="t4"><h3>4. Заперечення означення</h3>
+        <p>Щоб довести, що \(A\) <em>не</em> є границею, треба побудувати заперечення: квантори змінюються на протилежні, а імплікація — на кон’юнкцію з запереченням висновку:</p>
+        \[\lim_{x\to x_0}f(x)\neq A\iff \exists\varepsilon_0>0\ \ \forall\delta>0\ \ \exists x\in D:\quad 0<|x-x_0|<\delta\ \ \text{і}\ \ |f(x)-A|\ge\varepsilon_0 .\]
+        <p>На вкладці «Означення Коші» це видно як червоні ділянки графіка, що не зникають за жодного \(\delta\).</p>
+      </section>
+      <section id="t5"><h3>5. Однобічні границі</h3>
+        <div class="def"><span class="tag">Означення 3</span>
+          \[f(x_0-0)=\lim_{x\to x_0-0}f(x)=A\iff\forall\varepsilon>0\ \exists\delta>0\ \forall x\in D:\ x_0-\delta\lt x\lt x_0\Rightarrow|f(x)-A|<\varepsilon;\]
+          \[f(x_0+0)=\lim_{x\to x_0+0}f(x)=A\iff\forall\varepsilon>0\ \exists\delta>0\ \forall x\in D:\ x_0\lt x\lt x_0+\delta\Rightarrow|f(x)-A|<\varepsilon .\]</div>
+        <div class="def thm"><span class="tag">Теорема 2</span>Якщо \(x_0\) — гранична точка для \(D\) як зліва, так і справа, то \(\lim\limits_{x\to x_0}f(x)=A\) тоді й лише тоді, коли \(f(x_0-0)=f(x_0+0)=A\).</div>
+        <p>Наприклад, для \(\operatorname{sign}x\) маємо \(f(0-0)=-1\), \(f(0+0)=1\), тож границі в нулі немає. Для монотонної функції однобічні границі існують у кожній внутрішній точці (вони дорівнюють відповідним точним межам).</p>
+      </section>
+      <section id="t6"><h3>6. Нескінченні границі та границі на нескінченності</h3>
+        <p>Усі варіанти зручно описувати через околи нескінченно віддалених точок: \(U_E(+\infty)=(E,+\infty)\), \(U_E(-\infty)=(-\infty,-E)\), \(U_E(\infty)=\{|y|>E\}\). Тоді, наприклад,</p>
+        \[\lim_{x\to x_0}f(x)=+\infty\iff\forall E>0\ \exists\delta>0\ \forall x\in D:\ 0<|x-x_0|<\delta\Rightarrow f(x)>E,\]
+        \[\lim_{x\to+\infty}f(x)=A\iff\forall\varepsilon>0\ \exists M\ \forall x\in D:\ x>M\Rightarrow|f(x)-A|<\varepsilon,\]
+        \[\lim_{x\to-\infty}f(x)=-\infty\iff\forall E>0\ \exists M\ \forall x\in D:\ x<-M\Rightarrow f(x)<-E .\]
+        <p>Загальна схема: \(\lim\limits_{x\to a}f(x)=b\iff\) для кожного околу \(V\) точки \(b\) існує окіл \(U\) точки \(a\) такий, що \(f(\mathring U\cap D)\subset V\). Геометрично скінченна границя на нескінченності — це горизонтальна асимптота, а нескінченна границя в точці — вертикальна.</p>
+      </section>
+      <section id="t7"><h3>7. Критерій Коші існування границі</h3>
+        <div class="def thm"><span class="tag">Теорема 3 (критерій Коші)</span>Скінченна границя \(\lim\limits_{x\to x_0}f(x)\) існує тоді й лише тоді, коли
+          \[\forall\varepsilon>0\ \exists\delta>0\ \forall x',x''\in\mathring U_\delta(x_0)\cap D:\quad |f(x')-f(x'')|<\varepsilon .\]</div>
+        <p>Перевага критерію в тому, що він не вимагає знати значення границі заздалегідь: досить, щоб значення функції «злипалися» поблизу \(x_0\). Для \(\sin\frac1x\) він порушується: у будь-якому околі нуля є точки зі значеннями \(1\) і \(-1\).</p>
+      </section>
+      <section id="t8"><h3>8. Основні властивості границь</h3>
+        <p>Нижче \(\lim f=A\), \(\lim g=B\) при \(x\to x_0\), де \(A,B\in\mathbb R\).</p>
+        <div class="def thm"><span class="tag">Теорема 4</span>
+          <p><b>Єдиність.</b> Функція не може мати двох різних границь у точці.</p>
+          <p><b>Локальна обмеженість.</b> Функція, що має скінченну границю, обмежена в деякому проколотому околі \(x_0\).</p>
+          <p><b>Збереження знака.</b> Якщо \(A>0\), то \(f(x)>0\) у деякому проколотому околі \(x_0\) (аналогічно для \(A<0\)).</p>
+          <p><b>Арифметичні дії.</b> \(\lim(f\pm g)=A\pm B,\quad \lim(f\cdot g)=A\cdot B,\quad \lim\frac fg=\frac AB\ \ (B\neq0)\).</p>
+          <p><b>Граничний перехід у нерівностях.</b> Якщо \(f(x)\le g(x)\) у проколотому околі, то \(A\le B\) (строга нерівність може перетворитися на нестрогу!).</p>
+          <p><b>Теорема про проміжну функцію («про двох поліцейських»).</b> Якщо \(f(x)\le h(x)\le g(x)\) у проколотому околі і \(A=B\), то \(\lim h=A\).</p>
+          <p><b>Границя композиції.</b> Якщо \(\lim\limits_{x\to x_0}g(x)=y_0\), \(\lim\limits_{y\to y_0}f(y)=A\) і \(g(x)\neq y_0\) у деякому проколотому околі \(x_0\) (або \(f\) неперервна в \(y_0\)), то \(\lim\limits_{x\to x_0}f(g(x))=A\).</p>
+        </div>
+      </section>
+      <section id="t9"><h3>9. Чудові границі та наслідки з них</h3>
+        <div class="def thm"><span class="tag">Перша чудова границя</span>\[\lim_{x\to0}\frac{\sin x}{x}=1 .\]
+          Доводиться з нерівностей \(\sin x\lt x<\operatorname{tg}x\) при \(0\lt x<\frac\pi2\) (порівняння площ трикутників і сектора) і теореми про двох поліцейських.</div>
+        <div class="def thm"><span class="tag">Друга чудова границя</span>\[\lim_{x\to\infty}\left(1+\frac1x\right)^x=e,\qquad \lim_{t\to0}(1+t)^{1/t}=e .\]</div>
+        <p>Наслідки, які постійно використовуються в обчисленнях (\(a>0\), \(\alpha\in\mathbb R\)):</p>
+        \[\lim_{x\to0}\frac{\ln(1+x)}{x}=1,\quad \lim_{x\to0}\frac{e^x-1}{x}=1,\quad \lim_{x\to0}\frac{a^x-1}{x}=\ln a,\quad \lim_{x\to0}\frac{(1+x)^\alpha-1}{x}=\alpha,\quad \lim_{x\to0}\frac{1-\cos x}{x^2}=\frac12 .\]
+      </section>
+      <section id="t10"><h3>10. Нескінченно малі та еквівалентності</h3>
+        <p>Функцію \(\alpha(x)\) називають нескінченно малою при \(x\to x_0\), якщо \(\alpha(x)\to0\). Нескінченно малі \(\alpha\) і \(\beta\) <em>еквівалентні</em> (\(\alpha\sim\beta\)), якщо \(\lim\frac{\alpha}{\beta}=1\); пишуть \(\alpha=o(\beta)\), якщо \(\lim\frac\alpha\beta=0\). Таблиця еквівалентностей при \(x\to0\):</p>
+        <table class="plain">
+          <tr><td>\(\sin x\sim x\)</td><td>\(\operatorname{tg}x\sim x\)</td><td>\(\arcsin x\sim x\)</td><td>\(\operatorname{arctg}x\sim x\)</td></tr>
+          <tr><td>\(1-\cos x\sim\frac{x^2}{2}\)</td><td>\(\ln(1+x)\sim x\)</td><td>\(e^x-1\sim x\)</td><td>\(a^x-1\sim x\ln a\)</td></tr>
+          <tr><td colspan="4">\((1+x)^\alpha-1\sim\alpha x\)</td></tr>
+        </table>
+        <div class="def thm"><span class="tag">Теорема 5 (заміна на еквівалентні)</span>Якщо \(\alpha\sim\alpha_1\), \(\beta\sim\beta_1\), то \(\lim\frac{\alpha}{\beta}=\lim\frac{\alpha_1}{\beta_1}\) (обидві границі існують або не існують одночасно). Заміна допустима в <em>множниках і дільниках</em>, але не в доданках: \(\lim\limits_{x\to0}\frac{\operatorname{tg}x-\sin x}{x^3}=\frac12\), а «заміна» \(\operatorname{tg}x\) і \(\sin x\) на \(x\) дала б 0.</div>
+      </section>
+      <section id="t11"><h3>11. Невизначеності</h3>
+        <p>Арифметичні теореми не застосовні, коли виникає одна з семи невизначеностей:</p>
+        \[\frac00,\qquad\frac\infty\infty,\qquad 0\cdot\infty,\qquad\infty-\infty,\qquad 1^\infty,\qquad 0^0,\qquad\infty^0 .\]
+        <p>Їх «розкривають» тотожними перетвореннями (скорочення, множення на спряжений вираз), заміною на еквівалентні, зведенням до чудових границь, а пізніше — за правилом Лопіталя й формулою Тейлора. Показникові невизначеності зводять до \(0\cdot\infty\) через \(u^v=e^{v\ln u}\).</p>
+      </section>
+      <section id="t12"><h3>12. Узагальнення: границя за базою (фільтром)</h3>
+        <p>Усі розглянуті види границь — у точці, однобічні, на нескінченності, а також границя послідовності — є окремими випадками однієї конструкції. Сукупність \(\mathcal B\) непорожніх підмножин \(D\) називають <em>базою</em>, якщо для будь-яких \(B_1,B_2\in\mathcal B\) знайдеться \(B_3\in\mathcal B\), \(B_3\subset B_1\cap B_2\).</p>
+        <div class="def"><span class="tag">Означення 4</span>\[\lim_{\mathcal B}f=A\iff\forall\varepsilon>0\ \exists B\in\mathcal B:\ f(B)\subset(A-\varepsilon,\,A+\varepsilon).\]</div>
+        <p>Беручи як \(\mathcal B\) сукупність проколотих околів \(\{\mathring U_\delta(x_0)\cap D\}\), лівих півоколів \(\{(x_0-\delta,x_0)\cap D\}\), променів \(\{(M,+\infty)\cap D\}\) чи «хвостів» \(\{\{n,n+1,\dots\}\}\) натурального ряду, отримуємо відповідно границю в точці, лівобічну границю, границю при \(x\to+\infty\) та границю послідовності. Властивості з п. 8 доводяться один раз — для довільної бази. Цей погляд веде далі, до границь за фільтрами та ідеалами, зокрема до статистичної збіжності, де «хвости» замінюють множинами, доповнення яких мають нульову асимптотичну щільність.</p>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 7. ПРО ПОСІБНИК ================= -->
+<section class="panel" id="p-about">
+  <h2>Як користуватися посібником</h2>
+  <div class="split">
+    <div class="card prose">
+      <h3>Порядок роботи</h3>
+      <p>Вкладки впорядковано від означень до застосувань. Рекомендуємо почати з <a href="#" data-goto="cauchy">означення Коші</a>: оберіть готовий приклад, рухайте повзунок ε і стежте, як змінюється δ. Потім на вкладці <a href="#" data-goto="heine">Гейне</a> подивіться ті самі функції «очима послідовностей», а на вкладці <a href="#" data-goto="onesided">однобічних границь</a> — функції з розривами та асимптотами. Вкладки «Зміст» і «Прикладні задачі» показують, навіщо все це потрібно. <a href="#" data-goto="theory">Теоретична довідка</a> містить означення й теореми для повторення.</p>
+      <p>Числа, які обчислює програма (оцінки границь, δ, M), — <em>чисельні наближення</em>: вони ілюструють означення, але не замінюють доведення. Програма може помилитися на «підступних» функціях — і це теж добрий привід для обговорення на занятті.</p>
+      <h3>Керування графіками</h3>
+      <table class="plain">
+        <tr><td>Перетягування мишею / пальцем</td><td>зсув області перегляду</td></tr>
+        <tr><td>Колесо миші</td><td>масштаб відносно курсора</td></tr>
+        <tr><td><kbd>Shift</kbd> + колесо / <kbd>Alt</kbd> + колесо</td><td>масштаб лише по x / лише по y</td></tr>
+        <tr><td>Подвійне клацання, кнопка ⌂</td><td>початковий вигляд</td></tr>
+        <tr><td>Кнопки + та −</td><td>масштаб (зручно на сенсорних екранах)</td></tr>
+        <tr><td><kbd>Enter</kbd> у полі введення</td><td>негайне оновлення</td></tr>
+      </table>
+    </div>
+    <div class="card prose">
+      <h3>Як вводити вирази</h3>
+      <table class="plain">
+        <tr><th>Що</th><th>Як записати</th></tr>
+        <tr><td>Дії</td><td><code>+  -  *  /  ^</code>; множення можна пропускати: <code>2x</code>, <code>3sin(x)</code>, <code>x(x+1)</code></td></tr>
+        <tr><td>Десяткові дроби</td><td><code>0.5</code> або <code>0,5</code>; <code>1e-3</code> = 0,001</td></tr>
+        <tr><td>Сталі</td><td><code>pi</code> (або <code>π</code>), <code>e</code></td></tr>
+        <tr><td>Тригонометрія</td><td><code>sin cos tg (tan) ctg (cot) arcsin arccos arctg (arctan) arcctg</code></td></tr>
+        <tr><td>Гіперболічні</td><td><code>sh ch th</code> (або <code>sinh cosh tanh</code>)</td></tr>
+        <tr><td>Показник, логарифми</td><td><code>exp(x)</code> = eˣ, <code>ln(x)</code>, <code>lg(x)</code> = log₁₀ x</td></tr>
+        <tr><td>Корені, модуль</td><td><code>sqrt(x)</code>, <code>cbrt(x)</code>, <code>x^(1/3)</code>, <code>abs(x)</code></td></tr>
+        <tr><td>Інші</td><td><code>sign(x)</code>, <code>floor(x)</code> = [x], <code>ceil(x)</code>, <code>frac(x)</code> = {x}</td></tr>
+        <tr><td>Степінь функції</td><td><code>sin^2(x)</code> = sin²x</td></tr>
+      </table>
+      <p class="note">Аргументи функцій завжди беруть у дужки: <code>sin(2x)</code>, а не <code>sin2x</code>. Змінна — <code>x</code> (у задачі про рух — <code>t</code>, у послідовностях — <code>n</code>). У полях для точок можна писати вирази: <code>pi/2</code>, <code>sqrt(2)</code>. Під кожним полем вираз показано у вигляді формули LaTeX — так зручно перевірити, чи правильно його прочитано.</p>
+    </div>
+  </div>
+  <div class="card prose" style="margin-top:22px">
+    <h3>Для викладачів: як доповнювати посібник</h3>
+    <p>Посібник — один самодостатній HTML-файл без серверної частини; його можна відкрити локально, розмістити на GitHub Pages, сайті кафедри чи в Google Classroom. Формули відображаються бібліотекою MathJax 3, яка завантажується з CDN (для формул потрібен інтернет; уся інтерактивна частина працює й без нього).</p>
+    <p>Код у файлі розділено на пронумеровані блоки з коментарями. Щоб додати власний приклад, достатньо дописати рядок до одного з масивів <code>CAUCHY_PRESETS</code>, <code>HEINE_PRESETS</code>, <code>ONESIDED_PRESETS</code>, <code>INF_PRESETS</code> — за зразком наявних (поле <code>w</code> задає половину ширини початкового вікна графіка). Назву кафедри, версію, рік і список укладачів змінюють в об’єкті <code>CONFIG</code> на початку скрипту; кольори оформлення — у змінних CSS <code>--green</code>, <code>--gold</code> на початку стилів. Тексти пояснень і довідки — звичайна HTML-розмітка з формулами LaTeX у дужках <code>\( … \)</code> та <code>\[ … \]</code>.</p>
+    <p>Ідеї для наступних версій і студентських проєктів: вкладка з границями послідовностей, неперервність і рівномірна неперервність (де δ не залежить від точки), правило Лопіталя, порівняння швидкостей зростання функцій.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="in">
+    <img data-logo alt="">
+    <div><span id="authors"></span>© <span data-cfg="year"></span> <span data-cfg="department"></span>, <span data-cfg="university"></span> · версія <span data-cfg="version"></span><br>
+    <span style="opacity:.75">Матеріал призначено для навчального процесу; його можна вільно використовувати та доповнювати.</span></div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+/* =====================================================================
+   Границя функції однієї змінної — інтерактивний посібник
+   Кафедра фундаментальної математики
+   ХНУ імені В. Н. Каразіна
+   ---------------------------------------------------------------------
+   Структура коду:
+     0. CONFIG                — назви, версія, рік (редагуйте тут)
+     1. Утиліти та кольори
+     2. MathExpr              — розбір виразів, обчислення, перетворення в LaTeX
+     3. Числові методи        — оцінка границь, пошук δ і M
+     4. Plot                  — універсальний графік на canvas (масштаб, зсув)
+     5. Вкладки: Коші, Гейне, Однобічні/∞, Зміст, Прикладні задачі
+     6. Навігація між вкладками
+   Готові приклади кожної вкладки зібрано в масивах *_PRESETS — їх
+   можна доповнювати, не змінюючи решти коду.
+   ===================================================================== */
+
+/* ---------- 0. CONFIG ---------- */
+const CONFIG = {
+  title: 'Границя функції однієї змінної',
+  department: 'Кафедра фундаментальної математики',
+  university: 'Харківський національний університет імені В. Н. Каразіна',
+  version: '1.0',
+  year: 2026,
+  authors: ''            // за бажання: прізвища авторів/укладачів
+};
+
+/* ---------- 1. Утиліти ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const C = { green:'#345a53', greenD:'#26443e', gold:'#ca9d48', goldD:'#a87d2c', red:'#b5483b',
+            blue:'#3f6b9a', muted:'#93a39f', ink:'#1e2b28', light:'#e9d3a6' };
+const SUP = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+const sup = s => String(s).split('').map(ch => SUP[ch] || ch).join('');
+function trimNum(s){ return (s.includes('.') && !s.includes('e')) ? s.replace(/0+$/,'').replace(/\.$/,'') : s; }
+/** Форматування числа для показу (десяткова кома, ∞, степені 10). */
+function fmt(v, sig = 6){
+  if (v === null || v === undefined || Number.isNaN(v)) return 'не визначено';
+  if (v === Infinity) return '+∞';
+  if (v === -Infinity) return '−∞';
+  if (v === 0 || Math.abs(v) < 1e-14) return '0';
+  const a = Math.abs(v); let s;
+  if (a >= 1e6 || a < 1e-4){
+    const e = Math.floor(Math.log10(a));
+    const m = v / Math.pow(10, e);
+    s = trimNum(m.toPrecision(Math.min(sig, 4))) + '·10' + sup(e);
+  } else s = trimNum(v.toPrecision(sig));
+  return s.replace('.', ',').replace(/^-/, '−');
+}
+/** Число для поля введення (з крапкою). */
+const fmtInput = v => String(+v.toPrecision(10));
+function fmtTick(x, step){
+  if (Math.abs(x) < step * 1e-6) return '0';
+  if (step < 1e-4 || Math.abs(x) >= 1e5) return fmt(x, 3);
+  const dec = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+  return x.toFixed(dec).replace('.', ',').replace('-', '−');
+}
+function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+const ease = k => k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
+
+/* MathJax: безпечне перерендерення фрагментів */
+let mjChain = Promise.resolve();
+function typeset(els){
+  if (!window.MathJax || !MathJax.typesetPromise) return;
+  mjChain = mjChain.then(() => { MathJax.typesetClear(els); return MathJax.typesetPromise(els); })
+                   .catch(e => console.warn(e));
+}
+function showTex(el, tex){ el.classList.remove('err'); el.innerHTML = '\\(' + tex + '\\)'; typeset([el]); }
+function showErr(el, msg){ el.classList.add('err'); el.textContent = '⚠ ' + msg; }
+
+/* Розпізнавання «гарних» констант у числових відповідях */
+const KNOWN = [['π',Math.PI],['π/2',Math.PI/2],['π/4',Math.PI/4],['e',Math.E],['1/e',1/Math.E],['ln 2',Math.LN2],
+  ['√2',Math.SQRT2],['1/2',.5],['1/3',1/3],['2/3',2/3],['1/6',1/6],['e²',Math.E*Math.E],['√e',Math.sqrt(Math.E)]];
+function recognize(v){
+  if (!isFinite(v)) return '';
+  for (const [n, c] of KNOWN){
+    if (Math.abs(Math.abs(v) - c) < 2e-5 * c) return ' (≈ ' + (v < 0 ? '−' : '') + n + ')';
+  }
+  return '';
+}
+
+/* ---------- 2. MathExpr: розбір і обчислення виразів ---------- */
+const MathExpr = (() => {
+  const F = (f, tex, kind = 'std') => ({ f, tex, kind });
+  const FUNCS = {
+    sin:F(Math.sin,'\\sin'), cos:F(Math.cos,'\\cos'),
+    tan:F(Math.tan,'\\operatorname{tg}'), tg:F(Math.tan,'\\operatorname{tg}'),
+    cot:F(x=>1/Math.tan(x),'\\operatorname{ctg}'), ctg:F(x=>1/Math.tan(x),'\\operatorname{ctg}'),
+    arcsin:F(Math.asin,'\\arcsin'), asin:F(Math.asin,'\\arcsin'),
+    arccos:F(Math.acos,'\\arccos'), acos:F(Math.acos,'\\arccos'),
+    arctan:F(Math.atan,'\\operatorname{arctg}'), arctg:F(Math.atan,'\\operatorname{arctg}'), atan:F(Math.atan,'\\operatorname{arctg}'),
+    arcctg:F(x=>Math.PI/2-Math.atan(x),'\\operatorname{arcctg}'),
+    sinh:F(Math.sinh,'\\operatorname{sh}'), sh:F(Math.sinh,'\\operatorname{sh}'),
+    cosh:F(Math.cosh,'\\operatorname{ch}'), ch:F(Math.cosh,'\\operatorname{ch}'),
+    tanh:F(Math.tanh,'\\operatorname{th}'), th:F(Math.tanh,'\\operatorname{th}'),
+    exp:F(Math.exp,'','exp'), ln:F(Math.log,'\\ln'), log:F(Math.log,'\\ln'), lg:F(Math.log10,'\\lg'),
+    sqrt:F(Math.sqrt,'','sqrt'), cbrt:F(Math.cbrt,'','cbrt'), abs:F(Math.abs,'','abs'),
+    sign:F(Math.sign,'\\operatorname{sign}'), sgn:F(Math.sign,'\\operatorname{sign}'),
+    floor:F(Math.floor,'','floor'), ceil:F(Math.ceil,'','ceil'), frac:F(x=>x-Math.floor(x),'','frac')
+  };
+  const CONSTS = { pi: Math.PI, 'π': Math.PI, e: Math.E };
+
+  function tokenize(src, vars){
+    const s = String(src).replace(/\s+/g, '').replace(/[−–—]/g, '-').replace(/[·×]/g, '*')
+                         .replace(/÷/g, '/').replace(/\*\*/g, '^').replace(/\[/g, '(').replace(/\]/g, ')');
+    if (!s) throw Error('Порожній вираз');
+    const names = [...Object.keys(FUNCS), ...Object.keys(CONSTS), ...vars].sort((a, b) => b.length - a.length);
+    const out = []; let i = 0;
+    while (i < s.length){
+      const c = s[i];
+      if (/[0-9.,]/.test(c)){
+        const m = s.slice(i).match(/^(\d+([.,]\d*)?|[.,]\d+)([eE][+-]?\d+)?/);
+        if (!m) throw Error('Неправильне число біля «' + s.slice(i, i + 4) + '»');
+        out.push({ type:'num', v: parseFloat(m[0].replace(',', '.')), raw: m[0].replace(',', '.') });
+        i += m[0].length; continue;
+      }
+      if (/[a-zA-Zπ]/.test(c)){
+        const run = s.slice(i).match(/^[a-zA-Zπ]+/)[0];
+        let p = 0;
+        while (p < run.length){
+          const nm = names.find(n => run.startsWith(n, p));
+          if (!nm) throw Error('Невідоме позначення «' + run.slice(p) + '». Змінна тут: ' + vars.join(', '));
+          out.push({ type:'name', v: nm }); p += nm.length;
+        }
+        i += run.length; continue;
+      }
+      if ('+-*/^()'.includes(c)){ out.push({ type:'op', v: c }); i++; continue; }
+      if (c === '|') throw Error('Модуль записуйте як abs(…)');
+      throw Error('Неочікуваний символ «' + c + '»');
+    }
+    return out;
+  }
+
+  function parse(src, vars = ['x']){
+    const t = tokenize(src, vars); let p = 0;
+    const peek = () => t[p];
+    const isOp = v => t[p] && t[p].type === 'op' && t[p].v === v;
+    const expect = v => { if (!isOp(v)) throw Error('Очікувалося «' + v + '»'); p++; };
+    const startsFactor = () => { const k = t[p]; return k && (k.type === 'num' || k.type === 'name' || (k.type === 'op' && k.v === '(')); };
+    function expr(){ let n = term(); while (isOp('+') || isOp('-')){ const o = t[p++].v; n = { t:'bin', o, a:n, b:term() }; } return n; }
+    function term(){
+      let n = unary();
+      for (;;){
+        if (isOp('*') || isOp('/')){ const o = t[p++].v; n = { t:'bin', o, a:n, b:unary() }; }
+        else if (startsFactor()) n = { t:'bin', o:'*', a:n, b:power(), imp:true };
+        else break;
+      }
+      return n;
+    }
+    function unary(){ if (isOp('-')){ p++; return { t:'neg', a:unary() }; } if (isOp('+')){ p++; return unary(); } return power(); }
+    function power(){ const b = primary(); if (isOp('^')){ p++; return { t:'bin', o:'^', a:b, b:unary() }; } return b; }
+    function primary(){
+      const k = t[p++];
+      if (!k) throw Error('Вираз обірвано');
+      if (k.type === 'num') return { t:'num', v:k.v, raw:k.raw };
+      if (k.type === 'name'){
+        if (FUNCS[k.v]){
+          let pw = null;
+          if (isOp('^')){ p++; pw = primary(); }
+          if (!isOp('(')) throw Error('Після «' + k.v + '» потрібні дужки: ' + k.v + '(…)');
+          p++; const arg = expr(); expect(')');
+          let n = { t:'fn', f:k.v, a:arg };
+          if (pw) n = { t:'bin', o:'^', a:n, b:pw, fpow:true };
+          return n;
+        }
+        if (k.v in CONSTS) return { t:'const', v:k.v };
+        return { t:'var', v:k.v };
+      }
+      if (k.v === '('){ const n = expr(); expect(')'); return n; }
+      throw Error('Неочікуваний символ «' + k.v + '»');
+    }
+    const ast = expr();
+    if (p < t.length) throw Error('Зайвий символ «' + t[p].v + '»');
+    return ast;
+  }
+
+  /* степінь з підтримкою непарних коренів від’ємних чисел: (-8)^(1/3) = -2 */
+  function pow(a, b){
+    if (a < 0 && !Number.isInteger(b)){
+      for (const q of [3, 5, 7, 9]){
+        const k = b * q;
+        if (Math.abs(k - Math.round(k)) < 1e-9){ const r = Math.pow(-a, b); return Math.round(k) % 2 ? -r : r; }
+      }
+      return NaN;
+    }
+    return Math.pow(a, b);
+  }
+
+  function compile(n){
+    switch (n.t){
+      case 'num': { const v = n.v; return () => v; }
+      case 'const': { const v = CONSTS[n.v]; return () => v; }
+      case 'var': { const k = n.v; return s => s[k]; }
+      case 'neg': { const a = compile(n.a); return s => -a(s); }
+      case 'fn': { const a = compile(n.a), f = FUNCS[n.f].f; return s => f(a(s)); }
+      case 'bin': {
+        const a = compile(n.a), b = compile(n.b);
+        switch (n.o){
+          case '+': return s => a(s) + b(s);
+          case '-': return s => a(s) - b(s);
+          case '*': return s => a(s) * b(s);
+          case '/': return s => a(s) / b(s);
+          case '^': return s => pow(a(s), b(s));
+        }
+      }
+    }
+    throw Error('Внутрішня помилка розбору');
+  }
+
+  /* ----- перетворення дерева виразу в LaTeX ----- */
+  const prec = n => n.t === 'bin' ? ({ '+':1, '-':1, '*':2, '/':3, '^':4 })[n.o] : n.t === 'neg' ? 2 : 5;
+  const par = s => '\\left(' + s + '\\right)';
+  function tex(n){
+    switch (n.t){
+      case 'num': return n.raw.replace('.', '{,}');
+      case 'const': return n.v === 'e' ? 'e' : '\\pi';
+      case 'var': return n.v;
+      case 'neg': return '-' + (prec(n.a) <= 2 && n.a.t !== 'bin' || (n.a.t === 'bin' && prec(n.a) <= 1) || n.a.t === 'neg' ? par(tex(n.a)) : tex(n.a));
+      case 'fn': {
+        const d = FUNCS[n.f], a = tex(n.a);
+        switch (d.kind){
+          case 'exp': return 'e^{' + a + '}';
+          case 'sqrt': return '\\sqrt{' + a + '}';
+          case 'cbrt': return '\\sqrt[3]{' + a + '}';
+          case 'abs': return '\\left|' + a + '\\right|';
+          case 'floor': return '\\left\\lfloor ' + a + '\\right\\rfloor';
+          case 'ceil': return '\\left\\lceil ' + a + '\\right\\rceil';
+          case 'frac': return '\\left\\{' + a + '\\right\\}';
+        }
+        const simple = n.a.t === 'var' || n.a.t === 'const' || n.a.t === 'num';
+        return d.tex + (simple ? ' ' + a : par(a));
+      }
+      case 'bin': {
+        const A = n.a, B = n.b;
+        switch (n.o){
+          case '+': return tex(A) + '+' + (B.t === 'neg' ? par(tex(B)) : tex(B));
+          case '-': return tex(A) + '-' + (prec(B) <= 1 || B.t === 'neg' ? par(tex(B)) : tex(B));
+          case '/': return '\\dfrac{' + tex(A) + '}{' + tex(B) + '}';
+          case '*': {
+            const l = prec(A) < 2 ? par(tex(A)) : tex(A);
+            const r = (prec(B) < 2 || B.t === 'neg') ? par(tex(B)) : tex(B);
+            const dot = /^[0-9]/.test(r) || (A.t === 'num' && B.t === 'num');
+            return l + (dot ? ' \\cdot ' : ' ') + r;
+          }
+          case '^': {
+            if (A.t === 'fn' && FUNCS[A.f].kind === 'std' && n.fpow)
+              return FUNCS[A.f].tex + '^{' + tex(B) + '}' + par(tex(A.a));
+            const atom = (A.t === 'var' || A.t === 'const' || (A.t === 'num' && !A.raw.includes('.')) ||
+                          (A.t === 'fn' && ['sqrt','cbrt','abs','floor','ceil','frac'].includes(FUNCS[A.f].kind)));
+            return (atom ? tex(A) : par(tex(A))) + '^{' + tex(B) + '}';
+          }
+        }
+      }
+    }
+    return '';
+  }
+
+  /** Створює функцію однієї змінної з рядка. */
+  function make(src, v = 'x'){
+    const ast = parse(src, [v]); const c = compile(ast); const sc = {};
+    return { ast, tex: tex(ast), fn: x => { sc[v] = x; return c(sc); } };
+  }
+  /** Обчислює сталий вираз (наприклад, «pi/2» або «0,5»). */
+  function evalConst(src){
+    const v = compile(parse(src, []))({});
+    if (!isFinite(v)) throw Error('Потрібне скінченне число');
+    return v;
+  }
+  return { parse, compile, tex, make, evalConst, FUNCS };
+})();
+
+/* ---------- 3. Числові методи ---------- */
+/** Округлення до «гарного» числа в межах похибки tol. */
+function snap(v, tol){
+  tol = Math.max(tol, 1e-12 * Math.max(1, Math.abs(v)));
+  for (let k = 0; k <= 10; k++){
+    const p = Math.pow(10, k), c = Math.round(v * p) / p;
+    if (Math.abs(c - v) <= tol) return c;
+  }
+  return v;
+}
+/** Аналіз «хвоста» послідовності значень: скінченна границя, ±∞, коливання або невизначеність. */
+function analyzeTail(vals){
+  const tail = vals.slice(-10);
+  const nan = tail.filter(v => Number.isNaN(v)).length;
+  if (nan >= 5) return { status:'undef' };
+  const t = tail.filter(v => !Number.isNaN(v));
+  if (t.every(v => v === Infinity || v > 1e9)) return { status:'+inf' };
+  if (t.every(v => v === -Infinity || v < -1e9)) return { status:'-inf' };
+  const fin = t.filter(isFinite);
+  if (fin.length < 5) return { status: (t.some(v => v === Infinity) && t.some(v => v === -Infinity)) ? 'osc' : 'undef' };
+  const last = fin[fin.length - 1];
+  const mn = Math.min(...fin), mx = Math.max(...fin);
+  const d = []; for (let i = 0; i + 1 < fin.length; i++) d.push(fin[i + 1] - fin[i]);
+  const mono = d.every(x => x >= 0) || d.every(x => x <= 0);
+  const scale = Math.max(1, Math.abs(last));
+  const dl = Math.abs(d[d.length - 1]);
+  if (mx - mn <= 2e-3 * scale) return { status:'finite', value: snap(last, 3 * dl) };
+  if (mono){
+    const r = dl / (Math.abs(d[0]) + 1e-300);
+    if (r > 0.8) return { status: d[d.length - 1] > 0 ? '+inf' : '-inf' };
+    return { status:'finite', value: snap(last, 3 * dl), slow:true };
+  }
+  return { status:'osc' };
+}
+/** Однобічна границя в точці x0: dir = −1 (зліва) або +1 (справа). */
+function oneSided(f, x0, dir){
+  const sc = Math.max(1, Math.abs(x0)), vals = [];
+  for (let k = 0; k <= 24; k++) vals.push(f(x0 + dir * sc * Math.pow(10, -2 - k * 4 / 24)));
+  return analyzeTail(vals);
+}
+/** Границя на нескінченності: dir = +1 (x→+∞) або −1 (x→−∞). */
+function atInfinity(f, dir){
+  const vals = [];
+  for (let k = 0; k <= 24; k++) vals.push(f(dir * Math.pow(10, 1 + k * 6 / 24)));
+  return analyzeTail(vals);
+}
+/** Двобічна границя (числова оцінка). */
+function estimateLimit(f, x0){
+  const L = oneSided(f, x0, -1), R = oneSided(f, x0, 1);
+  if (L.status === 'finite' && R.status === 'finite'){
+    if (Math.abs(L.value - R.value) <= 2e-3 * Math.max(1, Math.abs(L.value)))
+      return { status:'finite', value: snap((L.value + R.value) / 2, 1e-6 * Math.max(1, Math.abs(L.value))), L, R };
+    return { status:'differ', L, R };
+  }
+  if (L.status === 'undef' && R.status === 'finite') return { status:'finite', value:R.value, L, R, side:'right' };
+  if (R.status === 'undef' && L.status === 'finite') return { status:'finite', value:L.value, L, R, side:'left' };
+  if (L.status === R.status && (L.status === '+inf' || L.status === '-inf')) return { status:L.status, L, R };
+  return { status:'none', L, R };
+}
+function describe(st){
+  switch (st.status){
+    case 'finite': return fmt(st.value, 8) + recognize(st.value);
+    case '+inf': return '+∞';
+    case '-inf': return '−∞';
+    case 'osc': return 'не існує (коливання)';
+    case 'undef': return 'функція тут не визначена';
+    case 'differ': return 'не існує: зліва ' + describe(st.L) + ', справа ' + describe(st.R);
+    default: return 'не існує';
+  }
+}
+/* сітка відстаней від x0 (нормована на R = 1): геометрична поблизу нуля + рівномірна */
+const DELTA_GRID = (() => {
+  const a = [];
+  for (let k = 0; k <= 240; k++) a.push(1e-6 * Math.pow(1e6, k / 240));
+  for (let k = 1; k <= 2000; k++) a.push(k / 2000);
+  return a.sort((x, y) => x - y);
+})();
+/** Найбільше δ ≤ R, для якого 0<|x−x0|<δ ⇒ |f(x)−A|<ε (точки поза областю визначення пропускаються). */
+function findDelta(f, x0, A, eps, R){
+  const viol = x => { const y = f(x); return Number.isNaN(y) ? false : (!isFinite(y) || Math.abs(y - A) >= eps); };
+  const side = dir => {
+    let prev = 0;
+    for (const u of DELTA_GRID){
+      const t = u * R;
+      if (viol(x0 + dir * t)){
+        if (prev === 0) return 0;
+        let lo = prev, hi = t;
+        for (let i = 0; i < 40; i++){ const m = (lo + hi) / 2; if (viol(x0 + dir * m)) hi = m; else lo = m; }
+        return lo;
+      }
+      prev = t;
+    }
+    return Infinity;
+  };
+  const d = Math.min(side(-1), side(1));
+  if (d === 0) return { status:'none' };
+  if (d === Infinity) return { status:'all', value:R };
+  return { status:'ok', value:d };
+}
+/** Перевірка заданого користувачем δ. */
+function checkDelta(f, x0, A, eps, d){
+  let worst = null, count = 0;
+  const test = x => {
+    const y = f(x); if (Number.isNaN(y)) return;
+    const e = isFinite(y) ? Math.abs(y - A) : Infinity;
+    if (e >= eps){ count++; if (!worst || e > worst.e) worst = { x, e }; }
+  };
+  for (const u of DELTA_GRID){ if (u >= 1) break; test(x0 - u * d); test(x0 + u * d); }
+  return { ok: count === 0, count, worst };
+}
+/** Пошук M: для x>M (dir=+1) або x<−M (dir=−1) виконується |f(x)−A|<ε. */
+function findM(f, A, eps, dir){
+  const viol = x => { const y = f(x); return Number.isNaN(y) ? false : (!isFinite(y) || Math.abs(y - A) >= eps); };
+  const xs = [];
+  for (let k = 0; k <= 5000; k++) xs.push(k * 0.01);
+  for (let k = 1; k <= 400; k++) xs.push(50 * Math.pow(2e4, k / 400));
+  let lastV = -1;
+  for (let i = 0; i < xs.length; i++) if (viol(dir * xs[i])) lastV = i;
+  if (lastV === xs.length - 1) return { status:'none' };
+  if (lastV < 0) return { status:'all', value:0 };
+  let lo = xs[lastV], hi = xs[lastV + 1];
+  for (let i = 0; i < 40; i++){ const m = (lo + hi) / 2; if (viol(dir * m)) lo = m; else hi = m; }
+  return { status:'ok', value:hi };
+}
+/** Автоматичний вибір вертикального масштабу (за процентилями). */
+function autoY(f, xmin, xmax, extra = []){
+  const ys = [];
+  for (let i = 0; i <= 600; i++){ const y = f(xmin + (xmax - xmin) * i / 600); if (isFinite(y)) ys.push(y); }
+  ys.sort((a, b) => a - b);
+  let lo = ys.length ? ys[Math.floor(ys.length * .04)] : -1, hi = ys.length ? ys[Math.floor(ys.length * .96)] : 1;
+  for (const e of extra) if (isFinite(e)){ lo = Math.min(lo, e); hi = Math.max(hi, e); }
+  if (!(hi - lo > 1e-9)){ lo -= 1; hi += 1; }
+  const pad = (hi - lo) * .18;
+  return [lo - pad, hi + pad];
+}
+const derivative = (f, x) => { const h = 1e-5 * Math.max(1, Math.abs(x)); return (f(x + h) - f(x - h)) / (2 * h); };
+
+/* ---------- 4. Plot: графік на canvas ---------- */
+const ALL_PLOTS = [];
+class Plot {
+  constructor(canvas, o = {}){
+    this.c = canvas; this.ctx = canvas.getContext('2d');
+    this.o = Object.assign({ xmin:-5, xmax:5, ymin:-3, ymax:3, xlabel:'x', ylabel:'y', xTick:null, yTick:null,
+                             pan:true, tools:true, grid:true, readout:true }, o);
+    this.v = { xmin:this.o.xmin, xmax:this.o.xmax, ymin:this.o.ymin, ymax:this.o.ymax };
+    this.home = { ...this.v };
+    this.W = 0; this.H = 0; this.dpr = 1; this.onDraw = null; this.mouse = null; this.raf = 0;
+    const wrap = canvas.parentElement;
+    new ResizeObserver(() => this.resize()).observe(wrap);
+    if (this.o.pan) this._bind();
+    if (this.o.tools) this._tools(wrap);
+    ALL_PLOTS.push(this);
+  }
+  _tools(wrap){
+    const d = document.createElement('div'); d.className = 'plot-tools';
+    const mk = (t, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.title = title; b.setAttribute('aria-label', title); b.onclick = fn; d.appendChild(b); };
+    mk('+', 'Наблизити', () => this.zoom(1 / 1.5));
+    mk('−', 'Віддалити', () => this.zoom(1.5));
+    mk('⌂', 'Початковий вигляд', () => this.reset());
+    wrap.appendChild(d);
+  }
+  _bind(){
+    const c = this.c; let drag = null;
+    c.addEventListener('pointerdown', e => { drag = { x:e.clientX, y:e.clientY, v:{ ...this.v } }; c.setPointerCapture(e.pointerId); c.classList.add('grabbing'); });
+    c.addEventListener('pointermove', e => {
+      const r = c.getBoundingClientRect(); this.mouse = { px:e.clientX - r.left, py:e.clientY - r.top };
+      if (drag){
+        const dx = (e.clientX - drag.x) / this.W * (drag.v.xmax - drag.v.xmin);
+        const dy = (e.clientY - drag.y) / this.H * (drag.v.ymax - drag.v.ymin);
+        this.v = { xmin:drag.v.xmin - dx, xmax:drag.v.xmax - dx, ymin:drag.v.ymin + dy, ymax:drag.v.ymax + dy };
+      }
+      this.request();
+    });
+    const end = () => { drag = null; c.classList.remove('grabbing'); };
+    c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
+    c.addEventListener('pointerleave', () => { this.mouse = null; this.request(); });
+    c.addEventListener('wheel', e => {
+      e.preventDefault();
+      const r = c.getBoundingClientRect();
+      const cx = this.ix(e.clientX - r.left), cy = this.iy(e.clientY - r.top);
+      const dl = e.deltaY || e.deltaX;
+      this.zoom(Math.pow(1.0015, dl), cx, cy, !e.altKey, !e.shiftKey);
+    }, { passive:false });
+    c.addEventListener('dblclick', () => this.reset());
+  }
+  zoom(k, cx, cy, ax = true, ay = true){
+    const v = this.v;
+    if (cx === undefined){ cx = (v.xmin + v.xmax) / 2; cy = (v.ymin + v.ymax) / 2; }
+    if (ax){ v.xmin = cx + (v.xmin - cx) * k; v.xmax = cx + (v.xmax - cx) * k; }
+    if (ay){ v.ymin = cy + (v.ymin - cy) * k; v.ymax = cy + (v.ymax - cy) * k; }
+    this.request();
+  }
+  reset(){ this.v = { ...this.home }; this.request(); }
+  setView(v, home = true){ this.v = { ...v }; if (home) this.home = { ...v }; this.request(); }
+  resize(){
+    const r = this.c.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return;
+    this.dpr = window.devicePixelRatio || 1; this.W = r.width; this.H = r.height;
+    this.c.width = Math.round(r.width * this.dpr); this.c.height = Math.round(r.height * this.dpr);
+    this.draw();
+  }
+  X(x){ return (x - this.v.xmin) / (this.v.xmax - this.v.xmin) * this.W; }
+  Y(y){ return this.H - (y - this.v.ymin) / (this.v.ymax - this.v.ymin) * this.H; }
+  ix(px){ return this.v.xmin + px / this.W * (this.v.xmax - this.v.xmin); }
+  iy(py){ return this.v.ymin + (this.H - py) / this.H * (this.v.ymax - this.v.ymin); }
+  request(){ if (!this.raf) this.raf = requestAnimationFrame(() => { this.raf = 0; this.draw(); }); }
+  draw(){
+    if (!this.W) return;
+    const g = this.ctx;
+    g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    g.clearRect(0, 0, this.W, this.H); g.fillStyle = '#fff'; g.fillRect(0, 0, this.W, this.H);
+    if (this.o.grid) this._grid();
+    if (this.onDraw){ try { this.onDraw(this, g); } catch (err){ console.error(err); } }
+    if (this.o.readout && this.mouse) this._readout();
+  }
+  _step(span, px){
+    const target = span / Math.max(1, px / 90);
+    const p = Math.pow(10, Math.floor(Math.log10(target))), m = target / p;
+    return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
+  }
+  _grid(){
+    const g = this.ctx, v = this.v, W = this.W, H = this.H;
+    const sx = this._step(v.xmax - v.xmin, W), sy = this._step(v.ymax - v.ymin, H);
+    const lines = (s, lo, hi, cb) => { for (let i = Math.ceil(lo / s); i <= Math.floor(hi / s); i++) cb(i * s); };
+    g.lineWidth = 1;
+    g.strokeStyle = '#f3f1ea';
+    g.beginPath();
+    lines(sx / 5, v.xmin, v.xmax, x => { const p = Math.round(this.X(x)) + .5; g.moveTo(p, 0); g.lineTo(p, H); });
+    lines(sy / 5, v.ymin, v.ymax, y => { const p = Math.round(this.Y(y)) + .5; g.moveTo(0, p); g.lineTo(W, p); });
+    g.stroke();
+    g.strokeStyle = '#e4e0d4';
+    g.beginPath();
+    lines(sx, v.xmin, v.xmax, x => { const p = Math.round(this.X(x)) + .5; g.moveTo(p, 0); g.lineTo(p, H); });
+    lines(sy, v.ymin, v.ymax, y => { const p = Math.round(this.Y(y)) + .5; g.moveTo(0, p); g.lineTo(W, p); });
+    g.stroke();
+    // осі
+    g.strokeStyle = '#7f8f8b'; g.lineWidth = 1.3; g.beginPath();
+    const y0 = this.Y(0), x0 = this.X(0);
+    if (y0 >= 0 && y0 <= H){ g.moveTo(0, y0); g.lineTo(W, y0); }
+    if (x0 >= 0 && x0 <= W){ g.moveTo(x0, 0); g.lineTo(x0, H); }
+    g.stroke();
+    // підписи
+    g.font = '11px Manrope, system-ui, sans-serif'; g.fillStyle = '#6d7a76';
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    const ly = clamp(y0 + 5, 4, H - 16);
+    lines(sx, v.xmin, v.xmax, x => {
+      if (Math.abs(x) < sx / 2 && x0 > 0 && x0 < W && y0 > 0 && y0 < H) return;
+      const px = this.X(x); if (px < 14 || px > W - 14) return;
+      g.fillText(this.o.xTick ? this.o.xTick(x, sx) : fmtTick(x, sx), px, ly);
+    });
+    let lx = x0 - 6, al = 'right';
+    if (lx < 34){ lx = 5; al = 'left'; } if (lx > W - 4){ lx = W - 5; al = 'right'; }
+    g.textAlign = al; g.textBaseline = 'middle';
+    lines(sy, v.ymin, v.ymax, y => {
+      if (Math.abs(y) < sy / 2) return;
+      const py = this.Y(y); if (py < 10 || py > H - 10) return;
+      g.fillText(this.o.yTick ? this.o.yTick(y, sy) : fmtTick(y, sy), lx, py);
+    });
+    g.font = 'italic 600 13px "PT Serif", Georgia, serif'; g.fillStyle = '#4c5b57';
+    g.textAlign = 'right'; g.textBaseline = 'bottom';
+    g.fillText(this.o.xlabel, W - 8, clamp(y0 - 4, 18, H - 4));
+    g.textAlign = 'left'; g.textBaseline = 'top';
+    g.fillText(this.o.ylabel, clamp(x0 + 7, 6, W - 60), 8);
+  }
+  _readout(){
+    const { px, py } = this.mouse;
+    const t = 'x = ' + fmt(this.ix(px), 4) + '   y = ' + fmt(this.iy(py), 4);
+    this.labelPx(10, this.H - 14, t, { color:'#55625f', size:11, bold:false });
+  }
+  /* ---- примітиви малювання (у координатах задачі) ---- */
+  curve(f, o = {}){
+    const { color = C.green, width = 2.5, from, to, colorFn = null, dash = null, alpha = 1 } = o;
+    const g = this.ctx, v = this.v, H = this.H;
+    const a = Math.max(from ?? v.xmin, v.xmin), b = Math.min(to ?? v.xmax, v.xmax);
+    if (!(b > a)) return;
+    const N = Math.max(60, Math.ceil((this.X(b) - this.X(a)) * 1.5));
+    g.save(); g.lineWidth = width; g.lineJoin = 'round'; g.lineCap = 'round'; g.globalAlpha = alpha;
+    if (dash) g.setLineDash(dash);
+    let pen = false, cur = null, prev = null;
+    const lim = y => clamp(y, -4 * H, 5 * H);
+    const stroke = () => { if (pen){ g.stroke(); pen = false; } };
+    for (let i = 0; i <= N; i++){
+      const x = a + (b - a) * i / N, y = f(x);
+      if (!isFinite(y)){ stroke(); prev = null; continue; }
+      const px = this.X(x), py = this.Y(y);
+      const col = colorFn ? colorFn(x, y) : color;
+      if (prev){
+        const brk = Math.abs(py - prev.py) > 30 && this._isJump(f, prev.x, x);
+        if (brk) stroke();
+        else {
+          if (!pen || col !== cur){ stroke(); g.beginPath(); g.strokeStyle = col; cur = col; g.moveTo(prev.px, lim(prev.py)); pen = true; }
+          g.lineTo(px, lim(py));
+        }
+      }
+      prev = { x, px, py };
+    }
+    stroke(); g.restore();
+  }
+  _isJump(f, a, b){
+    let fa = f(a), fb = f(b);
+    for (let k = 0; k < 18; k++){
+      const m = (a + b) / 2, fm = f(m);
+      if (!isFinite(fm)) return true;
+      if (Math.abs(fm - fa) > Math.abs(fb - fm)){ b = m; fb = fm; } else { a = m; fa = fm; }
+    }
+    return Math.abs(this.Y(fa) - this.Y(fb)) > 8;
+  }
+  hband(y1, y2, fill, x1, x2){
+    const g = this.ctx; g.fillStyle = fill;
+    const top = this.Y(Math.max(y1, y2)), bot = this.Y(Math.min(y1, y2));
+    const l = x1 === undefined ? 0 : clamp(this.X(x1), 0, this.W), r = x2 === undefined ? this.W : clamp(this.X(x2), 0, this.W);
+    g.fillRect(l, top, r - l, bot - top);
+  }
+  vband(x1, x2, fill){
+    const g = this.ctx; g.fillStyle = fill;
+    const l = this.X(Math.min(x1, x2)), r = this.X(Math.max(x1, x2));
+    g.fillRect(l, 0, r - l, this.H);
+  }
+  rect(x1, y1, x2, y2, { stroke = C.green, lw = 1.5, fill = null, dash = null } = {}){
+    const g = this.ctx, l = this.X(x1), r = this.X(x2), t = this.Y(y2), b = this.Y(y1);
+    g.save(); if (dash) g.setLineDash(dash);
+    if (fill){ g.fillStyle = fill; g.fillRect(l, t, r - l, b - t); }
+    g.strokeStyle = stroke; g.lineWidth = lw; g.strokeRect(l, t, r - l, b - t); g.restore();
+  }
+  hline(y, { color = '#999', width = 1.2, dash = [6, 5], label = null } = {}){
+    const g = this.ctx, p = this.Y(y); if (p < -2 || p > this.H + 2) return;
+    g.save(); g.strokeStyle = color; g.lineWidth = width; g.setLineDash(dash || []);
+    g.beginPath(); g.moveTo(0, p); g.lineTo(this.W, p); g.stroke(); g.restore();
+    if (label) this.labelPx(this.W - 46, p, label, { color, align:'right' });
+  }
+  vline(x, { color = '#999', width = 1.2, dash = [6, 5], label = null, labelY = null } = {}){
+    const g = this.ctx, p = this.X(x); if (p < -2 || p > this.W + 2) return;
+    g.save(); g.strokeStyle = color; g.lineWidth = width; g.setLineDash(dash || []);
+    g.beginPath(); g.moveTo(p, 0); g.lineTo(p, this.H); g.stroke(); g.restore();
+    if (label) this.labelPx(p, labelY ?? this.H - 30, label, { color, align:'center' });
+  }
+  line(x1, y1, x2, y2, { color = C.ink, width = 1.5, dash = null } = {}){
+    const g = this.ctx; g.save(); g.strokeStyle = color; g.lineWidth = width; if (dash) g.setLineDash(dash);
+    g.beginPath(); g.moveTo(this.X(x1), this.Y(y1)); g.lineTo(this.X(x2), this.Y(y2)); g.stroke(); g.restore();
+  }
+  /** пряма через точку з кутовим коефіцієнтом k на всю ширину */
+  slopeLine(x0, y0, k, o){ const v = this.v; this.line(v.xmin, y0 + k * (v.xmin - x0), v.xmax, y0 + k * (v.xmax - x0), o); }
+  dot(x, y, { r = 5, fill = C.green, stroke = '#fff', lw = 2, alpha = 1 } = {}){
+    if (!isFinite(y)) return;
+    const g = this.ctx; g.save(); g.globalAlpha = alpha; g.beginPath(); g.arc(this.X(x), this.Y(y), r, 0, 7);
+    g.fillStyle = fill; g.fill(); if (lw){ g.strokeStyle = stroke; g.lineWidth = lw; g.stroke(); } g.restore();
+  }
+  hole(x, y, { r = 5.5, color = C.greenD } = {}){
+    if (!isFinite(y)) return;
+    const g = this.ctx; g.beginPath(); g.arc(this.X(x), this.Y(y), r, 0, 7);
+    g.fillStyle = '#fff'; g.fill(); g.strokeStyle = color; g.lineWidth = 2.2; g.stroke();
+  }
+  label(x, y, text, o = {}){ this.labelPx(this.X(x), this.Y(y), text, o); }
+  labelPx(px, py, text, { color = C.ink, dx = 0, dy = 0, align = 'left', bold = true, bg = true, size = 12 } = {}){
+    const g = this.ctx; g.save();
+    g.font = (bold ? '700 ' : '500 ') + size + 'px Manrope, system-ui, sans-serif';
+    g.textBaseline = 'middle'; g.textAlign = align;
+    const w = g.measureText(text).width, x = px + dx, y = py + dy;
+    if (bg){
+      const bx = align === 'left' ? x - 4 : align === 'right' ? x - w - 4 : x - w / 2 - 4;
+      g.fillStyle = 'rgba(255,255,255,.9)';
+      g.beginPath(); if (g.roundRect) g.roundRect(bx, y - size * .75, w + 8, size * 1.5, 5); else g.rect(bx, y - size * .75, w + 8, size * 1.5); g.fill();
+    }
+    g.fillStyle = color; g.fillText(text, x, y); g.restore();
+  }
+  arrowPx(x1, y1, x2, y2, color, w = 2){
+    const g = this.ctx, a = Math.atan2(y2 - y1, x2 - x1);
+    g.save(); g.strokeStyle = color; g.fillStyle = color; g.lineWidth = w;
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+    g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - 9 * Math.cos(a - .4), y2 - 9 * Math.sin(a - .4));
+    g.lineTo(x2 - 9 * Math.cos(a + .4), y2 - 9 * Math.sin(a + .4)); g.closePath(); g.fill(); g.restore();
+  }
+}
+
+/* Допоміжне: прив’язати текстове поле до функції оновлення з прев’ю LaTeX */
+function bindExpr(inputId, previewId, varName, label, onOk){
+  const inp = $(inputId), prev = $(previewId);
+  const run = () => {
+    try { const m = MathExpr.make(inp.value, varName); inp.classList.remove('bad'); if (prev) showTex(prev, label + '=' + m.tex); onOk(m); }
+    catch (e){ inp.classList.add('bad'); if (prev) showErr(prev, e.message); }
+  };
+  const deb = debounce(run, 250);
+  inp.addEventListener('input', deb);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+  return run;
+}
+function readConst(id){
+  const el = $(id);
+  try { const v = MathExpr.evalConst(el.value); el.classList.remove('bad'); el.title = ''; return v; }
+  catch (e){ el.classList.add('bad'); el.title = e.message; return null; }
+}
+
+/* =====================================================================
+   5.1  ВКЛАДКА «ОЗНАЧЕННЯ КОШІ (ε–δ)»
+   ===================================================================== */
+const CAUCHY_PRESETS = [
+  { name:'Перша чудова границя: sin x / x, x → 0', f:'sin(x)/x', x0:'0', eps:0.1, w:3 },
+  { name:'Усувна особливість: (x² − 4)/(x − 2), x → 2', f:'(x^2-4)/(x-2)', x0:'2', eps:0.5, w:3 },
+  { name:'x², x → 1: δ залежить від ε', f:'x^2', x0:'1', eps:0.5, w:2 },
+  { name:'(1 − cos x)/x², x → 0', f:'(1-cos(x))/x^2', x0:'0', eps:0.05, w:4 },
+  { name:'(eˣ − 1)/x, x → 0', f:'(exp(x)-1)/x', x0:'0', eps:0.2, w:2.5 },
+  { name:'x·sin(1/x), x → 0: згасні коливання', f:'x*sin(1/x)', x0:'0', eps:0.1, w:0.6 },
+  { name:'√x, x → 4', f:'sqrt(x)', x0:'4', eps:0.2, w:4 },
+  { name:'sign x, x → 0: границі не існує', f:'sign(x)', x0:'0', eps:0.5, A:'0', w:2 },
+  { name:'sin(1/x), x → 0: границі не існує', f:'sin(1/x)', x0:'0', eps:0.3, A:'0', w:0.5 }
+];
+function initCauchy(){
+  const P = new Plot($('c-canvas'));
+  const S = { f:null, x0:0, A:0, eps:0.1, R:3, d:null, est:null };
+  const sel = $('c-preset');
+  CAUCHY_PRESETS.forEach((p, i) => sel.add(new Option(p.name, i)));
+
+  const setEps = e => { S.eps = e; $('c-eps').value = Math.log10(e); $('c-eps-val').textContent = fmt(e, 3); };
+  const manual = () => !$('c-dauto').checked;
+
+  function compute(){
+    if (!S.f || S.A === null) return;
+    if (manual()){
+      const d = parseFloat(String($('c-d').value).replace(',', '.'));
+      if (!(d > 0)){ $('c-d').classList.add('bad'); return; }
+      $('c-d').classList.remove('bad');
+      S.d = { status:'manual', value:d, ...checkDelta(S.f, S.x0, S.A, S.eps, d) };
+    } else S.d = findDelta(S.f, S.x0, S.A, S.eps, S.R);
+    renderResult(); P.request();
+  }
+  function renderResult(){
+    const r = $('c-res'), d = S.d, e = fmt(S.eps, 3);
+    r.classList.remove('bad');
+    if (d.status === 'ok' || d.status === 'all'){
+      r.innerHTML = '<div class="kicker">Для ε = ' + e + ' знайдено</div><div class="big">δ ≈ ' + fmt(d.value, 4) + (d.status === 'all' ? ' <small>(і навіть більше)</small>' : '') + '</div>' +
+        '<div class="stmt">0 &lt; |x − ' + fmt(S.x0, 5) + '| &lt; ' + fmt(d.value, 4) + ' ⇒ |f(x) − ' + fmt(S.A, 6) + '| &lt; ' + e + '</div>' +
+        '<div class="note">Це найбільше δ (з точністю чисельного пошуку); будь-яке менше δ теж підходить. Відношення δ/ε ≈ ' + fmt(d.value / S.eps, 3) + '.</div>';
+    } else if (d.status === 'none'){
+      r.classList.add('bad');
+      r.innerHTML = '<div class="kicker">Для ε = ' + e + '</div><div class="big">δ не існує</div>' +
+        '<div class="note">Як близько не підходь до x₀, знаходяться точки x, де |f(x) − A| ≥ ε (червоні ділянки). Отже, A — не границя: або A обрано неправильно, або границі взагалі не існує. Наблизьте графік колесом миші, щоб переконатися.</div>';
+    } else {
+      if (d.ok) r.innerHTML = '<div class="kicker">Перевірка вашого δ</div><div class="big">δ = ' + fmt(d.value, 4) + ' підходить ✓</div><div class="note">Уся частина графіка над проколотим δ-околом лежить у ε-смузі.</div>';
+      else { r.classList.add('bad'); r.innerHTML = '<div class="kicker">Перевірка вашого δ</div><div class="big">δ = ' + fmt(d.value, 4) + ' не підходить ✗</div><div class="note">Знайдено точку x ≈ ' + fmt(d.worst.x, 5) + ', де |f(x) − A| ≈ ' + fmt(d.worst.e, 4) + ' ≥ ε. Зменште δ.</div>'; }
+    }
+  }
+  P.onDraw = (p) => {
+    if (!S.f || S.A === null || !S.d) return;
+    const { f, x0, A, eps } = S;
+    const bad = S.d.status === 'none' || (S.d.status === 'manual' && !S.d.ok);
+    const d = S.d.status === 'none' ? (p.v.xmax - p.v.xmin) / 30 : S.d.value;
+    p.hband(A - eps, A + eps, 'rgba(202,157,72,.17)');
+    p.vband(x0 - d, x0 + d, bad ? 'rgba(181,72,59,.08)' : 'rgba(52,90,83,.10)');
+    p.rect(x0 - d, A - eps, x0 + d, A + eps, { stroke: bad ? C.red : C.green, lw: 1.6 });
+    const epsClose = Math.abs(p.Y(A + eps) - p.Y(A - eps)) < 30;
+    p.hline(A + eps, { color:C.goldD, label: epsClose ? 'A ± ε' : 'A + ε' });
+    p.hline(A - eps, { color:C.goldD, label: epsClose ? null : 'A − ε' });
+    p.hline(A, { color:'#9aa8a4', dash:[2, 4] });
+    const dClose = Math.abs(p.X(x0 + d) - p.X(x0 - d)) < 110;
+    p.vline(x0 - d, { color:C.green, label: dClose ? null : 'x₀ − δ' });
+    p.vline(x0 + d, { color:C.green, label: dClose ? 'x₀ ± δ' : 'x₀ + δ', labelY: dClose ? p.H - 30 : undefined });
+    p.vline(x0, { color:'#9aa8a4', dash:[2, 4], label: dClose ? null : 'x₀', labelY: p.H - 54 });
+    p.curve(f, { color:'#7d8f8a', width:2 });
+    p.curve(f, { from:x0 - d, to:x0 + d, width:3.6, colorFn:(x, y) => (Math.abs(y - A) < eps ? C.greenD : C.red) });
+    p.hole(x0, A, { color:C.greenD });
+    p.label(x0, A, 'A', { dx:-14, dy:-12, color:C.greenD });
+    const fx0 = f(x0);
+    if (isFinite(fx0) && Math.abs(fx0 - A) > 1e-9){ p.dot(x0, fx0, { fill:C.blue }); p.label(x0, fx0, 'f(x₀)', { dx:10, dy:-10, color:C.blue }); }
+  };
+
+  function autoView(w){
+    const [lo, hi] = autoY(S.f, S.x0 - w, S.x0 + w, [S.A - 1.5 * S.eps, S.A + 1.5 * S.eps]);
+    P.setView({ xmin:S.x0 - w, xmax:S.x0 + w, ymin:lo, ymax:hi });
+  }
+  let curW = 3;
+  function update(resetView = false){
+    if (!S.f) return;
+    const x0 = readConst('c-x0'); if (x0 === null) return;
+    S.x0 = x0;
+    const est = estimateLimit(S.f, x0); S.est = est;
+    const auto = $('c-Aauto').checked;
+    if (auto && est.status === 'finite'){
+      S.A = est.value; $('c-A').value = fmtInput(est.value); $('c-A').disabled = true;
+      $('c-Ainfo').innerHTML = 'Числова оцінка: <b>A ≈ ' + describe(est) + '</b>' + (est.side ? ' (функція визначена лише з одного боку)' : '');
+    } else {
+      $('c-A').disabled = false;
+      S.A = readConst('c-A');
+      $('c-Ainfo').innerHTML = (auto ? '<span class="warn">Автоматично знайти A не вдалося: ' + describe(est) + '.</span> Використовую введене A.' : 'Числова оцінка границі: ' + describe(est));
+    }
+    S.R = curW;
+    if (resetView) autoView(curW);
+    compute();
+  }
+  const runF = bindExpr('c-f', 'c-f-prev', 'x', 'f(x)', m => { S.f = m.fn; update(true); });
+  const deb = debounce(() => update(false), 250);
+  $('c-x0').addEventListener('input', debounce(() => update(true), 300));
+  $('c-A').addEventListener('input', deb);
+  $('c-Aauto').addEventListener('change', () => update(false));
+  $('c-eps').addEventListener('input', () => { setEps(Math.pow(10, +$('c-eps').value)); compute(); });
+  $('c-dauto').addEventListener('change', () => { $('c-dbox').hidden = !manual(); if (manual() && S.d && S.d.value) $('c-d').value = fmtInput(S.d.value * 1.5); compute(); });
+  $('c-d').addEventListener('input', debounce(compute, 150));
+  sel.addEventListener('change', () => load(+sel.value));
+  function load(i){
+    const p = CAUCHY_PRESETS[i]; curW = p.w || 3;
+    $('c-f').value = p.f; $('c-x0').value = p.x0;
+    $('c-Aauto').checked = p.A === undefined; if (p.A !== undefined) $('c-A').value = p.A;
+    setEps(p.eps); runF();
+  }
+  $('c-zoom').onclick = () => {
+    const d = S.d && S.d.value ? S.d.value : S.eps;
+    P.setView({ xmin:S.x0 - 3 * d, xmax:S.x0 + 3 * d, ymin:S.A - 3 * S.eps, ymax:S.A + 3 * S.eps }, false);
+  };
+  let anim = 0;
+  $('c-anim').onclick = () => {
+    const btn = $('c-anim');
+    if (anim){ cancelAnimationFrame(anim); anim = 0; btn.textContent = '▶ ε → 0'; return; }
+    const e0 = S.eps, e1 = Math.max(0.001, e0 / 60), t0 = performance.now();
+    btn.textContent = '■ Зупинити';
+    const step = t => {
+      const k = Math.min(1, (t - t0) / 6000);
+      setEps(e0 * Math.pow(e1 / e0, ease(k))); compute();
+      if (S.d && (S.d.status === 'ok' || S.d.status === 'manual')){
+        const d = S.d.value, v = P.v;
+        const tg = { xmin:S.x0 - 3.2 * d, xmax:S.x0 + 3.2 * d, ymin:S.A - 3.2 * S.eps, ymax:S.A + 3.2 * S.eps };
+        for (const key in tg) v[key] += (tg[key] - v[key]) * 0.07;
+      }
+      if (k < 1) anim = requestAnimationFrame(step); else { anim = 0; btn.textContent = '▶ ε → 0'; }
+    };
+    anim = requestAnimationFrame(step);
+  };
+  load(0);
+}
+
+/* =====================================================================
+   5.2  ВКЛАДКА «ОЗНАЧЕННЯ ГЕЙНЕ»
+   ===================================================================== */
+const HEINE_PRESETS = [
+  { name:'sin x / x, x → 0: дві різні послідовності', f:'sin(x)/x', x0:'0', s1:'1/n', s2:'-1/n^2', w:1.5 },
+  { name:'(x² − 4)/(x − 2), x → 2', f:'(x^2-4)/(x-2)', x0:'2', s1:'2+1/n', s2:'2+(-1)^n/sqrt(n)', w:2 },
+  { name:'(1 + x)^(1/x), x → 0: число e', f:'(1+x)^(1/x)', x0:'0', s1:'1/n', s2:'-1/(n+1)', w:0.9 },
+  { name:'sin(1/x), x → 0: границі не існує', f:'sin(1/x)', x0:'0', s1:'1/(pi*n)', s2:'2/(pi*(4n+1))', w:0.5 },
+  { name:'sign x, x → 0: границі не існує', f:'sign(x)', x0:'0', s1:'1/n', s2:'-1/n', w:1.5 },
+  { name:'x·cos(1/x), x → 0', f:'x*cos(1/x)', x0:'0', s1:'1/(2pi*n)', s2:'1/(pi*(2n+1))', w:0.5 }
+];
+function initHeine(){
+  const P1 = new Plot($('h-canvas1'));
+  const P2 = new Plot($('h-canvas2'), { xlabel:'n', ylabel:'f(xₙ)' });
+  const S = { f:null, x0:0, seq:[null, null], data:[[], []], N:20, w:1.5 };
+  const COL = [C.goldD, C.blue];
+  const NMAX = 200;
+  const sel = $('h-preset'); HEINE_PRESETS.forEach((p, i) => sel.add(new Option(p.name, i)));
+
+  function recompute(){
+    if (!S.f) return;
+    for (let j = 0; j < 2; j++){
+      const s = S.seq[j]; S.data[j] = [];
+      if (!s) continue;
+      for (let n = 1; n <= NMAX; n++){ const x = s(n); S.data[j].push({ n, x, y: S.f(x) }); }
+    }
+    render();
+  }
+  function tailInfo(arr){
+    const N = S.N, part = arr.slice(Math.max(0, N - 10), N).map(o => o.y).filter(isFinite);
+    if (part.length < 3) return { ok:false };
+    const mn = Math.min(...part), mx = Math.max(...part), last = part[part.length - 1];
+    return { ok: mx - mn < 0.03 * Math.max(1, Math.abs(last)), last, spread: mx - mn };
+  }
+  function render(){
+    // таблиця
+    const N = S.N, rows = [];
+    for (let n = Math.max(1, N - 5); n <= N; n++){
+      const a = S.data[0][n - 1], b = S.data[1][n - 1];
+      rows.push('<tr><td>' + n + '</td><td>' + (a ? fmt(a.x, 5) : '') + '</td><td>' + (a ? fmt(a.y, 6) : '') + '</td><td>' + (b ? fmt(b.x, 5) : '—') + '</td><td>' + (b ? fmt(b.y, 6) : '—') + '</td></tr>');
+    }
+    $('h-table').innerHTML = rows.join('');
+    // висновок
+    const out = [];
+    const ti = [0, 1].map(j => S.data[j].length ? tailInfo(S.data[j]) : null);
+    for (let j = 0; j < 2; j++){
+      const d = S.data[j]; if (!d.length) continue;
+      const xN = d[N - 1].x, hit = d.slice(0, N).some(o => o.x === S.x0);
+      const conv = Math.abs(xN - S.x0) < Math.abs(d[0].x - S.x0) + 1e-12;
+      const nm = j ? 'x′ₙ' : 'xₙ';
+      out.push('<div><span class="sw" style="background:' + COL[j] + '"></span><b>' + nm + '</b>: ' +
+        (hit ? '<span class="warn">містить x₀ — така послідовність не підходить (потрібно xₙ ≠ x₀)</span>' :
+         '|' + nm + ' − x₀| = ' + fmt(Math.abs(xN - S.x0), 3) + (conv ? ' → 0' : ' (не прямує до x₀?)') +
+         '; f(' + nm + ') ' + (ti[j].ok ? '→ ≈ ' + fmt(ti[j].last, 6) : 'не стабілізується')) + '</div>');
+    }
+    let verdict = '';
+    if (ti[0] && ti[1]){
+      if (ti[0].ok && ti[1].ok){
+        if (Math.abs(ti[0].last - ti[1].last) < 0.03 * Math.max(1, Math.abs(ti[0].last)))
+          verdict = '<div class="verdict ok">Обидві послідовності значень прямують до одного числа ≈ ' + fmt((ti[0].last + ti[1].last) / 2, 5) + recognize((ti[0].last + ti[1].last) / 2) + '. Це узгоджується з існуванням границі, але не доводить її: означення Гейне вимагає збіжності для <i>кожної</i> послідовності xₙ → x₀.</div>';
+        else verdict = '<div class="verdict bad">Дві послідовності, що прямують до x₀, дають різні границі значень функції. За Гейне це доводить, що границі функції в точці x₀ не існує.</div>';
+      } else verdict = '<div class="verdict bad">Хоча б одна з послідовностей f(xₙ) не збігається — отже, границі функції в точці x₀ не існує (за Гейне). Збільште n, щоб переконатися.</div>';
+    }
+    $('h-res').innerHTML = out.join('') + verdict;
+    // масштаб нижнього графіка
+    const ys = [];
+    for (let j = 0; j < 2; j++) for (const o of S.data[j].slice(0, N)) if (isFinite(o.y)) ys.push(o.y);
+    ys.sort((a, b) => a - b);
+    let lo = ys.length ? ys[Math.floor(ys.length * .02)] : -1, hi = ys.length ? ys[Math.floor(ys.length * .98)] : 1;
+    if (!(hi - lo > 1e-6)){ lo -= .5; hi += .5; }
+    const pad = (hi - lo) * .2;
+    P2.setView({ xmin:-0.5, xmax:N + 1.5, ymin:lo - pad, ymax:hi + pad });
+    P1.request();
+  }
+  P1.onDraw = p => {
+    if (!S.f) return;
+    p.vline(S.x0, { color:'#9aa8a4', dash:[3, 4], label:'x₀' });
+    p.curve(S.f, { color:'#8fa29c', width:2.2 });
+    const N = S.N, y0 = p.Y(0), ty = clamp(y0, 6, p.H - 6);
+    for (let j = 0; j < 2; j++){
+      const d = S.data[j]; if (!d.length) continue;
+      for (let k = 0; k < N; k++){
+        const o = d[k]; const al = 0.25 + 0.75 * (k + 1) / N;
+        // мітки xₙ на осі абсцис
+        const px = p.X(o.x); p.ctx.save(); p.ctx.globalAlpha = al; p.ctx.strokeStyle = COL[j]; p.ctx.lineWidth = 2;
+        p.ctx.beginPath(); p.ctx.moveTo(px, ty - 6); p.ctx.lineTo(px, ty + 6); p.ctx.stroke(); p.ctx.restore();
+        p.dot(o.x, o.y, { r: k === N - 1 ? 6.5 : 4, fill:COL[j], alpha:al, lw: k === N - 1 ? 2 : 1 });
+      }
+      const L = d[N - 1];
+      if (isFinite(L.y)){
+        p.line(L.x, 0, L.x, L.y, { color:COL[j], dash:[4, 4], width:1.2 });
+        p.line(p.v.xmin, L.y, L.x, L.y, { color:COL[j], dash:[4, 4], width:1.2 });
+        p.label(L.x, L.y, j ? 'f(x′ₙ)' : 'f(xₙ)', { dx:10, dy: j ? 14 : -14, color:COL[j] });
+      }
+    }
+  };
+  P2.onDraw = p => {
+    const N = S.N;
+    for (let j = 0; j < 2; j++){
+      const d = S.data[j]; if (!d.length) continue;
+      let prev = null;
+      for (let k = 0; k < N; k++){
+        const o = d[k];
+        if (prev && isFinite(prev.y) && isFinite(o.y)) p.line(prev.n, prev.y, o.n, o.y, { color:COL[j], width:1, dash:[2, 3] });
+        prev = o;
+      }
+      for (let k = 0; k < N; k++) p.dot(d[k].n, d[k].y, { r: 3.6, fill:COL[j], lw:1 });
+    }
+  };
+  function setN(n){ S.N = n; $('h-N').value = n; $('h-N-val').textContent = n; render(); }
+  $('h-N').addEventListener('input', () => setN(+$('h-N').value));
+
+  const runF = bindExpr('h-f', 'h-f-prev', 'x', 'f(x)', m => { S.f = m.fn; recompute(); });
+  const run1 = bindExpr('h-s1', 'h-s1-prev', 'n', 'x_n', m => { S.seq[0] = m.fn; recompute(); });
+  const s2inp = $('h-s2');
+  const run2 = () => {
+    if (!s2inp.value.trim()){ S.seq[1] = null; $('h-s2-prev').textContent = ''; s2inp.classList.remove('bad'); recompute(); return; }
+    try { const m = MathExpr.make(s2inp.value, 'n'); S.seq[1] = m.fn; s2inp.classList.remove('bad'); showTex($('h-s2-prev'), "x'_n=" + m.tex); recompute(); }
+    catch (e){ s2inp.classList.add('bad'); showErr($('h-s2-prev'), e.message); }
+  };
+  s2inp.addEventListener('input', debounce(run2, 250));
+  $('h-x0').addEventListener('input', debounce(() => { const v = readConst('h-x0'); if (v !== null){ S.x0 = v; view(); recompute(); } }, 300));
+  function view(){
+    const [lo, hi] = autoY(S.f, S.x0 - S.w, S.x0 + S.w);
+    const l2 = Math.min(lo, -0.3), h2 = Math.max(hi, 0.3), pd = (h2 - l2) * .12;
+    P1.setView({ xmin:S.x0 - S.w, xmax:S.x0 + S.w, ymin:l2 - pd, ymax:h2 + pd });
+  }
+  function load(i){
+    const p = HEINE_PRESETS[i];
+    $('h-f').value = p.f; $('h-x0').value = p.x0; $('h-s1').value = p.s1; $('h-s2').value = p.s2;
+    S.x0 = MathExpr.evalConst(p.x0); S.w = p.w;
+    runF(); run1(); run2(); view(); setN(20);
+  }
+  sel.addEventListener('change', () => load(+sel.value));
+  let anim = 0;
+  $('h-play').onclick = () => {
+    const btn = $('h-play');
+    if (anim){ clearInterval(anim); anim = 0; btn.textContent = '▶ Анімувати n'; return; }
+    btn.textContent = '■ Зупинити'; let n = 1; setN(1);
+    anim = setInterval(() => { n += n < 20 ? 1 : n < 60 ? 2 : 5; if (n >= 150){ n = 150; clearInterval(anim); anim = 0; btn.textContent = '▶ Анімувати n'; } setN(n); }, 110);
+  };
+  load(0);
+}
+
+/* =====================================================================
+   5.3  ВКЛАДКА «ОДНОБІЧНІ ГРАНИЦІ ТА НЕСКІНЧЕННІСТЬ»
+   ===================================================================== */
+const ONESIDED_PRESETS = [
+  { name:'sign x у точці 0: стрибок', f:'sign(x)', x0:'0', w:2 },
+  { name:'1/x у точці 0: −∞ і +∞', f:'1/x', x0:'0', w:2 },
+  { name:'1/x² у точці 0: +∞ з обох боків', f:'1/x^2', x0:'0', w:2 },
+  { name:'e^(1/x) у точці 0: 0 і +∞', f:'exp(1/x)', x0:'0', w:2 },
+  { name:'arctg(1/x) у точці 0: −π/2 і π/2', f:'arctan(1/x)', x0:'0', w:3 },
+  { name:'1/(1 + e^(1/x)) у точці 0: 1 і 0', f:'1/(1+exp(1/x))', x0:'0', w:2 },
+  { name:'[x] (ціла частина) у точці 1', f:'floor(x)', x0:'1', w:2 },
+  { name:'|x − 1|/(x − 1) у точці 1', f:'abs(x-1)/(x-1)', x0:'1', w:2 },
+  { name:'√x у точці 0: лише справа', f:'sqrt(x)', x0:'0', w:2 }
+];
+const INF_PRESETS = [
+  { name:'(2x² + 1)/(x² + 3) → 2', f:'(2x^2+1)/(x^2+3)', eps:0.1 },
+  { name:'arctg x: різні границі на ±∞', f:'arctan(x)', eps:0.1 },
+  { name:'sin x / x → 0', f:'sin(x)/x', eps:0.05 },
+  { name:'(1 + 1/x)^x → e', f:'(1+1/x)^x', eps:0.1 },
+  { name:'x·sin(1/x) → 1', f:'x*sin(1/x)', eps:0.02 },
+  { name:'√(x² + x) − x: 1/2 на +∞', f:'sqrt(x^2+x)-x', eps:0.05 },
+  { name:'e^(−x)·cos 5x: на −∞ границі нема', f:'exp(-x)*cos(5x)', eps:0.1 }
+];
+function initOneSided(){
+  const P = new Plot($('o-canvas'));
+  const S = { mode:'point', f:null, x0:0, L:null, R:null, h:0, phase:0, w:2, eps:0.1, Ap:null, Am:null, Mp:null, Mm:null };
+  const selP = $('o-preset'), selI = $('o-ipreset');
+  ONESIDED_PRESETS.forEach((p, i) => selP.add(new Option(p.name, i)));
+  INF_PRESETS.forEach((p, i) => selI.add(new Option(p.name, i)));
+
+  function setMode(m){
+    S.mode = m;
+    document.querySelectorAll('#o-mode button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+    $('o-pointbox').hidden = m !== 'point'; $('o-infbox').hidden = m !== 'inf';
+    $('o-def-point').hidden = m !== 'point'; $('o-pointctl').hidden = m !== 'point'; $('o-epsctl').hidden = m !== 'inf'; $('o-def-inf').hidden = m !== 'inf';
+    if (m === 'point') loadP(+selP.value); else loadI(+selI.value);
+    loop();
+  }
+  document.querySelectorAll('#o-mode button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
+  function analyzePoint(){
+    S.L = oneSided(S.f, S.x0, -1); S.R = oneSided(S.f, S.x0, 1);
+    const lv = describe(S.L), rv = describe(S.R);
+    let concl;
+    if (S.L.status === 'finite' && S.R.status === 'finite'){
+      concl = Math.abs(S.L.value - S.R.value) < 1e-6 * Math.max(1, Math.abs(S.L.value))
+        ? '<div class="verdict ok">Однобічні границі рівні ⇒ існує \\(\\lim_{x\\to x_0} f(x)\\) = ' + fmt(S.L.value, 6) + '.</div>'
+        : '<div class="verdict bad">Однобічні границі скінченні, але різні ⇒ двобічної границі немає; x₀ — точка розриву I роду (стрибок ' + fmt(S.R.value - S.L.value, 5) + ').</div>';
+    } else if (S.L.status === S.R.status && (S.L.status === '+inf' || S.L.status === '-inf')){
+      concl = '<div class="verdict ok">З обох боків f(x) → ' + lv + ': нескінченна границя; пряма x = x₀ — вертикальна асимптота.</div>';
+    } else if (S.L.status === 'undef' || S.R.status === 'undef'){
+      concl = '<div class="verdict">З одного боку функція не визначена, тож границя розглядається лише по області визначення.</div>';
+    } else concl = '<div class="verdict bad">Однобічні границі різні або хоча б одна з них не існує (чи нескінченна) ⇒ скінченної двобічної границі немає; x₀ — точка розриву II роду, якщо хоча б одна однобічна границя нескінченна чи не існує.</div>';
+    $('o-res').innerHTML = '<div class="pair"><div><span class="sw" style="background:' + C.green + '"></span>Зліва: \\(f(x_0-0)\\) = <b>' + lv + '</b></div><div><span class="sw" style="background:' + C.gold + '"></span>Справа: \\(f(x_0+0)\\) = <b>' + rv + '</b></div></div>' + concl;
+    typeset([$('o-res')]);
+  }
+  function analyzeInf(){
+    S.Ap = atInfinity(S.f, 1); S.Am = atInfinity(S.f, -1);
+    S.Mp = S.Ap.status === 'finite' ? findM(S.f, S.Ap.value, S.eps, 1) : null;
+    S.Mm = S.Am.status === 'finite' ? findM(S.f, S.Am.value, S.eps, -1) : null;
+    const mtxt = (M, sgn) => !M ? '' : M.status === 'ok' ? '; для ε = ' + fmt(S.eps, 3) + ' можна взяти M ≈ ' + fmt(M.value, 4) + ' (x ' + (sgn > 0 ? '>' : '< −') + ' M)' :
+      M.status === 'all' ? '; умова виконується на всьому проміжку' : '; M не знайдено на [0; 10⁶]';
+    $('o-res').innerHTML = '<div><span class="sw" style="background:' + C.gold + '"></span>\\(x\\to+\\infty\\): <b>' + describe(S.Ap) + '</b>' + mtxt(S.Mp, 1) + '</div>' +
+      '<div><span class="sw" style="background:' + C.green + '"></span>\\(x\\to-\\infty\\): <b>' + describe(S.Am) + '</b>' + mtxt(S.Mm, -1) + '</div>' +
+      (S.Ap.status === 'finite' || S.Am.status === 'finite' ? '<div class="note">Скінченна границя на нескінченності означає, що графік має горизонтальну асимптоту y = A.</div>' : '');
+    typeset([$('o-res')]);
+  }
+  P.onDraw = p => {
+    if (!S.f) return;
+    if (S.mode === 'point') drawPoint(p); else drawInf(p);
+  };
+  function drawPoint(p){
+    const { f, x0, L, R } = S;
+    p.vline(x0, { color:'#9aa8a4', dash:[3, 4], label:'x₀', labelY:p.H - 54 });
+    if (L && L.status === 'finite') p.hline(L.value, { color:'rgba(52,90,83,.55)', dash:[5, 5] });
+    if (R && R.status === 'finite') p.hline(R.value, { color:'rgba(202,157,72,.75)', dash:[5, 5] });
+    p.curve(f, { to:x0, color:C.green, width:2.8 });
+    p.curve(f, { from:x0, color:C.goldD, width:2.8 });
+    if (L && L.status === 'finite') p.hole(x0, L.value, { color:C.green });
+    if (R && R.status === 'finite') p.hole(x0, R.value, { color:C.goldD });
+    const fx0 = f(x0); if (isFinite(fx0)) p.dot(x0, fx0, { fill:C.blue, r:5 });
+    const h = S.h, ty = clamp(p.Y(0), 10, p.H - 10);
+    [[-1, C.green, 'x₀ − h'], [1, C.goldD, 'x₀ + h']].forEach(([s, col, lab]) => {
+      const x = x0 + s * h, y = f(x);
+      const px = p.X(x);
+      p.arrowPx(px - s * 26, ty, px - s * 4, ty, col, 2.4);
+      if (isFinite(y)){
+        p.line(x, 0, x, y, { color:col, dash:[3, 4], width:1.2 });
+        p.dot(x, y, { r:6.5, fill:col });
+        p.label(x, y, 'f = ' + fmt(y, 4), { dx: s * 12, dy:-14, align: s < 0 ? 'right' : 'left', color:col });
+      }
+      p.labelPx(px, ty + 18, lab, { color:col, align:'center', size:11 });
+    });
+  }
+  function drawInf(p){
+    const f = S.f, eps = S.eps;
+    [[S.Ap, S.Mp, 1, C.goldD, 'rgba(202,157,72,.22)'], [S.Am, S.Mm, -1, C.green, 'rgba(52,90,83,.16)']].forEach(([A, M, s, col, fill]) => {
+      if (!A || A.status !== 'finite') return;
+      const a = A.value;
+      p.hband(a - eps, a + eps, 'rgba(202,157,72,.07)');
+      if (M && M.status !== 'none'){
+        const m = M.value;
+        if (s > 0) p.hband(a - eps, a + eps, fill, m, p.v.xmax); else p.hband(a - eps, a + eps, fill, p.v.xmin, -m);
+        p.vline(s * m, { color:col, dash:[6, 4], label: s > 0 ? 'M' : '−M′' });
+      }
+      p.hline(a, { color:col, dash:[8, 5], width:1.4, label: (s > 0 ? 'A₊ ≈ ' : 'A₋ ≈ ') + fmt(a, 4) });
+    });
+    p.curve(f, { color:C.greenD, width:2.6 });
+  }
+  /* анімація: точки x₀ ± h, h → 0 */
+  let raf = 0, last = 0;
+  function loop(){
+    if (raf) return;
+    const tick = t => {
+      raf = 0;
+      if (!isActive('onesided') || S.mode !== 'point' || !$('o-play').checked) return;
+      const dt = last ? Math.min(50, t - last) : 16; last = t;
+      S.phase = (S.phase + dt / 5000) % 1.15;
+      const ph = Math.min(1, S.phase);
+      const H0 = (P.v.xmax - P.v.xmin) / 3;
+      S.h = H0 * Math.pow(2e-3, ph);
+      P.draw();
+      raf = requestAnimationFrame(tick);
+    };
+    last = 0; raf = requestAnimationFrame(tick);
+  }
+  TAB_HOOKS.onesided = loop;
+  $('o-play').addEventListener('change', () => { if ($('o-play').checked) loop(); });
+  $('o-h').addEventListener('input', () => { $('o-play').checked = false; S.h = (P.v.xmax - P.v.xmin) / 3 * Math.pow(2e-3, +$('o-h').value); P.request(); });
+
+  const runF = bindExpr('o-f', 'o-f-prev', 'x', 'f(x)', m => {
+    S.f = m.fn;
+    if (S.mode === 'point'){ analyzePoint(); const [lo, hi] = autoY(S.f, S.x0 - S.w, S.x0 + S.w); P.setView({ xmin:S.x0 - S.w, xmax:S.x0 + S.w, ymin:lo, ymax:hi }); S.h = S.w / 2; }
+    else { analyzeInf(); const ex = [S.Ap, S.Am].filter(a => a && a.status === 'finite').map(a => a.value); const [lo, hi] = autoY(S.f, -30, 30, ex); P.setView({ xmin:-30, xmax:30, ymin:lo, ymax:hi }); }
+  });
+  $('o-x0').addEventListener('input', debounce(() => { const v = readConst('o-x0'); if (v !== null){ S.x0 = v; runF(); } }, 300));
+  $('o-eps').addEventListener('input', () => { S.eps = Math.pow(10, +$('o-eps').value); $('o-eps-val').textContent = fmt(S.eps, 3); if (S.f){ analyzeInf(); P.request(); } });
+  function loadP(i){ const p = ONESIDED_PRESETS[i]; $('o-f').value = p.f; $('o-x0').value = p.x0; S.x0 = MathExpr.evalConst(p.x0); S.w = p.w; runF(); }
+  function loadI(i){ const p = INF_PRESETS[i]; $('o-f').value = p.f; S.eps = p.eps; $('o-eps').value = Math.log10(p.eps); $('o-eps-val').textContent = fmt(p.eps, 3); runF(); }
+  selP.addEventListener('change', () => loadP(+selP.value));
+  selI.addEventListener('change', () => loadI(+selI.value));
+  setMode('point');
+}
+
+/* =====================================================================
+   5.4  ВКЛАДКА «ГЕОМЕТРИЧНИЙ І ФІЗИЧНИЙ ЗМІСТ»
+   ===================================================================== */
+function initMeaning(){
+  /* --- (а) дотична як границя січних --- */
+  const G = new Plot($('g-canvas'));
+  const S = { f:null, x0:1, dx:1, sign:1 };
+  G.onDraw = p => {
+    if (!S.f) return;
+    const f = S.f, x0 = S.x0, y0 = f(x0), x1 = x0 + S.sign * S.dx, y1 = f(x1);
+    const k = derivative(f, x0);
+    p.curve(f, { color:'#7d8f8a', width:2.4 });
+    if (isFinite(k)) p.slopeLine(x0, y0, k, { color:C.green, width:2, dash:[7, 5] });
+    if (isFinite(y1)){
+      const ks = (y1 - y0) / (x1 - x0);
+      p.slopeLine(x0, y0, ks, { color:C.goldD, width:2.4 });
+      p.line(x0, y0, x1, y0, { color:C.blue, width:1.6, dash:[3, 3] });
+      p.line(x1, y0, x1, y1, { color:C.red, width:1.6, dash:[3, 3] });
+      p.label((x0 + x1) / 2, y0, 'Δx', { dy: y1 > y0 ? 14 : -14, color:C.blue, align:'center' });
+      p.label(x1, (y0 + y1) / 2, 'Δy', { dx: S.sign > 0 ? 10 : -10, align: S.sign > 0 ? 'left' : 'right', color:C.red });
+      p.dot(x1, y1, { fill:C.goldD, r:6 }); p.label(x1, y1, 'M', { dx:10 * S.sign, dy:-14, color:C.goldD, align:'center' });
+    }
+    p.dot(x0, y0, { fill:C.green, r:6 }); p.label(x0, y0, 'M₀', { dx:-14 * S.sign, dy:-14, color:C.green, align:'center' });
+  };
+  function geoRead(){
+    if (!S.f) return;
+    const f = S.f, x0 = S.x0, y0 = f(x0), dx = S.sign * S.dx, dy = f(x0 + dx) - y0;
+    const k = derivative(f, x0), ks = dy / dx;
+    $('g-res').innerHTML =
+      '<div class="kv"><span>Δx</span><b>' + fmt(dx, 4) + '</b></div><div class="kv"><span>Δy = f(x₀+Δx) − f(x₀)</span><b>' + fmt(dy, 5) + '</b></div>' +
+      '<div class="kv"><span>кутовий коеф. січної Δy/Δx</span><b style="color:' + C.goldD + '">' + fmt(ks, 6) + '</b></div>' +
+      '<div class="kv"><span>кутовий коеф. дотичної f′(x₀)</span><b style="color:' + C.green + '">' + fmt(k, 6) + '</b></div>' +
+      '<div class="kv"><span>різниця</span><b>' + fmt(Math.abs(ks - k), 3) + '</b></div>';
+  }
+  const setDx = v => { S.dx = Math.pow(10, v); $('g-dx').value = v; $('g-dx-val').textContent = fmt(S.sign * S.dx, 3); geoRead(); G.request(); };
+  $('g-dx').addEventListener('input', () => setDx(+$('g-dx').value));
+  $('g-sign').onclick = () => { S.sign *= -1; $('g-sign').textContent = S.sign > 0 ? 'Δx > 0' : 'Δx < 0'; setDx(+$('g-dx').value); };
+  const runG = bindExpr('g-f', 'g-f-prev', 'x', 'f(x)', m => {
+    S.f = m.fn; const x0 = readConst('g-x0'); if (x0 === null) return; S.x0 = x0;
+    const [lo, hi] = autoY(S.f, x0 - 1.6, x0 + 1.6, [S.f(x0)]);
+    G.setView({ xmin:x0 - 2.5, xmax:x0 + 2.5, ymin:lo, ymax:hi }); geoRead();
+  });
+  $('g-x0').addEventListener('input', debounce(runG, 300));
+  let ganim = 0;
+  $('g-anim').onclick = () => {
+    if (ganim){ cancelAnimationFrame(ganim); ganim = 0; $('g-anim').textContent = '▶ Δx → 0'; return; }
+    $('g-anim').textContent = '■ Зупинити';
+    const v0 = +$('g-dx').value, v1 = -2.5, t0 = performance.now();
+    const st = t => { const k = Math.min(1, (t - t0) / 4500); setDx(v0 + (v1 - v0) * ease(k)); if (k < 1) ganim = requestAnimationFrame(st); else { ganim = 0; $('g-anim').textContent = '▶ Δx → 0'; } };
+    ganim = requestAnimationFrame(st);
+  };
+  runG(); setDx(0);
+
+  /* --- (б) миттєва швидкість --- */
+  const T = new Plot($('p-track'), { grid:false, pan:false, tools:false, readout:false });
+  const Q = new Plot($('p-canvas'), { xlabel:'Δt', ylabel:'v̄' });
+  const V = { s:null, t0:2, dt:1 };
+  T.onDraw = p => {
+    if (!V.s) return;
+    const s = V.s, t0 = V.t0, t1 = t0 + V.dt, g = p.ctx;
+    const tmax = Math.max(t1, t0) , samples = [];
+    for (let i = 0; i <= 40; i++) samples.push(s(tmax * i / 40));
+    samples.push(s(t0), s(t1));
+    const fin = samples.filter(isFinite); if (!fin.length) return;
+    let lo = Math.min(...fin), hi = Math.max(...fin); if (hi - lo < 1e-9){ lo -= 1; hi += 1; }
+    const pad = (hi - lo) * .08; p.v = { xmin:lo - pad, xmax:hi + pad, ymin:0, ymax:1 };
+    const yR = p.H * .58;
+    // дорога
+    g.fillStyle = '#eef1ee'; g.fillRect(0, yR - 16, p.W, 32);
+    g.strokeStyle = '#c9d2ce'; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(0, yR); g.lineTo(p.W, yR); g.stroke(); g.setLineDash([]);
+    // шкала
+    const st = p._step(p.v.xmax - p.v.xmin, p.W);
+    g.font = '11px Manrope, sans-serif'; g.fillStyle = '#6d7a76'; g.textAlign = 'center'; g.textBaseline = 'top';
+    for (let i = Math.ceil(p.v.xmin / st); i <= Math.floor(p.v.xmax / st); i++){
+      const x = p.X(i * st); g.fillRect(x, yR + 16, 1, 6); g.fillText(fmtTick(i * st, st) + ' м', x, yR + 24);
+    }
+    // стробоскоп: положення через рівні проміжки часу
+    for (let i = 0; i <= 12; i++){
+      const tt = tmax * i / 12, x = s(tt); if (!isFinite(x)) continue;
+      g.beginPath(); g.arc(p.X(x), yR, 4, 0, 7); g.fillStyle = 'rgba(52,90,83,.25)'; g.fill();
+    }
+    const x0 = s(t0), x1 = s(t1);
+    if (isFinite(x0) && isFinite(x1)){
+      const a = p.X(x0), b = p.X(x1);
+      g.strokeStyle = C.red; g.lineWidth = 2; g.beginPath(); g.moveTo(a, yR - 30); g.lineTo(a, yR - 38); g.lineTo(b, yR - 38); g.lineTo(b, yR - 30); g.stroke();
+      p.labelPx((a + b) / 2, yR - 50, 'Δs = ' + fmt(x1 - x0, 4) + ' м', { color:C.red, align:'center' });
+      g.beginPath(); g.arc(a, yR, 9, 0, 7); g.fillStyle = C.green; g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke();
+      g.beginPath(); g.arc(b, yR, 9, 0, 7); g.fillStyle = C.gold; g.fill(); g.stroke();
+      p.labelPx(a, yR + 46, 't₀', { color:C.green, align:'center' });
+      p.labelPx(b, yR + 46, 't₀ + Δt', { color:C.goldD, align:'center' });
+    }
+  };
+  const phi = dt => (V.s(V.t0 + dt) - V.s(V.t0)) / dt;
+  Q.onDraw = p => {
+    if (!V.s) return;
+    const v = derivative(V.s, V.t0);
+    p.hline(v, { color:C.green, dash:[6, 5], label:'v(t₀)' });
+    p.curve(phi, { color:C.goldD, width:2.6 });
+    p.hole(0, v, { color:C.green });
+    p.dot(V.dt, phi(V.dt), { fill:C.gold, r:6.5 });
+  };
+  function physRead(){
+    if (!V.s) return;
+    const ds = V.s(V.t0 + V.dt) - V.s(V.t0), v = derivative(V.s, V.t0);
+    $('p-res').innerHTML =
+      '<div class="kv"><span>Δt</span><b>' + fmt(V.dt, 4) + ' с</b></div><div class="kv"><span>Δs</span><b>' + fmt(ds, 5) + ' м</b></div>' +
+      '<div class="kv"><span>середня швидкість Δs/Δt</span><b style="color:' + C.goldD + '">' + fmt(ds / V.dt, 6) + ' м/с</b></div>' +
+      '<div class="kv"><span>миттєва швидкість v(t₀)</span><b style="color:' + C.green + '">' + fmt(v, 6) + ' м/с</b></div>';
+    T.request(); Q.request();
+  }
+  const setDt = u => { V.dt = Math.sign(u) * Math.pow(10, Math.abs(u) * 3 - 3) * (u === 0 ? 0 : 1); if (V.dt === 0) V.dt = 1e-3; $('p-dt').value = u; $('p-dt-val').textContent = fmt(V.dt, 3); physRead(); };
+  $('p-dt').addEventListener('input', () => setDt(+$('p-dt').value));
+  const runP = bindExpr('p-s', 'p-s-prev', 't', 's(t)', m => {
+    V.s = m.fn; const t0 = readConst('p-t0'); if (t0 === null) return; V.t0 = t0;
+    const ys = []; for (let i = -40; i <= 40; i++){ const dt = i / 20; if (i) ys.push(phi(dt)); }
+    const fin = ys.filter(isFinite); let lo = Math.min(...fin), hi = Math.max(...fin); if (!(hi - lo > 1e-6)){ lo -= 1; hi += 1; }
+    const pad = (hi - lo) * .25; Q.setView({ xmin:-2.2, xmax:2.2, ymin:lo - pad, ymax:hi + pad }); physRead();
+  });
+  $('p-t0').addEventListener('input', debounce(runP, 300));
+  let panim = 0;
+  $('p-anim').onclick = () => {
+    if (panim){ cancelAnimationFrame(panim); panim = 0; $('p-anim').textContent = '▶ Δt → 0'; return; }
+    $('p-anim').textContent = '■ Зупинити';
+    const u0 = +$('p-dt').value || 1, u1 = Math.sign(u0) * 0.02, t0 = performance.now();
+    const st = t => { const k = Math.min(1, (t - t0) / 4500); setDt(u0 + (u1 - u0) * ease(k)); if (k < 1) panim = requestAnimationFrame(st); else { panim = 0; $('p-anim').textContent = '▶ Δt → 0'; } };
+    panim = requestAnimationFrame(st);
+  };
+  runP(); setDt(1);
+}
+
+/* =====================================================================
+   5.5  ВКЛАДКА «ПРИКЛАДНІ ЗАДАЧІ»
+   ===================================================================== */
+function num(id, def){ const v = parseFloat(String($(id).value).replace(',', '.')); if (!isFinite(v)){ $(id).classList.add('bad'); return def; } $(id).classList.remove('bad'); return v; }
+function initApplied(){
+  /* --- 1. Неперервне нарахування відсотків --- */
+  const P1 = new Plot($('a1-canvas'), { xlabel:'n', ylabel:'сума', xTick:(u) => Number.isInteger(Math.round(u * 1e6) / 1e6) ? '10' + sup(Math.round(u)) : '' });
+  const PER = [[1,'щороку'],[2,'щопівроку'],[4,'щокварталу'],[12,'щомісяця'],[52,'щотижня'],[365,'щодня'],[8760,'щогодини'],[525600,'щохвилини']];
+  const A1 = { P:10000, r:.2, T:1 };
+  const amount = n => A1.P * Math.pow(1 + A1.r / n, n * A1.T);
+  function a1(){
+    A1.P = num('a1-P', 10000); A1.r = num('a1-r', 20) / 100; A1.T = num('a1-T', 1);
+    const lim = A1.P * Math.exp(A1.r * A1.T);
+    $('a1-tbl').innerHTML = PER.map(([n, nm]) => '<tr><td>' + nm + '</td><td>' + n + '</td><td>' + fmt(amount(n), 9) + '</td><td>' + fmt(lim - amount(n), 3) + '</td></tr>').join('') +
+      '<tr class="limrow"><td>неперервно (n → ∞)</td><td>∞</td><td>' + fmt(lim, 9) + '</td><td>0</td></tr>';
+    $('a1-res').innerHTML = 'Границя: \\(P e^{rT}\\) = <b>' + fmt(lim, 9) + '</b>. Навіть щохвилинне нарахування відстає від неї лише на ' + fmt(lim - amount(525600), 3) + '.';
+    typeset([$('a1-res')]);
+    const y0 = amount(1);
+    P1.setView({ xmin:-0.3, xmax:6.4, ymin:y0 - (lim - y0) * .35, ymax:lim + (lim - y0) * .35 });
+  }
+  P1.onDraw = p => {
+    const lim = A1.P * Math.exp(A1.r * A1.T);
+    p.hline(lim, { color:C.green, dash:[7, 5], width:1.6, label:'P·e^(rT)' });
+    p.curve(u => amount(Math.pow(10, u)), { color:'#b9c4c1', width:2, from:0 });
+    PER.forEach(([n], i) => { const u = Math.log10(n); p.dot(u, amount(n), { fill:C.goldD, r:5.5 }); if (i < 4 || i === 5 || i === 7) p.label(u, amount(n), String(n), { dy:14, size:10.5, color:C.goldD, align:'center', bold:false }); });
+  };
+  ['a1-P', 'a1-r', 'a1-T'].forEach(id => $(id).addEventListener('input', debounce(a1, 200)));
+  a1();
+
+  /* --- 2. Гранична швидкість падіння --- */
+  const P2 = new Plot($('a2-canvas'), { xlabel:'t, с', ylabel:'v, м/с' });
+  const A2 = { m:80, k:15, eps:0.5 };
+  function a2(){
+    A2.m = Math.max(1e-3, num('a2-m', 80)); A2.k = Math.max(1e-3, num('a2-k', 15)); A2.eps = Math.pow(10, +$('a2-eps').value);
+    $('a2-eps-val').textContent = fmt(A2.eps, 3);
+    const vinf = A2.m * 9.81 / A2.k, T = A2.eps < vinf ? (A2.m / A2.k) * Math.log(vinf / A2.eps) : 0;
+    A2.vinf = vinf; A2.T = T;
+    $('a2-res').innerHTML = '<div class="kv"><span>гранична швидкість \\(v_\\infty = mg/k\\)</span><b>' + fmt(vinf, 5) + ' м/с ≈ ' + fmt(vinf * 3.6, 4) + ' км/год</b></div>' +
+      '<div class="kv"><span>\\(T(\\varepsilon) = \\frac{m}{k}\\ln\\frac{v_\\infty}{\\varepsilon}\\)</span><b>' + fmt(T, 4) + ' с</b></div>' +
+      '<div class="note">Для всіх t &gt; T(ε) швидкість відрізняється від граничної менше ніж на ε = ' + fmt(A2.eps, 3) + ' м/с. Чим менше ε, тим більше T — так само, як δ у точці.</div>';
+    typeset([$('a2-res')]);
+    const tm = Math.max(2 * T, 5 * A2.m / A2.k);
+    P2.setView({ xmin:-tm * .04, xmax:tm, ymin:-vinf * .08, ymax:vinf * 1.2 });
+  }
+  P2.onDraw = p => {
+    const { vinf, T, eps } = A2, v = t => vinf * (1 - Math.exp(-A2.k * t / A2.m));
+    p.hband(vinf - eps, vinf + eps, 'rgba(202,157,72,.12)');
+    p.hband(vinf - eps, vinf + eps, 'rgba(202,157,72,.35)', T, p.v.xmax);
+    p.hline(vinf, { color:C.green, dash:[7, 5], width:1.5, label:'v∞' });
+    p.vline(T, { color:C.goldD, label:'T(ε)' });
+    p.curve(v, { from:0, color:C.greenD, width:2.8 });
+  };
+  ['a2-m', 'a2-k'].forEach(id => $(id).addEventListener('input', debounce(a2, 200)));
+  $('a2-eps').addEventListener('input', a2);
+  a2();
+
+  /* --- 3. Малі кути: sin φ ≈ φ --- */
+  const G3 = new Plot($('a3-geo'), { grid:false, pan:false, tools:false, readout:false });
+  const P3 = new Plot($('a3-canvas'), { xlabel:'φ, °', ylabel:'sin φ / φ' });
+  const A3 = { deg:20 };
+  const agm = (a, b) => { for (let i = 0; i < 30; i++){ const m = (a + b) / 2; b = Math.sqrt(a * b); a = m; } return a; };
+  function a3(){
+    A3.deg = +$('a3-phi').value; $('a3-phi-val').textContent = A3.deg + '°';
+    const f = A3.deg * Math.PI / 180, r = Math.sin(f) / f, Tr = 1 / agm(1, Math.cos(f / 2));
+    $('a3-res').innerHTML = '<div class="kv"><span>φ (радіани)</span><b>' + fmt(f, 5) + '</b></div><div class="kv"><span>sin φ</span><b>' + fmt(Math.sin(f), 5) + '</b></div>' +
+      '<div class="kv"><span>sin φ / φ</span><b>' + fmt(r, 6) + '</b></div>' +
+      '<div class="kv"><span>відносна похибка заміни sin φ на φ</span><b>' + fmt((f - Math.sin(f)) / Math.sin(f) * 100, 3) + ' %</b></div>' +
+      '<div class="kv"><span>похибка формули \\(T_0 = 2\\pi\\sqrt{l/g}\\) для амплітуди φ</span><b>' + fmt((Tr - 1) * 100, 3) + ' %</b></div>';
+    typeset([$('a3-res')]); G3.request(); P3.request();
+  }
+  G3.onDraw = p => {
+    const g = p.ctx, f = A3.deg * Math.PI / 180;
+    const R = Math.min(p.W * .62, p.H * .78), ox = p.W * .16, oy = p.H * .88;
+    g.lineWidth = 1.2; g.strokeStyle = '#c9d2ce';
+    g.beginPath(); g.arc(ox, oy, R, -Math.PI / 2, 0); g.stroke();
+    g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox + R * 1.12, oy); g.moveTo(ox, oy); g.lineTo(ox, oy - R * 1.05); g.stroke();
+    const cx = ox + R * Math.cos(f), cy = oy - R * Math.sin(f), tH = R * Math.tan(f);
+    // tg φ
+    g.strokeStyle = C.blue; g.lineWidth = 3; g.beginPath(); g.moveTo(ox + R, oy); g.lineTo(ox + R, oy - tH); g.stroke();
+    g.strokeStyle = 'rgba(63,107,154,.5)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox + R, oy - tH); g.stroke();
+    // радіус
+    g.strokeStyle = C.ink; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ox, oy); g.lineTo(cx, cy); g.stroke();
+    // дуга φ
+    g.strokeStyle = C.gold; g.lineWidth = 4; g.beginPath(); g.arc(ox, oy, R, -f, 0); g.stroke();
+    // sin φ
+    g.strokeStyle = C.green; g.lineWidth = 3.4; g.beginPath(); g.moveTo(cx, oy); g.lineTo(cx, cy); g.stroke();
+    g.fillStyle = C.ink; g.beginPath(); g.arc(cx, cy, 4, 0, 7); g.fill();
+    g.strokeStyle = '#777'; g.lineWidth = 1; g.beginPath(); g.arc(ox, oy, 26, -f, 0); g.stroke();
+    p.labelPx(ox + 36, oy - 12, 'φ', { color:C.ink });
+    p.labelPx(cx - 8, (oy + cy) / 2, 'sin φ', { color:C.green, align:'right' });
+    p.labelPx(ox + R + 8, oy - tH / 2, 'tg φ', { color:C.blue });
+    p.labelPx(ox + R * Math.cos(f / 2) + 12, oy - R * Math.sin(f / 2) - 4, 'дуга = φ', { color:C.goldD });
+  };
+  P3.setView({ xmin:-4, xmax:92, ymin:0.6, ymax:1.08 });
+  P3.onDraw = p => {
+    p.hline(1, { color:C.green, dash:[6, 5], label:'1' });
+    p.curve(d => { const f = d * Math.PI / 180; return Math.sin(f) / f; }, { from:0, color:C.goldD, width:2.6 });
+    p.hole(0, 1, { color:C.green });
+    const f = A3.deg * Math.PI / 180; p.dot(A3.deg, Math.sin(f) / f, { fill:C.gold, r:6.5 });
+  };
+  $('a3-phi').addEventListener('input', a3);
+  a3();
+
+  /* --- 4. Чисельне диференціювання і комп’ютерний зір --- */
+  const P4 = new Plot($('a4-canvas'), { xlabel:'h', ylabel:'похибка',
+    xTick:(u) => Number.isInteger(Math.round(u * 1e6) / 1e6) ? '10' + sup(Math.round(u)) : '',
+    yTick:(u) => Number.isInteger(Math.round(u * 1e6) / 1e6) ? '10' + sup(Math.round(u)) : '' });
+  const A4 = { f:Math.sin, x:1, d:Math.cos(1) };
+  const fwd = u => { const h = Math.pow(10, u), f = A4.f, x = A4.x; return Math.max(-17, Math.log10(Math.abs((f(x + h) - f(x)) / h - A4.d))); };
+  const cen = u => { const h = Math.pow(10, u), f = A4.f, x = A4.x; return Math.max(-17, Math.log10(Math.abs((f(x + h) - f(x - h)) / (2 * h) - A4.d))); };
+  const best = g => { let bu = 0, bv = Infinity; for (let u = -16; u <= 0; u += 0.02){ const v = g(u); if (v < bv){ bv = v; bu = u; } } return [bu, bv]; };
+  function a4(){
+    const x = readConst('a4-x'); if (x === null || !A4.f) return; A4.x = x;
+    const f = A4.f, h = 1e-2 * Math.max(1, Math.abs(x));
+    A4.d = (-f(x - 3 * h) + 9 * f(x - 2 * h) - 45 * f(x - h) + 45 * f(x + h) - 9 * f(x + 2 * h) + f(x + 3 * h)) / (60 * h);
+    const [bu1, bv1] = best(fwd), [bu2, bv2] = best(cen);
+    A4.b1 = [bu1, bv1]; A4.b2 = [bu2, bv2];
+    $('a4-res').innerHTML = '<div class="kv"><span>f′(x) (еталон)</span><b>' + fmt(A4.d, 10) + '</b></div>' +
+      '<div class="kv"><span>права різниця: найкраще h</span><b style="color:' + C.goldD + '">≈ 10' + sup(Math.round(bu1)) + ', похибка ≈ 10' + sup(Math.round(bv1)) + '</b></div>' +
+      '<div class="kv"><span>центральна різниця: найкраще h</span><b style="color:' + C.green + '">≈ 10' + sup(Math.round(bu2)) + ', похибка ≈ 10' + sup(Math.round(bv2)) + '</b></div>';
+    P4.request();
+  }
+  P4.setView({ xmin:-16.5, xmax:0.5, ymin:-17.5, ymax:1.5 });
+  P4.onDraw = p => {
+    p.vline(Math.log10(Math.sqrt(2.2e-16)), { color:'rgba(168,125,44,.5)', dash:[3, 4], label:'√ε_маш' });
+    p.curve(fwd, { color:C.goldD, width:1.8 });
+    p.curve(cen, { color:C.green, width:1.8 });
+    if (A4.b1){ p.dot(A4.b1[0], A4.b1[1], { fill:C.goldD }); p.dot(A4.b2[0], A4.b2[1], { fill:C.green }); }
+    p.labelPx(p.W - 12, 18, 'зменшення h ←', { align:'right', color:'#6d7a76', bold:false, size:11 });
+  };
+  bindExpr('a4-f', 'a4-f-prev', 'x', 'f(x)', m => { A4.f = m.fn; a4(); })();
+  $('a4-x').addEventListener('input', debounce(a4, 250));
+
+  /* --- 5. Архімед: площа круга як границя площ многокутників --- */
+  const G5 = new Plot($('a5-geo'), { grid:false, pan:false, tools:false, readout:false });
+  const P5 = new Plot($('a5-canvas'), { xlabel:'n', ylabel:'Sₙ' });
+  const A5 = { n:6 };
+  const Sn = n => n / 2 * Math.sin(2 * Math.PI / n);
+  function a5(){
+    A5.n = Math.round(Math.pow(10, +$('a5-n').value)); $('a5-n-val').textContent = A5.n;
+    $('a5-res').innerHTML = '<div class="kv"><span>площа многокутника \\(S_n\\) (R = 1)</span><b>' + fmt(Sn(A5.n), 10) + '</b></div>' +
+      '<div class="kv"><span>π − \\(S_n\\)</span><b>' + fmt(Math.PI - Sn(A5.n), 4) + '</b></div>' +
+      '<div class="kv"><span>півпериметр \\(n\\sin\\frac{\\pi}{n}\\)</span><b>' + fmt(A5.n * Math.sin(Math.PI / A5.n), 10) + '</b></div>';
+    typeset([$('a5-res')]);
+    P5.setView({ xmin:0, xmax:Math.max(30, A5.n * 1.3), ymin:1.2, ymax:3.45 });
+    G5.request();
+  }
+  G5.onDraw = p => {
+    const g = p.ctx, n = A5.n, R = Math.min(p.W, p.H) / 2 - 16, cx = p.W / 2, cy = p.H / 2;
+    g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = 'rgba(202,157,72,.22)'; g.fill(); g.strokeStyle = C.gold; g.lineWidth = 2; g.stroke();
+    g.beginPath();
+    for (let k = 0; k <= n; k++){ const a = -Math.PI / 2 + 2 * Math.PI * k / n; const x = cx + R * Math.cos(a), y = cy + R * Math.sin(a); k ? g.lineTo(x, y) : g.moveTo(x, y); }
+    g.fillStyle = 'rgba(52,90,83,.55)'; g.fill(); g.strokeStyle = C.greenD; g.lineWidth = 1.6; g.stroke();
+    if (n <= 48){
+      g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1; g.beginPath();
+      for (let k = 0; k < n; k++){ const a = -Math.PI / 2 + 2 * Math.PI * k / n; g.moveTo(cx, cy); g.lineTo(cx + R * Math.cos(a), cy + R * Math.sin(a)); }
+      g.stroke();
+    }
+  };
+  P5.onDraw = p => {
+    p.hline(Math.PI, { color:C.goldD, dash:[7, 5], width:1.6, label:'π' });
+    for (let n = 3; n <= p.v.xmax; n++) p.dot(n, Sn(n), { r: n === A5.n ? 6.5 : 2.6, fill: n === A5.n ? C.gold : C.green, lw: n === A5.n ? 2 : 0 });
+  };
+  $('a5-n').addEventListener('input', a5);
+  a5();
+}
+
+/* =====================================================================
+   6. НАВІГАЦІЯ
+   ===================================================================== */
+const TAB_HOOKS = {};
+const TABS = ['cauchy', 'heine', 'onesided', 'meaning', 'applied', 'theory', 'about'];
+const isActive = id => $('p-' + id) && $('p-' + id).classList.contains('active');
+function showTab(id){
+  if (!TABS.includes(id)) id = 'cauchy';
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'p-' + id));
+  document.querySelectorAll('.tab').forEach(b => { const on = b.dataset.tab === id; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+  if (TAB_HOOKS[id]) TAB_HOOKS[id]();
+  requestAnimationFrame(() => ALL_PLOTS.forEach(p => p.resize()));
+}
+function initNav(){
+  document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+    try { if (location.hash !== '#' + b.dataset.tab) location.hash = b.dataset.tab; else showTab(b.dataset.tab); } catch (e){ showTab(b.dataset.tab); }
+  }));
+  window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+  document.querySelectorAll('[data-goto]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); try { location.hash = a.dataset.goto; } catch (_){ showTab(a.dataset.goto); } window.scrollTo({ top:0, behavior:'smooth' }); }));
+  document.querySelectorAll('.toc a').forEach(a => a.addEventListener('click', e => { e.preventDefault(); const t = document.getElementById(a.dataset.target); if (t) t.scrollIntoView({ behavior:'smooth', block:'start' }); }));
+  showTab((location.hash || '#cauchy').slice(1));
+}
+function initMeta(){
+  const src = $('logo-main').src;              // логотип вбудовано в документ один раз
+  document.querySelectorAll('img[data-logo]').forEach(im => { im.src = src; });
+  $('favicon').href = src;
+  document.querySelectorAll('[data-cfg]').forEach(el => { el.textContent = CONFIG[el.dataset.cfg]; });
+  if (CONFIG.authors) $('authors').textContent = 'Укладачі: ' + CONFIG.authors + ' · ';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initMeta();
+  initCauchy(); initHeine(); initOneSided(); initMeaning(); initApplied();
+  initNav();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ALL_PLOTS.forEach(p => p.request()));
+});
+
+</script>
+</body>
+</html>
